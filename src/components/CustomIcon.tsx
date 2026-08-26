@@ -10,8 +10,9 @@ export interface CustomIconProps {
   white?: boolean;
 }
 
-// Keep using the original artwork. The PNG/SVG files live in the public
-// repository; loading them from raw GitHub avoids deployment-path issues.
+// Keep the original FurEver artwork. The image files live in
+// public/icons on GitHub. media.githubusercontent.com serves the
+// exact binary PNG/SVG files and bypasses Vercel's static-asset path.
 const nameAliases: Record<string, string> = {
   ball: 'ball.png',
   bone: 'bone.png',
@@ -83,7 +84,7 @@ const nameAliases: Record<string, string> = {
   'all friends': 'all-pets.svg',
 };
 
-const RAW_ICONS_BASE = 'https://raw.githubusercontent.com/sakinaeae/FurEver/main/public/icons/';
+const GITHUB_MEDIA_BASE = 'https://media.githubusercontent.com/media/sakinaeae/FurEver/main/public/icons/';
 
 export const CustomIcon: React.FC<CustomIconProps> = ({
   name,
@@ -128,7 +129,7 @@ export const CustomIcon: React.FC<CustomIconProps> = ({
   }
 
   const mappedFileName = nameAliases[normalizedKey] || `${normalizedKey}.png`;
-  const finalSrc = `${RAW_ICONS_BASE}${mappedFileName}`;
+  const finalSrc = `${GITHUB_MEDIA_BASE}${mappedFileName}`;
 
   return (
     <img
