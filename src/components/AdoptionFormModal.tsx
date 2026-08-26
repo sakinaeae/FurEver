@@ -32,11 +32,12 @@ export const AdoptionFormModal: React.FC<AdoptionFormModalProps> = ({
   // UI state
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [submittedApp, setSubmittedApp] = useState<AdoptionApplication | null>(null);
+  const [savedJsonPath, setSavedJsonPath] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isOpen || !pet) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
 
@@ -54,57 +55,74 @@ export const AdoptionFormModal: React.FC<AdoptionFormModalProps> = ({
 
     setIsSubmitting(true);
 
-    setTimeout(() => {
-      // Generate Unique Application ID
-      const randomNum = Math.floor(1000 + Math.random() * 9000);
-      const generatedId = `FUR-2026-${randomNum}`;
-      const now = new Date();
-      const dateString = now.toISOString().split('T')[0];
+    // Generate Unique Application ID
+    const randomNum = Math.floor(1000 + Math.random() * 9000);
+    const generatedId = `FUR-2026-${randomNum}`;
+    const now = new Date();
+    const dateString = now.toISOString().split('T')[0];
 
-      const newApplication: AdoptionApplication = {
-        id: generatedId,
-        petId: pet.id,
-        petName: pet.name,
-        petBreed: pet.breed,
-        petImage: pet.image,
-        petType: pet.animalType,
-        petLocation: pet.location,
-        applicantName: fullName.trim(),
-        applicantEmail: email.trim(),
-        applicantPhone: phone.trim(),
-        applicantAddress: address.trim() || pet.location,
-        housingType,
-        hasOtherPets,
-        petExperience,
-        fitReason: fitReason.trim(),
-        dateApplied: dateString,
-        currentStatus: 'Pending',
-        timelineNotes: {
-          appliedAt: `${dateString} ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
-          shelterNote: `Application successfully logged for ${pet.name}. Shelter coordinator is assigned to review your profile.`,
-        },
-      };
+    const newApplication: AdoptionApplication = {
+      id: generatedId,
+      petId: pet.id,
+      petName: pet.name,
+      petBreed: pet.breed,
+      petImage: pet.image,
+      petType: pet.animalType,
+      petLocation: pet.location,
+      applicantName: fullName.trim(),
+      applicantEmail: email.trim(),
+      applicantPhone: phone.trim(),
+      applicantAddress: address.trim() || pet.location,
+      housingType,
+      hasOtherPets,
+      petExperience,
+      fitReason: fitReason.trim(),
+      dateApplied: dateString,
+      currentStatus: 'Pending',
+      timelineNotes: {
+        appliedAt: `${dateString} ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
+        shelterNote: `Application successfully logged for ${pet.name}. Shelter coordinator is assigned to review your profile.`,
+      },
+    };
 
-      // Fire celebratory confetti!
-      try {
-        confetti({
-          particleCount: 100,
-          spread: 70,
-          origin: { y: 0.6 },
-          colors: ['#FB4504', '#0F5C94', '#0F942D', '#F6D97B', '#9A5D16'],
-        });
-      } catch (err) {
-        // Fallback gracefully if confetti fails
+    try {
+      // Send form data to C++ backend via /api/adoption-form
+      const response = await fetch('/api/adoption-form', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newApplication),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.file) {
+          setSavedJsonPath(data.file);
+        }
       }
+    } catch (err) {
+      console.warn('API post error:', err);
+    }
 
-      setIsSubmitting(false);
-      setSubmittedApp(newApplication);
-      onSubmitSuccess(newApplication);
-    }, 600);
+    // Fire celebratory confetti!
+    try {
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#FB4504', '#0F5C94', '#0F942D', '#F6D97B', '#9A5D16'],
+      });
+    } catch (err) {
+      // Fallback gracefully if confetti fails
+    }
+
+    setIsSubmitting(false);
+    setSubmittedApp(newApplication);
+    onSubmitSuccess(newApplication);
   };
 
   const handleResetModal = () => {
     setSubmittedApp(null);
+    setSavedJsonPath(null);
     setErrorMessage(null);
     onClose();
   };
@@ -319,7 +337,7 @@ export const AdoptionFormModal: React.FC<AdoptionFormModalProps> = ({
             {/* Field: Why fit? */}
             <div>
               <label className="block text-xs font-black text-[#0F5C94] uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                <CustomIcon name="message" className="w-3.5 h-3.5 text-[#9A5D16]" />
+                <CustomIcon name="message-box" className="w-3.5 h-3.5 text-[#9A5D16]" />
                 Why would you be a good fit for this pet? <span className="text-[#FB4504]">*</span>
               </label>
               <textarea
