@@ -21,8 +21,8 @@ const iconFiles: Record<string, string> = {
   'right-arrow': 'right-arrow.png', search: 'search.png', share: 'share.png', smiley: 'smiley.png',
   sparkle: 'sparkle.png', sparkles: 'sparkle.png', star: 'star-filled.png', 'star-filled': 'star-filled.png',
   'star-unfilled': 'star-unfilled.png', menu: 'three-lines.png', 'three-lines': 'three-lines.png', tick: 'tick.png', user: 'user.png',
-  dog: 'dog.svg', dogs: 'dog.svg', cat: 'cat.svg', cats: 'cat.svg', rabbit: 'rabbit.svg', rabbits: 'rabbits.svg',
-  bird: 'bird.svg', birds: 'birds.svg', other: 'other.svg', 'small-animals': 'small-animals.svg', 'any-pet': 'any-pet.svg', 'all-pets': 'all-pets.svg',
+  dog: 'icons/dog.svg', dogs: 'icons/dog.svg', cat: 'icons/cat.svg', cats: 'icons/cat.svg', rabbit: 'icons/rabbits.svg', rabbits: 'icons/rabbits.svg',
+  bird: 'icons/birds.svg', birds: 'icons/birds.svg', other: 'icons/small-animals.svg', 'small-animals': 'icons/small-animals.svg', 'any-pet': 'icons/any-pet.svg', 'all-pets': 'icons/all-pets.svg',
 };
 
 const ASSET_BASE = '/';
