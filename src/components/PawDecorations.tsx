@@ -38,19 +38,3 @@ export const BoneIcon: React.FC<{ className?: string; color?: string }> = ({
     </svg>
   );
 };
-
-export const ColorBadge: React.FC<{
-  text: string;
-  bg?: string;
-  textColor?: string;
-  className?: string;
-}> = ({ text, bg = "#F6D97B", textColor = "#0F5C94", className = "" }) => {
-  return (
-    <span
-      className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${className}`}
-      style={{ backgroundColor: bg, color: textColor }}
-    >
-      {text}
-    </span>
-  );
-};

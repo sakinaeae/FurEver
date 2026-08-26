@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Sparkles, FileCheck, ArrowRight, Layers, SlidersHorizontal } from 'lucide-react';
+import { Search, Sparkles, FileCheck, ArrowRight, Layers } from 'lucide-react';
 import { PawIcon } from './PawDecorations';
 
 interface HowItWorksProps {

@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, ArrowRight, Heart, Compass, SlidersHorizontal, CheckCircle2, FileText, Info } from 'lucide-react';
 import { Pet, AdoptionApplication } from './types';
 import { INITIAL_PETS } from './data/petsData';
 import { INITIAL_APPLICATIONS } from './data/initialApplications';
@@ -17,6 +16,7 @@ import { AdoptionFormModal } from './components/AdoptionFormModal';
 import { MyApplicationsView } from './components/MyApplicationsView';
 import { SavedMatchesModal } from './components/SavedMatchesModal';
 import { Footer } from './components/Footer';
+import { Sparkles, ArrowRight, Compass } from 'lucide-react';
 import { PawIcon } from './components/PawDecorations';
 
 export default function App() {
@@ -192,7 +192,7 @@ export default function App() {
 
                 <div className="space-y-2 text-center md:text-left relative z-10">
                   <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#FB4504] text-white text-[11px] font-black uppercase tracking-wider">
-                    <Sparkles className="w-3.5 h-3.5" />
+                    <Sparkles className="w-3.5 h-3.5 text-[#F6D97B]" />
                     <span>FEATURED INTERACTION</span>
                   </div>
                   <h3 className="text-2xl sm:text-3xl font-titan tracking-normal text-[#F6D97B]">
@@ -214,7 +214,7 @@ export default function App() {
                   >
                     <Sparkles className="w-4 h-4 text-[#FB4504]" />
                     <span>Try Swipe to Match</span>
-                    <ArrowRight className="w-4 h-4" />
+                    <ArrowRight className="w-4 h-4 text-[#0F5C94]" />
                   </button>
                 </div>
               </div>
@@ -272,7 +272,7 @@ export default function App() {
                       className="self-start md:self-auto px-6 py-3.5 rounded-xl bg-[#FB4504] hover:bg-[#e03a00] text-white font-black text-xs uppercase tracking-wider border-2 border-[#0F5C94] shadow-[4px_4px_0px_#0F5C94] hover:translate-x-0.5 hover:translate-y-0.5 transition-all flex items-center gap-2 cursor-pointer"
                     >
                       <span>Find My Match</span>
-                      <ArrowRight className="w-4 h-4" />
+                      <ArrowRight className="w-4 h-4 text-white" />
                     </button>
                   </div>
 

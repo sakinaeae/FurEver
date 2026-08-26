@@ -115,6 +115,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                   <span className="text-[11px] sm:text-xs">Live Tracking</span>
                 </div>
               </div>
+
             </div>
 
           </div>

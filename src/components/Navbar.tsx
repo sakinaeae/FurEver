@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Pet } from '../types';
 import {
   Heart,
   FileText,
@@ -12,7 +13,6 @@ import {
   Phone,
   ArrowRight
 } from 'lucide-react';
-import { Pet } from '../types';
 import { PawIcon } from './PawDecorations';
 
 interface NavbarProps {
@@ -166,7 +166,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     : 'text-white/85 hover:text-white hover:bg-white/10'
                 }`}
               >
-                <Compass className="w-3.5 h-3.5" />
+                <Compass className="w-3.5 h-3.5 text-[#0F5C94]" />
                 <span>Pets</span>
               </button>
 
@@ -208,7 +208,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     : 'text-white/85 hover:text-white hover:bg-white/10'
                 }`}
               >
-                <FileText className="w-3.5 h-3.5" />
+                <FileText className="w-3.5 h-3.5 text-[#0F5C94]" />
                 <span>Status</span>
                 {applicationCount > 0 && (
                   <span className="px-1.5 py-0.2 bg-[#FB4504] text-white text-[10px] font-black rounded-full shadow">
@@ -259,9 +259,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                 aria-expanded={mobileMenuOpen}
               >
                 {mobileMenuOpen ? (
-                  <X className="w-5 h-5" />
+                  <X className="w-5 h-5 text-[#0F5C94]" />
                 ) : (
-                  <Menu className="w-5 h-5" />
+                  <Menu className="w-5 h-5 text-[#0F5C94]" />
                 )}
               </button>
 
@@ -370,7 +370,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   </a>
                 </div>
                 <div className="w-8 h-8 rounded-lg bg-[#0F5C94] text-[#F6D97B] flex items-center justify-center">
-                  <Phone className="w-4 h-4" />
+                  <Phone className="w-4 h-4 text-[#F6D97B]" />
                 </div>
               </div>
             </div>
@@ -381,4 +381,5 @@ export const Navbar: React.FC<NavbarProps> = ({
     </header>
   );
 };
+
 
