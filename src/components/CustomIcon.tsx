@@ -16,7 +16,10 @@ const iconFiles: Record<string, string> = {
   file: 'file.png', flame: 'flame.png', 'health-verified': 'health-verified.png',
   'heart-filled': 'heart-filled.png', 'heart-illustration': 'heart-illustration.png', 'heart-unfilled': 'heart-unfilled.png',
   home: 'home.png', 'left-arrow': 'left-arrow.png', 'location-pin': 'location-pin.png', location: 'location-pin.png',
-  mail: 'mail.png', male: 'male.png', 'message-box': 'message-box.png', message: 'message-box.png',
+  mail: 'mail.png', male: 'male.png',
+  // message-box.png is stored inside public/icons, not at the public root.
+  'message-box': 'icons/message-box.png',
+  message: 'icons/message-box.png',
   paw: 'paw.png', 'paw-illustration': 'paw-illustration.png', phone: 'phone.png',
   'right-arrow': 'right-arrow.png', search: 'search.png', share: 'share.png', smiley: 'smiley.png',
   sparkle: 'sparkle.png', sparkles: 'sparkle.png', star: 'star-filled.png', 'star-filled': 'star-filled.png',
