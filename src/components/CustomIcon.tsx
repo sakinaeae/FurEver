@@ -10,8 +10,8 @@ export interface CustomIconProps {
   white?: boolean;
 }
 
-// Icons are stored in public/icons, so use stable public URLs.
-// Use Vite's BASE_URL so the same PNG assets work on root and sub-path deployments.
+// Keep using the original artwork. The PNG/SVG files live in the public
+// repository; loading them from raw GitHub avoids deployment-path issues.
 const nameAliases: Record<string, string> = {
   ball: 'ball.png',
   bone: 'bone.png',
@@ -83,6 +83,8 @@ const nameAliases: Record<string, string> = {
   'all friends': 'all-pets.svg',
 };
 
+const RAW_ICONS_BASE = 'https://raw.githubusercontent.com/sakinaeae/FurEver/main/public/icons/';
+
 export const CustomIcon: React.FC<CustomIconProps> = ({
   name,
   className = 'w-5 h-5',
@@ -126,7 +128,7 @@ export const CustomIcon: React.FC<CustomIconProps> = ({
   }
 
   const mappedFileName = nameAliases[normalizedKey] || `${normalizedKey}.png`;
-  const finalSrc = `${import.meta.env.BASE_URL}icons/${mappedFileName}`;
+  const finalSrc = `${RAW_ICONS_BASE}${mappedFileName}`;
 
   return (
     <img
