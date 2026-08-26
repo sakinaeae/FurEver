@@ -10,29 +10,8 @@ export interface CustomIconProps {
   white?: boolean;
 }
 
-// Eagerly load all icon assets from src/assets/icons/ and return their actual
-// bundled URLs. Using ?url + import: 'default' avoids relying on module shape.
-const assetModules = import.meta.glob<string>(
-  '../assets/icons/*.{png,svg}',
-  {
-    eager: true,
-    query: '?url',
-    import: 'default',
-  }
-);
-
-// Build a dictionary mapping filename (with or without extension) to bundled asset URL.
-const bundledIcons: Record<string, string> = {};
-for (const [path, url] of Object.entries(assetModules)) {
-  const fileWithExt = path.split('/').pop() || '';
-  const fileName = fileWithExt.toLowerCase();
-  const baseName = fileName.replace(/\.[^/.]+$/, '');
-
-  bundledIcons[fileName] = url;
-  bundledIcons[baseName] = url;
-}
-
-// Logical name mappings
+// Icons are stored in public/icons, so use stable public URLs.
+// This avoids Vite glob/module resolution issues in production builds.
 const nameAliases: Record<string, string> = {
   ball: 'ball.png',
   bone: 'bone.png',
@@ -147,13 +126,7 @@ export const CustomIcon: React.FC<CustomIconProps> = ({
   }
 
   const mappedFileName = nameAliases[normalizedKey] || `${normalizedKey}.png`;
-  const baseName = mappedFileName.replace(/\.[^/.]+$/, '').toLowerCase();
-
-  const finalSrc =
-    bundledIcons[mappedFileName.toLowerCase()] ||
-    bundledIcons[baseName] ||
-    bundledIcons['paw.png'] ||
-    '';
+  const finalSrc = `/icons/${mappedFileName}`;
 
   return (
     <img
@@ -163,7 +136,9 @@ export const CustomIcon: React.FC<CustomIconProps> = ({
       style={style}
       onClick={onClick}
       onError={(e) => {
-        (e.target as HTMLImageElement).src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"/>';
+        const target = e.currentTarget;
+        if (target.src.endsWith('/paw.png')) return;
+        target.src = '/icons/paw.png';
       }}
     />
   );
