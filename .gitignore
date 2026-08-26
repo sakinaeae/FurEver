@@ -6,3 +6,13 @@ coverage/
 *.log
 .env*
 !.env.example
+# C++ Binaries and build artifacts
+backend_handler
+backend_handler.exe
+*.exe
+*.o
+*.obj
+
+# Ignore individual user form submissions in git (keep .gitkeep)
+FormDataJson/*.json
+!FormDataJson/.gitkeep
