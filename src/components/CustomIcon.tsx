@@ -10,19 +10,24 @@ export interface CustomIconProps {
   white?: boolean;
 }
 
-// Eagerly load all icon assets from src/assets/icons/ via Vite glob
-const assetModules = import.meta.glob<{ default: string }>(
+// Eagerly load all icon assets from src/assets/icons/ and return their actual
+// bundled URLs. Using ?url + import: 'default' avoids relying on module shape.
+const assetModules = import.meta.glob<string>(
   '../assets/icons/*.{png,svg}',
-  { eager: true }
+  {
+    eager: true,
+    query: '?url',
+    import: 'default',
+  }
 );
 
-// Build a dictionary mapping filename (without extension or with extension) to bundled asset URL
+// Build a dictionary mapping filename (with or without extension) to bundled asset URL.
 const bundledIcons: Record<string, string> = {};
-for (const path in assetModules) {
+for (const [path, url] of Object.entries(assetModules)) {
   const fileWithExt = path.split('/').pop() || '';
   const fileName = fileWithExt.toLowerCase();
   const baseName = fileName.replace(/\.[^/.]+$/, '');
-  const url = assetModules[path].default;
+
   bundledIcons[fileName] = url;
   bundledIcons[baseName] = url;
 }
@@ -111,7 +116,12 @@ export const CustomIcon: React.FC<CustomIconProps> = ({
   const scaleClass = isFloating ? '' : 'scale-140 transition-transform';
 
   const style = {
-    ...(size ? { width: typeof size === 'number' ? `${size}px` : size, height: typeof size === 'number' ? `${size}px` : size } : {}),
+    ...(size
+      ? {
+          width: typeof size === 'number' ? `${size}px` : size,
+          height: typeof size === 'number' ? `${size}px` : size,
+        }
+      : {}),
   };
 
   if (['retry', 'reset', 'refresh', 'rotate'].includes(normalizedKey)) {
@@ -137,13 +147,12 @@ export const CustomIcon: React.FC<CustomIconProps> = ({
   }
 
   const mappedFileName = nameAliases[normalizedKey] || `${normalizedKey}.png`;
-  const baseName = mappedFileName.replace(/\.[^/.]+$/, '');
-  
-  const finalSrc = 
-    bundledIcons[mappedFileName] || 
-    bundledIcons[baseName + '.png'] || 
-    bundledIcons[baseName + '.svg'] || 
-    bundledIcons['paw.png'] || 
+  const baseName = mappedFileName.replace(/\.[^/.]+$/, '').toLowerCase();
+
+  const finalSrc =
+    bundledIcons[mappedFileName.toLowerCase()] ||
+    bundledIcons[baseName] ||
+    bundledIcons['paw.png'] ||
     '';
 
   return (
