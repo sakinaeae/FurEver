@@ -3,6 +3,7 @@ import { CustomIcon } from './CustomIcon';
 import { Pet, AnimalType, AgeCategory, PetSize } from '../types';
 import { PetCard } from './PetCard';
 import { PawIcon } from './PawDecorations';
+import { AnimalMarqueeTape } from './AnimalMarqueeTape';
 
 interface MatchQuizFinderProps {
   pets: Pet[];
@@ -24,13 +25,13 @@ export const MatchQuizFinder: React.FC<MatchQuizFinderProps> = ({
   const [locationQuery, setLocationQuery] = useState('');
   const [hasSearched, setHasSearched] = useState(false);
 
-  const animalTypes: { type: AnimalType | 'All'; label: string; iconEmoji: string }[] = [
-    { type: 'All', label: 'Any Pet', iconEmoji: '🐾' },
-    { type: 'Dog', label: 'Dogs', iconEmoji: '🐶' },
-    { type: 'Cat', label: 'Cats', iconEmoji: '🐱' },
-    { type: 'Rabbit', label: 'Rabbits', iconEmoji: '🐰' },
-    { type: 'Bird', label: 'Birds', iconEmoji: '🦜' },
-    { type: 'Other', label: 'Small Animals', iconEmoji: '🐹' },
+  const animalTypes: { type: AnimalType | 'All'; label: string; iconKey: string }[] = [
+    { type: 'All', label: 'Any Pet', iconKey: 'any-pet' },
+    { type: 'Dog', label: 'Dogs', iconKey: 'dog' },
+    { type: 'Cat', label: 'Cats', iconKey: 'cat' },
+    { type: 'Rabbit', label: 'Rabbits', iconKey: 'rabbit' },
+    { type: 'Bird', label: 'Birds', iconKey: 'bird' },
+    { type: 'Other', label: 'Small Animals', iconKey: 'small-animals' },
   ];
 
   const ageOptions: { value: AgeCategory | 'All'; label: string; desc: string }[] = [
@@ -132,13 +133,13 @@ export const MatchQuizFinder: React.FC<MatchQuizFinderProps> = ({
                     id={`quiz-type-${item.type.toLowerCase()}`}
                     type="button"
                     onClick={() => setSelectedType(item.type)}
-                    className={`p-3.5 rounded-2xl border-2 text-center transition-all flex flex-col items-center justify-center gap-1 cursor-pointer hover:translate-x-0.5 hover:translate-y-0.5 ${
+                    className={`p-3.5 rounded-2xl border-2 text-center transition-all flex flex-col items-center justify-center gap-1.5 cursor-pointer hover:translate-x-0.5 hover:translate-y-0.5 ${
                       isSelected
                         ? 'bg-[#0F5C94] border-[#0F5C94] text-white shadow-[3px_3px_0px_#FB4504]'
                         : 'bg-white border-[#0F5C94]/30 text-[#0F5C94] hover:bg-[#F6D97B]/30 shadow-[2px_2px_0px_#0F5C94]'
                     }`}
                   >
-                    <span className="text-3xl">{item.iconEmoji}</span>
+                    <CustomIcon name={item.iconKey} white={isSelected} className="w-9 h-9 sm:w-10 sm:h-10 object-contain my-0.5" />
                     <span className="text-xs font-black tracking-wide">{item.label}</span>
                     {isSelected && (
                       <span className="w-4 h-4 rounded-full bg-[#F6D97B] text-[#0F5C94] flex items-center justify-center text-[10px] font-black mt-0.5">
@@ -284,7 +285,7 @@ export const MatchQuizFinder: React.FC<MatchQuizFinderProps> = ({
                 onClick={handleClearFilters}
                 className="px-4 py-2.5 rounded-xl bg-white hover:bg-[#F6D97B] text-[#0F5C94] border-2 border-[#0F5C94] font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-[2px_2px_0px_#0F5C94] cursor-pointer"
               >
-                <CustomIcon name="calendar" className="w-3.5 h-3.5" />
+                <CustomIcon name="reset" className="w-3.5 h-3.5" />
                 <span>Clear Filters</span>
               </button>
 
@@ -302,8 +303,11 @@ export const MatchQuizFinder: React.FC<MatchQuizFinderProps> = ({
 
         </div>
 
+        {/* Moving Animal Icons Marquee Tape */}
+        <AnimalMarqueeTape className="my-8 sm:my-10" />
+
         {/* Live Match Results Section */}
-        <div id="match-results-section" className="mt-12 pt-8 border-t-3 border-[#0F5C94]/20">
+        <div id="match-results-section" className="mt-8 sm:mt-10">
           <div className="text-center mb-8">
             <h2 className="text-2xl sm:text-4xl font-titan text-[#0F5C94]">
               {matchedPets.length > 0

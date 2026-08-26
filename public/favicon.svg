@@ -1,12 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
   <rect width="64" height="64" rx="16" fill="#0F5C94"/>
-  <g fill="#ffca42">
+  <g fill="#F6D97B">
     <!-- Main pad -->
-    <path d="M32 29C25.5 29 20.5 34 20.5 41.5C20.5 47.5 25.5 52.5 32 52.5C38.5 52.5 43.5 47.5 43.5 41.5C43.5 34 38.5 29 32 29Z"/>
-    <!-- Toe pads with FUREVER accent colors -->
-    <circle cx="18" cy="25" r="5.5" fill="#FB4504"/>
-    <circle cx="27" cy="15" r="5.5" fill="#ffca42"/>
-    <circle cx="37" cy="15" r="5.5" fill="#ffca42"/>
-    <circle cx="46" cy="25" r="5.5" fill="#FB4504"/>
+    <path d="M32 28C24.5 28 19.5 33.5 19.5 41.5C19.5 47.5 25 52.5 32 52.5C39 52.5 44.5 47.5 44.5 41.5C44.5 33.5 39.5 28 32 28Z"/>
+    <!-- Yellow Toe Pads -->
+    <circle cx="17.5" cy="24.5" r="5.5" fill="#F6D97B"/>
+    <circle cx="27" cy="14.5" r="5.5" fill="#F6D97B"/>
+    <circle cx="37" cy="14.5" r="5.5" fill="#F6D97B"/>
+    <circle cx="46.5" cy="24.5" r="5.5" fill="#F6D97B"/>
   </g>
 </svg>

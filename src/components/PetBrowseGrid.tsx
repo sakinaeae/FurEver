@@ -3,6 +3,7 @@ import { CustomIcon } from './CustomIcon';
 import { Pet, AnimalType, AgeCategory, PetSize, PetGender } from '../types';
 import { PetCard } from './PetCard';
 import { PawIcon } from './PawDecorations';
+import { AnimalMarqueeTape } from './AnimalMarqueeTape';
 
 interface PetBrowseGridProps {
   pets: Pet[];
@@ -32,12 +33,12 @@ export const PetBrowseGrid: React.FC<PetBrowseGridProps> = ({
   const [visibleCount, setVisibleCount] = useState<number>(12);
 
   const categories: { type: AnimalType | 'All'; label: string; icon: string }[] = [
-    { type: 'All', label: 'All Friends', icon: '🐾' },
-    { type: 'Dog', label: 'Dogs', icon: '🐶' },
-    { type: 'Cat', label: 'Cats', icon: '🐱' },
-    { type: 'Rabbit', label: 'Rabbits', icon: '🐰' },
-    { type: 'Bird', label: 'Birds', icon: '🦜' },
-    { type: 'Other', label: 'Small Animals', icon: '🐹' },
+    { type: 'All', label: 'All Friends', icon: 'any-pet' },
+    { type: 'Dog', label: 'Dogs', icon: 'dog' },
+    { type: 'Cat', label: 'Cats', icon: 'cat' },
+    { type: 'Rabbit', label: 'Rabbits', icon: 'rabbit' },
+    { type: 'Bird', label: 'Birds', icon: 'bird' },
+    { type: 'Other', label: 'Small Animals', icon: 'small-animals' },
   ];
 
   // Distinct locations available
@@ -194,7 +195,7 @@ export const PetBrowseGrid: React.FC<PetBrowseGridProps> = ({
           </div>
 
           {/* Category Tabs Bar */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 pt-6 mt-4 border-t-2 border-[#0F5C94]/15 scrollbar-none">
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 pt-2 scrollbar-none">
             {categories.map((cat) => {
               const count =
                 cat.type === 'All'
@@ -210,13 +211,13 @@ export const PetBrowseGrid: React.FC<PetBrowseGridProps> = ({
                     setSelectedCategory(cat.type);
                     setVisibleCount(12);
                   }}
-                  className={`px-4 py-2.5 rounded-xl text-xs font-black whitespace-nowrap transition-all flex items-center gap-2 cursor-pointer uppercase tracking-wider ${
+                  className={`px-4 py-2.5 rounded-xl text-xs font-black whitespace-nowrap transition-all flex items-center gap-2.5 cursor-pointer uppercase tracking-wider ${
                     isSelected
                       ? 'bg-[#0F5C94] text-white border-2 border-[#0F5C94] shadow-[3px_3px_0px_#FB4504]'
                       : 'bg-white text-[#0F5C94] hover:bg-[#F6D97B]/40 border-2 border-[#0F5C94]/30'
                   }`}
                 >
-                  <span>{cat.icon}</span>
+                  <CustomIcon name={cat.icon} white={isSelected} className="w-5 h-5 object-contain" />
                   <span>{cat.label}</span>
                   <span
                     className={`text-[10px] px-2 py-0.2 rounded-md font-black ${
@@ -378,7 +379,7 @@ export const PetBrowseGrid: React.FC<PetBrowseGridProps> = ({
                   }`}
                   title="Grid View"
                 >
-                  <CustomIcon name="three lines" className="w-4 h-4" />
+                  <CustomIcon name="three lines" white={viewMode === 'grid'} className="w-4 h-4" />
                 </button>
                 <button
                   id="view-mode-list-btn"
@@ -390,13 +391,16 @@ export const PetBrowseGrid: React.FC<PetBrowseGridProps> = ({
                   }`}
                   title="Detailed List View"
                 >
-                  <CustomIcon name="file" className="w-4 h-4" />
+                  <CustomIcon name="file" white={viewMode === 'list'} className="w-4 h-4" />
                 </button>
               </div>
 
             </div>
           </div>
         </div>
+
+        {/* Moving Animal Icons Marquee Tape right after Showing XX of XX companions header */}
+        <AnimalMarqueeTape className="my-6 sm:my-8" />
 
         {/* Pets Presentation: Grid View */}
         {filteredPets.length > 0 ? (

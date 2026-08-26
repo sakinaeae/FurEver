@@ -69,10 +69,10 @@ export const HowItWorks: React.FC<HowItWorksProps> = ({
                     className="w-full p-2.5 rounded-xl bg-[#FAF5EB] hover:bg-[#0F5C94] text-[#0F5C94] hover:text-white border-2 border-[#0F5C94] text-xs font-black uppercase tracking-wider flex items-center justify-between transition-all cursor-pointer shadow-[2px_2px_0px_#0F5C94] group"
                   >
                     <span className="flex items-center gap-2">
-                      <CustomIcon name="search" className="w-3.5 h-3.5" />
+                      <CustomIcon name="search" className="w-3.5 h-3.5 group-hover:brightness-0 group-hover:invert group-hover:text-white transition-all" />
                       <span>Find a Pet (Browse)</span>
                     </span>
-                    <CustomIcon name="right-arrow" className="w-3.5 h-3.5" />
+                    <CustomIcon name="right-arrow" className="w-3.5 h-3.5 group-hover:brightness-0 group-hover:invert group-hover:text-white transition-all" />
                   </button>
 
                   <button
@@ -80,10 +80,10 @@ export const HowItWorks: React.FC<HowItWorksProps> = ({
                     className="w-full p-2.5 rounded-xl bg-[#FAF5EB] hover:bg-[#FB4504] text-[#0F5C94] hover:text-white border-2 border-[#0F5C94] text-xs font-black uppercase tracking-wider flex items-center justify-between transition-all cursor-pointer shadow-[2px_2px_0px_#0F5C94] group"
                   >
                     <span className="flex items-center gap-2">
-                      <CustomIcon name="flame" className="w-3.5 h-3.5" />
+                      <CustomIcon name="flame" className="w-3.5 h-3.5 group-hover:brightness-0 group-hover:invert group-hover:text-white transition-all" />
                       <span>Swipe to Match</span>
                     </span>
-                    <CustomIcon name="right-arrow" className="w-3.5 h-3.5" />
+                    <CustomIcon name="right-arrow" className="w-3.5 h-3.5 group-hover:brightness-0 group-hover:invert group-hover:text-white transition-all" />
                   </button>
 
                   <button
@@ -91,10 +91,10 @@ export const HowItWorks: React.FC<HowItWorksProps> = ({
                     className="w-full p-2.5 rounded-xl bg-[#FAF5EB] hover:bg-[#9A5D16] text-[#0F5C94] hover:text-white border-2 border-[#0F5C94] text-xs font-black uppercase tracking-wider flex items-center justify-between transition-all cursor-pointer shadow-[2px_2px_0px_#0F5C94] group"
                   >
                     <span className="flex items-center gap-2">
-                      <CustomIcon name="sparkle" className="w-3.5 h-3.5" />
+                      <CustomIcon name="sparkle" className="w-3.5 h-3.5 group-hover:brightness-0 group-hover:invert group-hover:text-white transition-all" />
                       <span>Match Finder Quiz</span>
                     </span>
-                    <CustomIcon name="right-arrow" className="w-3.5 h-3.5" />
+                    <CustomIcon name="right-arrow" className="w-3.5 h-3.5 group-hover:brightness-0 group-hover:invert group-hover:text-white transition-all" />
                   </button>
                 </div>
               </div>
@@ -152,10 +152,10 @@ export const HowItWorks: React.FC<HowItWorksProps> = ({
               <div className="mt-6">
                 <button
                   onClick={onConnectClick}
-                  className="w-full py-2.5 px-4 rounded-xl text-xs font-black uppercase tracking-wider border-2 border-[#0F5C94] flex items-center justify-center gap-1.5 transition-all hover:bg-[#0F5C94] hover:text-white cursor-pointer shadow-[2px_2px_0px_#0F5C94] bg-[#EBF7EE] text-[#0F942D]"
+                  className="w-full py-2.5 px-4 rounded-xl text-xs font-black uppercase tracking-wider border-2 border-[#0F5C94] flex items-center justify-center gap-1.5 transition-all hover:bg-[#0F5C94] hover:text-white cursor-pointer shadow-[2px_2px_0px_#0F5C94] bg-[#EBF7EE] text-[#0F942D] group"
                 >
                   <span>Check Status</span>
-                  <CustomIcon name="right-arrow" className="w-3.5 h-3.5" />
+                  <CustomIcon name="right-arrow" className="w-3.5 h-3.5 group-hover:brightness-0 group-hover:invert group-hover:text-white transition-all" />
                 </button>
               </div>
             </div>

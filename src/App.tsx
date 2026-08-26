@@ -19,6 +19,7 @@ import { Footer } from './components/Footer';
 import { FloatingBackgroundIcons } from './components/FloatingBackgroundIcons';
 import { CustomIcon } from './components/CustomIcon';
 import { PawIcon } from './components/PawDecorations';
+import { AnimalMarqueeTape } from './components/AnimalMarqueeTape';
 
 
 export default function App() {
@@ -31,12 +32,15 @@ export default function App() {
   // Persisted Applications
   const [applications, setApplications] = useState<AdoptionApplication[]>(() => {
     try {
-      const saved = localStorage.getItem('furever_applications_v3');
+      const saved = localStorage.getItem('furever_applications_v4') || localStorage.getItem('furever_applications_v3');
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          // Sanitize any older data to ensure Bangalore addresses and single user "You"
-          return parsed.map((app: AdoptionApplication) => ({
+          // Filter out pre-loaded sample mock applications so status starts empty until user fills one
+          const userSubmitted = parsed.filter(
+            (app: AdoptionApplication) => app.id !== 'FUR-2026-8942' && app.id !== 'FUR-2026-7621'
+          );
+          return userSubmitted.map((app: AdoptionApplication) => ({
             ...app,
             applicantName: 'You',
             petLocation: app.petLocation?.includes('Bengaluru') ? app.petLocation : 'Jayanagar, Bengaluru',
@@ -47,7 +51,7 @@ export default function App() {
     } catch (e) {
       console.error(e);
     }
-    return INITIAL_APPLICATIONS;
+    return [];
   });
 
   // Persisted Liked & Favorited Pets
@@ -70,7 +74,7 @@ export default function App() {
   // Sync to LocalStorage
   useEffect(() => {
     try {
-      localStorage.setItem('furever_applications_v3', JSON.stringify(applications));
+      localStorage.setItem('furever_applications_v4', JSON.stringify(applications));
     } catch (e) {
       console.error(e);
     }
@@ -185,43 +189,8 @@ export default function App() {
               availableCount={availablePetsCount}
             />
 
-            {/* Swipe to Match Teaser Banner */}
-            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-6">
-              <div className="bg-[#0F5C94] rounded-2xl p-6 sm:p-8 text-white shadow-[6px_6px_0px_#9A5D16] relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 border-3 border-[#0F5C94]">
-                {/* Background paw */}
-                <div className="absolute -right-8 -bottom-8 opacity-10 pointer-events-none">
-                  <PawIcon className="w-56 h-56 fill-white" />
-                </div>
-
-                <div className="space-y-2 text-center md:text-left relative z-10">
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#FB4504] text-white text-[11px] font-black uppercase tracking-wider">
-                    <CustomIcon name="sparkle" className="w-3.5 h-3.5 text-[#F6D97B]" />
-                    <span>FEATURED INTERACTION</span>
-                  </div>
-                  <h3 className="text-2xl sm:text-3xl font-titan tracking-normal text-[#F6D97B]">
-                    Swipe Through Available Pets
-                  </h3>
-                  <p className="text-sm text-white/90 max-w-lg font-medium">
-                    Try our original gesture card deck. Swipe right on pets who catch your heart, save your matches, and apply directly.
-                  </p>
-                </div>
-
-                <div className="relative z-10 shrink-0">
-                  <button
-                    id="home-swipe-teaser-btn"
-                    onClick={() => {
-                      setCurrentTab('swipe');
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }}
-                    className="px-6 py-3.5 rounded-xl bg-[#F6D97B] hover:bg-white text-[#0F5C94] font-black text-xs uppercase tracking-wider border-2 border-[#0F5C94] shadow-[4px_4px_0px_#FB4504] hover:translate-x-0.5 hover:translate-y-0.5 transition-all flex items-center gap-2 cursor-pointer"
-                  >
-                    <CustomIcon name="sparkle" className="w-4 h-4 text-[#FB4504]" />
-                    <span>Try Swipe to Match</span>
-                    <CustomIcon name="right-arrow" className="w-4 h-4 text-[#0F5C94]" />
-                  </button>
-                </div>
-              </div>
-            </section>
+            {/* Moving Animal Icons Marquee Tape */}
+            <AnimalMarqueeTape />
 
             {/* How It Works Section */}
             <HowItWorks

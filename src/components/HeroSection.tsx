@@ -86,7 +86,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                   className="w-full sm:w-auto px-6 sm:px-7 py-3 sm:py-3.5 rounded-xl bg-[#0F5C94] hover:bg-[#0c4a77] text-white font-black text-sm sm:text-base tracking-wide border-2 border-[#0F5C94] shadow-[4px_4px_0px_#FB4504] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_#FB4504] transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <span>Find Your Match</span>
-                  <CustomIcon name="sparkle" className="w-4 h-4" />
+                  <CustomIcon name="sparkle" white className="w-4 h-4" />
                 </button>
 
                 <button

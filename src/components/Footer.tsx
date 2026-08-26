@@ -22,8 +22,8 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab }) => {
           {/* Section 1: Brand Information */}
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#F6D97B] border-2 border-white flex items-center justify-center text-[#0F5C94] shadow-[3px_3px_0px_#FB4504]">
-                <PawIcon className="w-5 h-5 fill-[#0F5C94]" />
+              <div className="w-11 h-11 rounded-xl bg-[#F6D97B] border-2 border-white flex items-center justify-center text-[#0F5C94] shadow-[3px_3px_0px_#FB4504]">
+                <CustomIcon name="paw" className="w-7 h-7 object-contain" />
               </div>
               <span className="text-3xl sm:text-4xl font-titan tracking-normal text-white">
                 FUREVER
@@ -33,15 +33,6 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab }) => {
             <p className="text-white/85 text-xs sm:text-sm leading-relaxed max-w-sm font-medium">
               Making pet adoption easier to discover, apply for and track. Connecting shelter animals with loving, lifelong families through modern discovery tools.
             </p>
-
-            <div className="pt-1 flex flex-wrap items-center gap-2">
-              <span className="px-3 py-1 rounded-lg bg-[#0F942D] text-white text-[10px] font-black uppercase tracking-wider border border-white/30">
-                100% Ethical Rescues
-              </span>
-              <span className="px-3 py-1 rounded-lg bg-[#FB4504] text-white text-[10px] font-black uppercase tracking-wider border border-white/30">
-                Direct Applications
-              </span>
-            </div>
           </div>
 
           {/* Section 2: Explore Furever */}
@@ -126,15 +117,15 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab }) => {
             </h4>
             <div className="space-y-3 text-xs text-white/85 font-medium">
               <p className="flex items-center gap-2.5">
-                <CustomIcon name="mail" className="w-4 h-4 shrink-0" />
+                <CustomIcon name="mail" white className="w-5 h-5 shrink-0" />
                 <a href="mailto:support@furever.com" className="hover:text-[#F6D97B] transition-colors">support@furever.com</a>
               </p>
               <p className="flex items-center gap-2.5">
-                <CustomIcon name="phone" className="w-4 h-4 shrink-0" />
+                <CustomIcon name="phone" white className="w-5 h-5 shrink-0" />
                 <a href="tel:18002347890" className="hover:text-[#F6D97B] transition-colors">1800 234 7890</a>
               </p>
               <p className="flex items-center gap-2.5">
-                <CustomIcon name="location" className="w-4 h-4 shrink-0" />
+                <CustomIcon name="location" white className="w-5 h-5 shrink-0" />
                 <span>Bengaluru, Karnataka</span>
               </p>
             </div>

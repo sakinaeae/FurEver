@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, useMotionValue, useTransform } from 'motion/react';
 import { CustomIcon } from './CustomIcon';
+import { AnimalMarqueeTape } from './AnimalMarqueeTape';
 import { Pet } from '../types';
 
 interface SwipeCardDeckProps {
@@ -80,7 +81,7 @@ export const SwipeCardDeck: React.FC<SwipeCardDeckProps> = ({
   }, [currentIndex, currentPet]);
 
   return (
-    <div className="py-3 sm:py-5 min-h-[calc(100vh-4.5rem)] flex flex-col justify-center">
+    <div className="py-2 sm:py-4 min-h-[calc(100vh-4.5rem)] flex flex-col justify-center">
       <div className="max-w-3xl mx-auto px-4 w-full">
         
         {/* Page Header */}
@@ -256,7 +257,7 @@ export const SwipeCardDeck: React.FC<SwipeCardDeckProps> = ({
                   onClick={handleReset}
                   className="w-full py-2 rounded-xl bg-white hover:bg-[#F6D97B] text-[#0F5C94] font-black text-xs uppercase tracking-wider border-2 border-[#0F5C94] shadow-[2px_2px_0px_#0F5C94] flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <CustomIcon name="calendar" className="w-3.5 h-3.5" />
+                  <CustomIcon name="retry" className="w-3.5 h-3.5" />
                   <span>Restart Deck</span>
                 </button>
               </div>
@@ -288,7 +289,7 @@ export const SwipeCardDeck: React.FC<SwipeCardDeckProps> = ({
                 title="Undo last swipe"
                 aria-label="Undo last swipe"
               >
-                <CustomIcon name="calendar" className="w-4 h-4" />
+                <CustomIcon name="undo" className="w-4 h-4" />
               </button>
 
               {/* LIKE BUTTON */}
@@ -305,12 +306,15 @@ export const SwipeCardDeck: React.FC<SwipeCardDeckProps> = ({
 
             {/* Keyboard hint */}
             <p className="text-center text-[11px] font-bold text-[#0F5C94]/70 uppercase tracking-wider mt-2">
-              Keyboard: <kbd className="px-1.5 py-0.5 bg-white rounded border border-[#0F5C94] text-[#0F5C94] font-black text-[10px]">←</kbd> Pass or <kbd className="px-1.5 py-0.5 bg-white rounded border border-[#0F5C94] text-[#0F5C94] font-black text-[10px]">→</kbd> Like
+              Keyboard: <kbd className="px-1.5 py-0.5 bg-[#FAF5EB] rounded border border-[#0F5C94] text-[#0F5C94] font-black text-[10px]">←</kbd> Pass or <kbd className="px-1.5 py-0.5 bg-[#FAF5EB] rounded border border-[#0F5C94] text-[#0F5C94] font-black text-[10px]">→</kbd> Like
             </p>
           </div>
         )}
 
       </div>
+
+      {/* Moving Animal Icons Marquee Tape (Full Width Edge to Edge) */}
+      <AnimalMarqueeTape className="mt-8 mb-0" />
     </div>
   );
 };

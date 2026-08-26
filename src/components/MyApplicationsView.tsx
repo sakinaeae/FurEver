@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { CustomIcon } from './CustomIcon';
 import { AdoptionApplication, ApplicationStatus } from '../types';
 import { PawIcon } from './PawDecorations';
+import { AnimalMarqueeTape } from './AnimalMarqueeTape';
 
 interface MyApplicationsViewProps {
   applications: AdoptionApplication[];
@@ -369,6 +370,8 @@ export const MyApplicationsView: React.FC<MyApplicationsViewProps> = ({
           </div>
         )}
 
+        {/* Moving Animal Icons Marquee Tape above Footer */}
+        <AnimalMarqueeTape className="mt-12 mb-2 sm:mt-16 sm:mb-4" />
       </div>
     </div>
   );

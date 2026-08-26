@@ -117,6 +117,25 @@
 }
 
 /* Custom utility scrollbar */
+@keyframes marquee-slide {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee-tape {
+  display: flex;
+  width: max-content;
+  animation: marquee-slide 25s linear infinite;
+}
+
+.animate-marquee-tape:hover {
+  animation-play-state: paused;
+}
+
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
