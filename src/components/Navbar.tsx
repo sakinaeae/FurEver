@@ -110,11 +110,10 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={() => handleNavClick('home')}
               className="flex items-center gap-2.5 sm:gap-3 cursor-pointer group select-none shrink-0"
             >
-              <div className="relative">
+              <div>
                 <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-2xl bg-[#F6D97B] flex items-center justify-center text-[#0F5C94] shadow-lg group-hover:scale-105 group-hover:rotate-3 transition-transform duration-200 border-2 border-white/20">
                   <CustomIcon name="paw" className="w-8 h-8 sm:w-10 sm:h-10 object-contain" />
                 </div>
-                <div className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-[#FB4504] border-2 border-[#0F5C94]"></div>
               </div>
 
               <div className="flex flex-col">
