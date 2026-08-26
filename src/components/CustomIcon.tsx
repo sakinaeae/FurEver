@@ -10,9 +10,9 @@ export interface CustomIconProps {
   white?: boolean;
 }
 
-// Keep the original FurEver artwork. The image files live in
-// public/icons on GitHub. media.githubusercontent.com serves the
-// exact binary PNG/SVG files and bypasses Vercel's static-asset path.
+// Keep the original FurEver artwork. The PNG/SVG files remain unchanged in
+// public/icons. jsDelivr serves the same repository files through a CDN,
+// avoiding Vercel's public-asset path and GitHub raw/media delivery issues.
 const nameAliases: Record<string, string> = {
   ball: 'ball.png',
   bone: 'bone.png',
@@ -84,7 +84,7 @@ const nameAliases: Record<string, string> = {
   'all friends': 'all-pets.svg',
 };
 
-const GITHUB_MEDIA_BASE = 'https://media.githubusercontent.com/media/sakinaeae/FurEver/main/public/icons/';
+const ICONS_CDN_BASE = 'https://cdn.jsdelivr.net/gh/sakinaeae/FurEver@main/public/icons/';
 
 export const CustomIcon: React.FC<CustomIconProps> = ({
   name,
@@ -129,7 +129,7 @@ export const CustomIcon: React.FC<CustomIconProps> = ({
   }
 
   const mappedFileName = nameAliases[normalizedKey] || `${normalizedKey}.png`;
-  const finalSrc = `${GITHUB_MEDIA_BASE}${mappedFileName}`;
+  const finalSrc = `${ICONS_CDN_BASE}${mappedFileName}`;
 
   return (
     <img
