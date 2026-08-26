@@ -58,7 +58,18 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab }) => {
                   }}
                   className="hover:text-[#F6D97B] transition-colors cursor-pointer"
                 >
-                  Home Overview
+                  Home
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => {
+                    onSelectTab('how-it-works');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className="hover:text-[#F6D97B] transition-colors cursor-pointer"
+                >
+                  How It Works
                 </button>
               </li>
               <li>
@@ -97,17 +108,6 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab }) => {
               <li>
                 <button
                   onClick={() => {
-                    onSelectTab('how-it-works');
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }}
-                  className="hover:text-[#F6D97B] transition-colors cursor-pointer"
-                >
-                  How It Works
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => {
                     onSelectTab('applications');
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
@@ -127,11 +127,11 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab }) => {
             <div className="space-y-3 text-xs text-white/85 font-medium">
               <p className="flex items-center gap-2.5">
                 <Mail className="w-4 h-4 text-[#F6D97B] shrink-0" />
-                <span>support@furever-adopt.org</span>
+                <a href="mailto:support@furever.com" className="hover:text-[#F6D97B] transition-colors">support@furever.com</a>
               </p>
               <p className="flex items-center gap-2.5">
                 <Phone className="w-4 h-4 text-[#F6D97B] shrink-0" />
-                <span>1800 234 7890 (Toll Free)</span>
+                <a href="tel:18002347890" className="hover:text-[#F6D97B] transition-colors">1800 234 7890</a>
               </p>
               <p className="flex items-center gap-2.5">
                 <MapPin className="w-4 h-4 text-[#F6D97B] shrink-0" />
@@ -145,7 +145,7 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab }) => {
         {/* Bottom copyright row */}
         <div className="pt-6 flex flex-col sm:flex-row items-center justify-center text-center text-xs text-white/80 gap-3 font-medium">
           <div className="flex items-center gap-2">
-            <span>© 2026 FUREVER. By Sakina Ali, Phalak Bhandari, Tanmaya A & Deveshi pande</span>
+            <span>© 2026 FUREVER. By Sakina Ali, Phalak Bhandari, Tanmaya A & Devashi Pande</span>
           </div>
         </div>
       </div>

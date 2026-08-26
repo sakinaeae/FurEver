@@ -17,10 +17,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
     <section className="relative overflow-hidden pt-8 pb-14 lg:pt-12 lg:pb-20 bg-[#ffca42]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 relative">
         <div className="bg-[#FAF5EB] rounded-3xl border-3 border-[#0F5C94] shadow-[6px_6px_0px_#0F5C94] p-6 sm:p-10 lg:p-14">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 xl:gap-20 items-center">
             
             {/* Left Column: Expressive Editorial Copy */}
-            <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
+            <div className="lg:col-span-7 space-y-7 text-left lg:pr-8">
               
               {/* Tagline Badge */}
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-[#F6D97B] border-2 border-[#0F5C94] text-[#0F5C94] font-black text-xs uppercase tracking-wider shadow-[2px_2px_0px_#0F5C94]">
@@ -31,20 +31,18 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               </div>
 
               {/* Hero Headline */}
-              <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold text-[#0F5C94] tracking-tight leading-[1.05]">
+              <h1 className="text-4xl sm:text-5xl lg:text-5xl xl:text-6xl font-extrabold text-[#0F5C94] tracking-tight leading-[1.1] max-w-lg">
                 Find a <span className="font-titan text-[#FB4504] tracking-normal">friend.</span><br />
-                <span className="whitespace-nowrap inline-block text-[#0F5C94]">
-                  Give them a <span className="font-titan text-[#FB4504] tracking-normal">forever.</span>
-                </span>
+                Give them a <span className="font-titan text-[#FB4504] tracking-normal">forever.</span>
               </h1>
 
               {/* Supporting Text */}
-              <p className="text-base sm:text-lg text-[#0F5C94]/85 font-medium max-w-lg mx-auto lg:mx-0 leading-relaxed">
-                Discover verified rescue pets in Bangalore, match by lifestyle and personality, and submit transparent adoption applications directly to verified shelters.
+              <p className="text-base sm:text-lg text-[#0F5C94]/85 font-medium max-w-md mx-0 leading-relaxed">
+                A thoughtful way to discover pets, find the right match and manage your journey to adoption.
               </p>
 
               {/* Action Buttons */}
-              <div className="pt-2 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3.5">
+              <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-start gap-3.5">
                 <button
                   id="hero-find-match-btn"
                   onClick={onFindYourMatch}
@@ -66,7 +64,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               </div>
 
               {/* Trust & Guarantee Highlights */}
-              <div className="pt-4 grid grid-cols-3 gap-2 sm:gap-4 border-t-2 border-[#0F5C94]/15 max-w-lg mx-auto lg:mx-0 font-bold text-xs uppercase tracking-wider text-[#9A5D16]">
+              <div className="pt-4 grid grid-cols-3 gap-2 sm:gap-4 border-t-2 border-[#0F5C94]/15 max-w-lg mx-0 font-bold text-xs uppercase tracking-wider text-[#9A5D16]">
                 <div className="flex items-center gap-1.5 text-left">
                   <CheckCircle2 className="w-4 h-4 text-[#0F942D] shrink-0" />
                   <span className="text-[11px] sm:text-xs">Health Checked</span>
@@ -83,7 +81,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             </div>
 
             {/* Right Column: Editorial Hero Visual Composition with BOBI */}
-            <div className="lg:col-span-5 relative flex items-center justify-center pt-4 lg:pt-0">
+            <div className="lg:col-span-5 relative flex items-center justify-center pt-8 lg:pt-0 lg:pl-4">
               <div className="relative mx-auto max-w-sm w-full">
                 
                 {/* Tilted Photo Frame */}
@@ -113,7 +111,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 {/* Floating Match Pill */}
                 <div className="absolute -bottom-3 -left-2 z-20 bg-[#FB4504] text-white px-4 py-2 rounded-xl shadow-[3px_3px_0px_#0F5C94] border-2 border-[#0F5C94] flex items-center gap-1.5 font-black text-xs uppercase tracking-wider transform -rotate-2">
                   <PawIcon className="w-3.5 h-3.5 fill-white" />
-                  <span>Verified Bangalore Rescue</span>
+                  <span>People's Favourite</span>
                 </div>
 
               </div>

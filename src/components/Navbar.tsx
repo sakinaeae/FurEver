@@ -77,8 +77,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <span className="text-2xl sm:text-3xl tracking-tight text-white leading-none font-titan group-hover:text-[#F6D97B] transition-colors">
                     FUREVER
                   </span>
-                  <span className="text-[9px] font-black uppercase tracking-[0.22em] text-[#F6D97B] leading-tight">
-                    Adoption Hub
+                  <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-[0.14em] text-[#F6D97B] leading-tight">
+                    Find your match. Make it furever.
                   </span>
                 </div>
               </div>

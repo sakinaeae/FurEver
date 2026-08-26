@@ -137,33 +137,6 @@ export const INITIAL_PETS: Pet[] = [
     dateAdded: '2026-08-18'
   },
   {
-    id: 'pet-6',
-    name: 'Mango',
-    animalType: 'Bird',
-    breed: 'Sun Conure Parakeet',
-    age: '2 years',
-    ageCategory: 'Adult',
-    gender: 'Male',
-    size: 'Small',
-    location: 'Malleshwaram, Bengaluru',
-    description: 'Vibrant plumage and a cheerful soul! Mango mimics everyday sounds, whistles happy melodies, and loves perching on your shoulder while you work.',
-    personality: ['Vocal', 'Social', 'Affectionate', 'Playful'],
-    goodWith: ['Bird Lovers', 'Dedicated Companions'],
-    status: 'AVAILABLE',
-    image: 'https://images.unsplash.com/photo-1544923246-77307dd654cb?auto=format&fit=crop&w=1000&q=80',
-    medicalInfo: {
-      vaccinated: false,
-      spayedNeutered: false,
-      microchipped: true,
-      healthNotes: 'Avian vet check completed. Beak, wings and feathers in brilliant health.'
-    },
-    weight: '110 g',
-    activityLevel: 'High',
-    adoptionFee: '₹2,500 donation',
-    shelterName: 'Feathered Friends Rescue, Malleshwaram, Bengaluru',
-    dateAdded: '2026-08-05'
-  },
-  {
     id: 'pet-7',
     name: 'Daisy',
     animalType: 'Dog',
@@ -272,33 +245,6 @@ export const INITIAL_PETS: Pet[] = [
     dateAdded: '2026-08-15'
   },
   {
-    id: 'pet-11',
-    name: 'Ziggy',
-    animalType: 'Rabbit',
-    breed: 'Lionhead Dwarf Bunny',
-    age: '1 year',
-    ageCategory: 'Young',
-    gender: 'Male',
-    size: 'Small',
-    location: 'Electronic City, Bengaluru',
-    description: 'With a magnificent fluffy white mane, Ziggy is full of charisma. He loves gentle chin scratches, fresh cilantro, and wooden chew toys.',
-    personality: ['Playful', 'Curious', 'Charming', 'Docile'],
-    goodWith: ['Quiet Homes', 'Adults', 'Older Children'],
-    status: 'AVAILABLE',
-    image: 'https://images.unsplash.com/photo-1577741314755-048d8525d31e?auto=format&fit=crop&w=1000&q=80',
-    medicalInfo: {
-      vaccinated: true,
-      spayedNeutered: true,
-      microchipped: false,
-      healthNotes: 'Neutered and fully dewormed. High fiber hay diet recommended.'
-    },
-    weight: '1.4 kg',
-    activityLevel: 'Moderate',
-    adoptionFee: '₹1,000 donation',
-    shelterName: 'Precious Paws Foundation, Bengaluru',
-    dateAdded: '2026-08-11'
-  },
-  {
     id: 'pet-12',
     name: 'Cookie & Cream',
     animalType: 'Other',
@@ -351,33 +297,6 @@ export const INITIAL_PETS: Pet[] = [
     adoptionFee: '₹1,500 donation',
     shelterName: 'Bangalore Pet Rescue Foundation, Indiranagar, Bengaluru',
     dateAdded: '2026-08-02'
-  },
-  {
-    id: 'pet-14',
-    name: 'Cleo',
-    animalType: 'Cat',
-    breed: 'Siamese Cat',
-    age: '2.5 years',
-    ageCategory: 'Adult',
-    gender: 'Female',
-    size: 'Small',
-    location: 'Frazer Town, Bengaluru',
-    description: 'Striking sapphire blue eyes and lovely chocolate points. Cleo is chatty and loves holding soft conversations with her human family while curled in their lap.',
-    personality: ['Chatty', 'Intelligent', 'Affectionate', 'Loyal'],
-    goodWith: ['Attentive Humans', 'Other Cats', 'Apartments'],
-    status: 'AVAILABLE',
-    image: 'https://images.unsplash.com/photo-1513360309081-38f0762daed1?auto=format&fit=crop&w=1000&q=80',
-    medicalInfo: {
-      vaccinated: true,
-      spayedNeutered: true,
-      microchipped: true,
-      healthNotes: 'Spayed and fully vaccinated. Regular health checks.'
-    },
-    weight: '3.6 kg',
-    activityLevel: 'Moderate',
-    adoptionFee: '₹1,200 donation',
-    shelterName: 'Cat Welfare Bengaluru, Frazer Town, Bengaluru',
-    dateAdded: '2026-08-08'
   },
   {
     id: 'pet-15',

@@ -234,6 +234,10 @@ export default function App() {
                 setCurrentTab('applications');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
+              onSwipeClick={() => {
+                setCurrentTab('swipe');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
             />
 
             {/* PETS WAITING FOR YOU Showcase */}
