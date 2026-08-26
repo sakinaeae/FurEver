@@ -1,0 +1,6 @@
+{
+  "name": "FUREVER",
+  "description": "A pet adoption discovery and application platform for discovering pets, finding suitable matches, applying to adopt, and tracking applications.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

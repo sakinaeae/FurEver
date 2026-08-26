@@ -1,0 +1,136 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "JA Jayagiri Sans Regular";
+  src: local("JA Jayagiri Sans Regular"),
+       local("JA Jayagiri Sans"),
+       local("JA JayaGiriSans"),
+       local("JA JayaGiri Sans"),
+       local("JayagiriSans-Regular"),
+       local("Jayagiri Sans"),
+       url("/fonts/JA-Jayagiri-Sans-Regular.woff2") format("woff2"),
+       url("/fonts/JA-Jayagiri-Sans-Regular.woff") format("woff"),
+       url("/fonts/JA-Jayagiri-Sans-Regular.otf") format("opentype"),
+       url("/fonts/JA-Jayagiri-Sans-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "JA Jayagiri Sans";
+  src: local("JA Jayagiri Sans"),
+       local("JA Jayagiri Sans Regular"),
+       local("JA JayaGiriSans"),
+       local("JA JayaGiri Sans"),
+       local("JayagiriSans"),
+       url("/fonts/JA-Jayagiri-Sans.woff2") format("woff2"),
+       url("/fonts/JA-Jayagiri-Sans.woff") format("woff"),
+       url("/fonts/JA-Jayagiri-Sans.otf") format("opentype"),
+       url("/fonts/JA-Jayagiri-Sans.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@layer base {
+  :root {
+    --color-fur-blue: #0F5C94;
+    --color-fur-green: #0F942D;
+    --color-fur-brown: #9A5D16;
+    --color-fur-orange: #FB4504;
+    --color-fur-yellow: #F6D97B;
+    --color-fur-yellow-main: #ffca42;
+    --color-fur-cream: #FAF5EB;
+  }
+
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    color: #0F5C94;
+    background-color: #ffca42;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    letter-spacing: -0.02em;
+  }
+}
+
+.font-titan {
+  font-family: 'Titan One', cursive, system-ui, sans-serif;
+  letter-spacing: -0.01em;
+}
+
+.font-jayagiri {
+  font-family: 'Titan One', 'JA Jayagiri Sans Regular', 'Plus Jakarta Sans', sans-serif;
+}
+
+/* Editorial Crisp Borders & Shadows */
+.editorial-border {
+  border: 2px solid #0F5C94;
+}
+
+.editorial-shadow {
+  box-shadow: 4px 4px 0px #0F5C94;
+}
+
+.editorial-shadow-sm {
+  box-shadow: 2px 2px 0px #0F5C94;
+}
+
+.editorial-shadow-orange {
+  box-shadow: 4px 4px 0px #FB4504;
+}
+
+.editorial-shadow-brown {
+  box-shadow: 4px 4px 0px #9A5D16;
+}
+
+/* Bold Typography Utility Classes */
+.furever-bg {
+  background-color: #ffca42;
+}
+.furever-blue {
+  color: #0F5C94;
+}
+.furever-bg-blue {
+  background-color: #0F5C94;
+}
+.furever-orange {
+  color: #FB4504;
+}
+.furever-bg-orange {
+  background-color: #FB4504;
+}
+.furever-green {
+  color: #0F942D;
+}
+.furever-bg-green {
+  background-color: #0F942D;
+}
+.furever-brown {
+  color: #9A5D16;
+}
+.furever-yellow {
+  background-color: #F6D97B;
+}
+
+/* Custom utility scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #FAF5EB;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #0F5C94;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #FB4504;
+}
