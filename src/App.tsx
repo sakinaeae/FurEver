@@ -16,8 +16,10 @@ import { AdoptionFormModal } from './components/AdoptionFormModal';
 import { MyApplicationsView } from './components/MyApplicationsView';
 import { SavedMatchesModal } from './components/SavedMatchesModal';
 import { Footer } from './components/Footer';
-import { Sparkles, ArrowRight, Compass } from 'lucide-react';
+import { FloatingBackgroundIcons } from './components/FloatingBackgroundIcons';
+import { CustomIcon } from './components/CustomIcon';
 import { PawIcon } from './components/PawDecorations';
+
 
 export default function App() {
   // Navigation tab: 'home' | 'browse' | 'swipe' | 'quiz' | 'how-it-works' | 'applications'
@@ -138,7 +140,8 @@ export default function App() {
   const availablePetsCount = pets.filter((p) => p.status === 'AVAILABLE').length;
 
   return (
-    <div className="min-h-screen bg-[#ffca42] flex flex-col selection:bg-[#FB4504] selection:text-white">
+    <div className="min-h-screen bg-[#ffca42] flex flex-col selection:bg-[#FB4504] selection:text-white relative">
+      <FloatingBackgroundIcons />
       
       {/* Toast Notification Banner */}
       {toastMessage && (
@@ -164,7 +167,7 @@ export default function App() {
       />
 
       {/* Main Content View Switcher */}
-      <main className="flex-1">
+      <main className="flex-1 relative z-10">
         
         {/* VIEW 1: HOME PAGE */}
         {currentTab === 'home' && (
@@ -192,7 +195,7 @@ export default function App() {
 
                 <div className="space-y-2 text-center md:text-left relative z-10">
                   <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#FB4504] text-white text-[11px] font-black uppercase tracking-wider">
-                    <Sparkles className="w-3.5 h-3.5 text-[#F6D97B]" />
+                    <CustomIcon name="sparkle" className="w-3.5 h-3.5 text-[#F6D97B]" />
                     <span>FEATURED INTERACTION</span>
                   </div>
                   <h3 className="text-2xl sm:text-3xl font-titan tracking-normal text-[#F6D97B]">
@@ -212,9 +215,9 @@ export default function App() {
                     }}
                     className="px-6 py-3.5 rounded-xl bg-[#F6D97B] hover:bg-white text-[#0F5C94] font-black text-xs uppercase tracking-wider border-2 border-[#0F5C94] shadow-[4px_4px_0px_#FB4504] hover:translate-x-0.5 hover:translate-y-0.5 transition-all flex items-center gap-2 cursor-pointer"
                   >
-                    <Sparkles className="w-4 h-4 text-[#FB4504]" />
+                    <CustomIcon name="sparkle" className="w-4 h-4 text-[#FB4504]" />
                     <span>Try Swipe to Match</span>
-                    <ArrowRight className="w-4 h-4 text-[#0F5C94]" />
+                    <CustomIcon name="right-arrow" className="w-4 h-4 text-[#0F5C94]" />
                   </button>
                 </div>
               </div>
@@ -241,7 +244,7 @@ export default function App() {
             />
 
             {/* PETS WAITING FOR YOU Showcase */}
-            <section className="py-12 lg:py-16 bg-[#ffca42]">
+            <section className="py-12 lg:py-16">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10">
                 <div className="bg-[#FAF5EB] rounded-3xl border-3 border-[#0F5C94] shadow-[6px_6px_0px_#0F5C94] p-6 sm:p-10">
                   
@@ -272,7 +275,7 @@ export default function App() {
                       className="self-start md:self-auto px-6 py-3.5 rounded-xl bg-[#FB4504] hover:bg-[#e03a00] text-white font-black text-xs uppercase tracking-wider border-2 border-[#0F5C94] shadow-[4px_4px_0px_#0F5C94] hover:translate-x-0.5 hover:translate-y-0.5 transition-all flex items-center gap-2 cursor-pointer"
                     >
                       <span>Find My Match</span>
-                      <ArrowRight className="w-4 h-4 text-white" />
+                      <CustomIcon name="right-arrow" className="w-4 h-4 text-white" />
                     </button>
                   </div>
 
@@ -299,9 +302,9 @@ export default function App() {
                       }}
                       className="px-7 py-3.5 rounded-xl bg-white hover:bg-[#F6D97B]/40 text-[#0F5C94] font-black text-xs uppercase tracking-wider border-2 border-[#0F5C94] shadow-[4px_4px_0px_#0F5C94] hover:translate-x-0.5 hover:translate-y-0.5 transition-all inline-flex items-center gap-2 cursor-pointer"
                     >
-                      <Compass className="w-4 h-4 text-[#9A5D16]" />
+                      <CustomIcon name="discover" className="w-4 h-4 text-[#9A5D16]" />
                       <span>View All {pets.length} Available Pets</span>
-                      <ArrowRight className="w-4 h-4 text-[#0F5C94]" />
+                      <CustomIcon name="right-arrow" className="w-4 h-4 text-[#0F5C94]" />
                     </button>
                   </div>
 
@@ -350,7 +353,7 @@ export default function App() {
 
         {/* VIEW 5: HOW IT WORKS DEDICATED VIEW */}
         {currentTab === 'how-it-works' && (
-          <div className="py-12 bg-[#FFFDF9]">
+          <div className="py-12 bg-[#FFFDF9] relative z-10">
             <HowItWorks
               onDiscoverClick={() => {
                 setCurrentTab('browse');

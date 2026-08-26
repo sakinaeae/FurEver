@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, Sparkles, Compass, CheckCircle2 } from 'lucide-react';
+import { CustomIcon } from './CustomIcon';
 import { PawIcon } from './PawDecorations';
 
 interface HeroSectionProps {
@@ -14,7 +14,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   availableCount,
 }) => {
   return (
-    <section className="relative overflow-hidden pt-8 pb-14 lg:pt-12 lg:pb-20 bg-[#ffca42]">
+    <section className="relative overflow-hidden pt-8 pb-14 lg:pt-12 lg:pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 relative">
         <div className="bg-[#FAF5EB] rounded-3xl border-3 border-[#0F5C94] shadow-[6px_6px_0px_#0F5C94] p-6 sm:p-10 lg:p-14">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-14 xl:gap-18 items-center">
@@ -86,32 +86,32 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                   className="w-full sm:w-auto px-6 sm:px-7 py-3 sm:py-3.5 rounded-xl bg-[#0F5C94] hover:bg-[#0c4a77] text-white font-black text-sm sm:text-base tracking-wide border-2 border-[#0F5C94] shadow-[4px_4px_0px_#FB4504] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_#FB4504] transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <span>Find Your Match</span>
-                  <Sparkles className="w-4 h-4 text-[#F6D97B]" />
+                  <CustomIcon name="sparkle" className="w-4 h-4" />
                 </button>
 
                 <button
                   id="hero-explore-pets-btn"
                   onClick={onExplorePets}
-                  className="w-full sm:w-auto px-6 sm:px-7 py-3 sm:py-3.5 rounded-xl bg-white hover:bg-[#F6D97B]/40 text-[#0F5C94] font-black text-sm sm:text-base tracking-wide border-2 border-[#0F5C94] shadow-[4px_4px_0px_#0F5C94] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_#0F5C94] transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full sm:w-auto px-6 sm:px-7 py-3 sm:py-3.5 rounded-xl bg-white hover:bg-[#F6D97B]/40 text-[#0F5C94] font-black text-sm sm:text-base tracking-wide border-2 border-[#0F5C94] shadow-[4px_4px_0px_#FB4504] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_#FB4504] transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <Compass className="w-4 h-4 text-[#9A5D16]" />
+                  <CustomIcon name="discover" className="w-4 h-4" />
                   <span>Explore Pets</span>
-                  <ArrowRight className="w-4 h-4 text-[#0F5C94]" />
+                  <CustomIcon name="right-arrow" className="w-4 h-4" />
                 </button>
               </div>
 
               {/* Trust & Guarantee Highlights */}
               <div className="pt-3 grid grid-cols-3 gap-2 sm:gap-4 border-t-2 border-[#0F5C94]/15 max-w-lg mx-0 font-bold text-xs uppercase tracking-wider text-[#9A5D16]">
                 <div className="flex items-center gap-1.5 text-left">
-                  <CheckCircle2 className="w-4 h-4 text-[#0F942D] shrink-0" />
+                  <CustomIcon name="circle-tick" className="w-4 h-4 shrink-0" />
                   <span className="text-[11px] sm:text-xs">Health Checked</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-left">
-                  <CheckCircle2 className="w-4 h-4 text-[#0F942D] shrink-0" />
+                  <CustomIcon name="circle-tick" className="w-4 h-4 shrink-0" />
                   <span className="text-[11px] sm:text-xs">100% Ethical</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-left">
-                  <CheckCircle2 className="w-4 h-4 text-[#0F942D] shrink-0" />
+                  <CustomIcon name="circle-tick" className="w-4 h-4 shrink-0" />
                   <span className="text-[11px] sm:text-xs">Live Tracking</span>
                 </div>
               </div>

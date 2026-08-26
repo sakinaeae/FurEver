@@ -1,5 +1,5 @@
 import React from 'react';
-import { Heart, Compass, Sparkles, SlidersHorizontal, FileText, ShieldCheck, Mail, Phone, MapPin } from 'lucide-react';
+import { CustomIcon } from './CustomIcon';
 import { PawIcon } from './PawDecorations';
 
 interface FooterProps {
@@ -9,7 +9,7 @@ interface FooterProps {
 
 export const Footer: React.FC<FooterProps> = ({ onSelectTab }) => {
   return (
-    <footer className="bg-[#0F5C94] text-white pt-16 pb-12 border-t-8 border-[#FB4504] relative overflow-hidden">
+    <footer className="bg-[#0F5C94] text-white pt-16 pb-12 border-t-8 border-[#FB4504] relative z-10 overflow-hidden">
       {/* Decorative background paw */}
       <div className="absolute -bottom-10 -right-10 opacity-10 pointer-events-none">
         <PawIcon className="w-80 h-80 fill-white" />
@@ -126,15 +126,15 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab }) => {
             </h4>
             <div className="space-y-3 text-xs text-white/85 font-medium">
               <p className="flex items-center gap-2.5">
-                <Mail className="w-4 h-4 text-[#F6D97B] shrink-0" />
+                <CustomIcon name="mail" className="w-4 h-4 shrink-0" />
                 <a href="mailto:support@furever.com" className="hover:text-[#F6D97B] transition-colors">support@furever.com</a>
               </p>
               <p className="flex items-center gap-2.5">
-                <Phone className="w-4 h-4 text-[#F6D97B] shrink-0" />
+                <CustomIcon name="phone" className="w-4 h-4 shrink-0" />
                 <a href="tel:18002347890" className="hover:text-[#F6D97B] transition-colors">1800 234 7890</a>
               </p>
               <p className="flex items-center gap-2.5">
-                <MapPin className="w-4 h-4 text-[#F6D97B] shrink-0" />
+                <CustomIcon name="location" className="w-4 h-4 shrink-0" />
                 <span>Bengaluru, Karnataka</span>
               </p>
             </div>

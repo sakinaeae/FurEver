@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Sparkles, FileCheck, ArrowRight, Layers } from 'lucide-react';
+import { CustomIcon } from './CustomIcon';
 import { PawIcon } from './PawDecorations';
 
 interface HowItWorksProps {
@@ -16,7 +16,7 @@ export const HowItWorks: React.FC<HowItWorksProps> = ({
   onSwipeClick,
 }) => {
   return (
-    <section className="py-12 lg:py-16 bg-[#ffca42] relative overflow-hidden">
+    <section className="py-12 lg:py-16 relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 relative">
         <div className="bg-[#FAF5EB] rounded-3xl border-3 border-[#0F5C94] shadow-[6px_6px_0px_#0F5C94] p-6 sm:p-10 lg:p-14">
           
@@ -46,7 +46,7 @@ export const HowItWorks: React.FC<HowItWorksProps> = ({
                     01
                   </span>
                   <div className="w-12 h-12 rounded-xl flex items-center justify-center border-2 border-[#0F5C94] shadow-[2px_2px_0px_#0F5C94] bg-[#E8F3FA] text-[#0F5C94]">
-                    <Search className="w-6 h-6" />
+                    <CustomIcon name="search" className="w-6 h-6" />
                   </div>
                 </div>
 
@@ -69,10 +69,10 @@ export const HowItWorks: React.FC<HowItWorksProps> = ({
                     className="w-full p-2.5 rounded-xl bg-[#FAF5EB] hover:bg-[#0F5C94] text-[#0F5C94] hover:text-white border-2 border-[#0F5C94] text-xs font-black uppercase tracking-wider flex items-center justify-between transition-all cursor-pointer shadow-[2px_2px_0px_#0F5C94] group"
                   >
                     <span className="flex items-center gap-2">
-                      <Search className="w-3.5 h-3.5 text-[#0F5C94] group-hover:text-white" />
+                      <CustomIcon name="search" className="w-3.5 h-3.5" />
                       <span>Find a Pet (Browse)</span>
                     </span>
-                    <ArrowRight className="w-3.5 h-3.5" />
+                    <CustomIcon name="right-arrow" className="w-3.5 h-3.5" />
                   </button>
 
                   <button
@@ -80,10 +80,10 @@ export const HowItWorks: React.FC<HowItWorksProps> = ({
                     className="w-full p-2.5 rounded-xl bg-[#FAF5EB] hover:bg-[#FB4504] text-[#0F5C94] hover:text-white border-2 border-[#0F5C94] text-xs font-black uppercase tracking-wider flex items-center justify-between transition-all cursor-pointer shadow-[2px_2px_0px_#0F5C94] group"
                   >
                     <span className="flex items-center gap-2">
-                      <Layers className="w-3.5 h-3.5 text-[#FB4504] group-hover:text-white" />
+                      <CustomIcon name="flame" className="w-3.5 h-3.5" />
                       <span>Swipe to Match</span>
                     </span>
-                    <ArrowRight className="w-3.5 h-3.5" />
+                    <CustomIcon name="right-arrow" className="w-3.5 h-3.5" />
                   </button>
 
                   <button
@@ -91,10 +91,10 @@ export const HowItWorks: React.FC<HowItWorksProps> = ({
                     className="w-full p-2.5 rounded-xl bg-[#FAF5EB] hover:bg-[#9A5D16] text-[#0F5C94] hover:text-white border-2 border-[#0F5C94] text-xs font-black uppercase tracking-wider flex items-center justify-between transition-all cursor-pointer shadow-[2px_2px_0px_#0F5C94] group"
                   >
                     <span className="flex items-center gap-2">
-                      <Sparkles className="w-3.5 h-3.5 text-[#9A5D16] group-hover:text-white" />
+                      <CustomIcon name="sparkle" className="w-3.5 h-3.5" />
                       <span>Match Finder Quiz</span>
                     </span>
-                    <ArrowRight className="w-3.5 h-3.5" />
+                    <CustomIcon name="right-arrow" className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
@@ -108,7 +108,7 @@ export const HowItWorks: React.FC<HowItWorksProps> = ({
                     02
                   </span>
                   <div className="w-12 h-12 rounded-xl flex items-center justify-center border-2 border-[#0F5C94] shadow-[2px_2px_0px_#0F5C94] bg-[#FAF3E7] text-[#9A5D16]">
-                    <Sparkles className="w-6 h-6" />
+                    <CustomIcon name="sparkle" className="w-6 h-6" />
                   </div>
                 </div>
 
@@ -133,7 +133,7 @@ export const HowItWorks: React.FC<HowItWorksProps> = ({
                     03
                   </span>
                   <div className="w-12 h-12 rounded-xl flex items-center justify-center border-2 border-[#0F5C94] shadow-[2px_2px_0px_#0F5C94] bg-[#EBF7EE] text-[#0F942D]">
-                    <FileCheck className="w-6 h-6" />
+                    <CustomIcon name="file" className="w-6 h-6" />
                   </div>
                 </div>
 
@@ -155,7 +155,7 @@ export const HowItWorks: React.FC<HowItWorksProps> = ({
                   className="w-full py-2.5 px-4 rounded-xl text-xs font-black uppercase tracking-wider border-2 border-[#0F5C94] flex items-center justify-center gap-1.5 transition-all hover:bg-[#0F5C94] hover:text-white cursor-pointer shadow-[2px_2px_0px_#0F5C94] bg-[#EBF7EE] text-[#0F942D]"
                 >
                   <span>Check Status</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
+                  <CustomIcon name="right-arrow" className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>

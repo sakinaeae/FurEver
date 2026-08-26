@@ -1,18 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Pet } from '../types';
-import {
-  Heart,
-  FileText,
-  Compass,
-  Sparkles,
-  Search,
-  Flame,
-  Menu,
-  X,
-  Home,
-  Phone,
-  ArrowRight
-} from 'lucide-react';
+import { CustomIcon } from './CustomIcon';
 import { PawIcon } from './PawDecorations';
 
 interface NavbarProps {
@@ -70,21 +58,21 @@ export const Navbar: React.FC<NavbarProps> = ({
     {
       id: 'home',
       label: 'Home',
-      icon: Home,
+      icon: 'home',
       color: '#0F5C94',
     },
     {
       id: 'browse',
       label: 'Find a Pet (Browse)',
       shortLabel: 'Pets',
-      icon: Compass,
+      icon: 'discover',
       color: '#0F5C94',
     },
     {
       id: 'swipe',
       label: 'Swipe to Match',
       shortLabel: 'Swipe',
-      icon: Flame,
+      icon: 'flame',
       color: '#FB4504',
       badge: 'Interactive',
     },
@@ -92,7 +80,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       id: 'quiz',
       label: 'Match Finder Quiz',
       shortLabel: 'Matchfinder',
-      icon: Sparkles,
+      icon: 'sparkle',
       color: '#0F942D',
       badge: 'Smart Match',
     },
@@ -100,7 +88,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       id: 'applications',
       label: 'Application Status',
       shortLabel: 'Status',
-      icon: FileText,
+      icon: 'file',
       color: '#9A5D16',
       count: applicationCount,
     },
@@ -147,13 +135,14 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 id="nav-btn-home"
                 onClick={() => handleNavClick('home')}
-                className={`px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl transition-all font-bold text-[11px] sm:text-xs shrink-0 cursor-pointer ${
+                className={`px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl transition-all font-bold text-[11px] sm:text-xs shrink-0 cursor-pointer flex items-center gap-1.5 ${
                   currentTab === 'home'
                     ? 'bg-white/20 text-[#F6D97B] shadow-inner ring-1 ring-white/30'
                     : 'text-white/85 hover:text-white hover:bg-white/10'
                 }`}
               >
-                Home
+                <CustomIcon name="home" className="w-3.5 h-3.5" white />
+                <span>Home</span>
               </button>
 
               {/* 2. Pets */}
@@ -166,7 +155,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     : 'text-white/85 hover:text-white hover:bg-white/10'
                 }`}
               >
-                <Compass className="w-3.5 h-3.5 text-[#0F5C94]" />
+                <CustomIcon name="discover" className="w-3.5 h-3.5" white />
                 <span>Pets</span>
               </button>
 
@@ -180,7 +169,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     : 'text-white/85 hover:text-white hover:bg-white/10'
                 }`}
               >
-                <Flame className="w-3.5 h-3.5 text-[#F6D97B]" />
+                <CustomIcon name="flame" className="w-3.5 h-3.5" white />
                 <span>Swipe to Match</span>
               </button>
 
@@ -194,7 +183,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     : 'text-white/85 hover:text-white hover:bg-white/10'
                 }`}
               >
-                <Sparkles className="w-3.5 h-3.5 text-[#F6D97B]" />
+                <CustomIcon name="sparkle" className="w-3.5 h-3.5" white />
                 <span>Matchfinder</span>
               </button>
 
@@ -208,7 +197,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     : 'text-white/85 hover:text-white hover:bg-white/10'
                 }`}
               >
-                <FileText className="w-3.5 h-3.5 text-[#0F5C94]" />
+                <CustomIcon name="file" className="w-3.5 h-3.5" white />
                 <span>Status</span>
                 {applicationCount > 0 && (
                   <span className="px-1.5 py-0.2 bg-[#FB4504] text-white text-[10px] font-black rounded-full shadow">
@@ -229,7 +218,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                 title="Liked Pets"
                 aria-label="Liked Pets"
               >
-                <Heart className={`w-4 h-4 ${likedCount > 0 ? 'fill-[#FB4504] text-[#FB4504]' : 'currentColor'}`} />
+                <CustomIcon
+                  name={likedCount > 0 ? 'heart-filled' : 'heart-unfilled'}
+                  className="w-4 h-4"
+                  white
+                />
                 <span className="hidden sm:inline">Liked</span>
                 {likedCount > 0 && (
                   <span className="px-1.5 py-0.2 bg-[#FB4504] text-white text-[10px] font-black rounded-full ring-2 ring-[#0F5C94]">
@@ -246,7 +239,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 title="Search pets"
                 aria-label="Search pets"
               >
-                <Search className="w-4 h-4 text-[#F6D97B]" />
+                <CustomIcon name="search" className="w-4 h-4" white />
               </button>
 
               {/* Mobile Menu Toggle Button */}
@@ -259,9 +252,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                 aria-expanded={mobileMenuOpen}
               >
                 {mobileMenuOpen ? (
-                  <X className="w-5 h-5 text-[#0F5C94]" />
+                  <CustomIcon name="cross" className="w-5 h-5" />
                 ) : (
-                  <Menu className="w-5 h-5 text-[#0F5C94]" />
+                  <CustomIcon name="menu" className="w-5 h-5" />
                 )}
               </button>
 
@@ -294,7 +287,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* Navigation links list */}
             <div className="space-y-2 mb-6">
               {navItems.map((item) => {
-                const ItemIcon = item.icon;
                 const isActive = currentTab === item.id;
                 return (
                   <button
@@ -315,7 +307,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                             : 'bg-white/10 text-[#F6D97B] border-white/20'
                         }`}
                       >
-                        <ItemIcon className="w-4 h-4" />
+                        <CustomIcon name={item.icon} className="w-4 h-4" />
                       </div>
                       <div>
                         <div className="text-sm font-bold tracking-tight">
@@ -335,7 +327,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                           {item.count}
                         </span>
                       )}
-                      <ArrowRight className={`w-4 h-4 ${isActive ? 'text-[#0F5C94]' : 'text-white/60'}`} />
+                      <CustomIcon name="right-arrow" className="w-4 h-4 opacity-70" />
                     </div>
                   </button>
                 );
@@ -353,10 +345,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                 className="w-full p-3 rounded-xl bg-white/10 hover:bg-white/15 text-white border border-white/20 flex items-center justify-between text-xs font-bold uppercase tracking-wider cursor-pointer"
               >
                 <span className="flex items-center gap-2.5">
-                  <Heart className={`w-4 h-4 ${likedCount > 0 ? 'fill-[#FB4504] text-[#FB4504]' : 'text-[#F6D97B]'}`} />
+                  <CustomIcon
+                    name={likedCount > 0 ? 'heart-filled' : 'heart-unfilled'}
+                    className="w-4 h-4"
+                  />
                   <span>View Saved Matches ({likedCount})</span>
                 </span>
-                <ArrowRight className="w-3.5 h-3.5 text-white/60" />
+                <CustomIcon name="right-arrow" className="w-3.5 h-3.5 opacity-70" />
               </button>
 
               {/* Support helpline info */}
@@ -370,7 +365,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   </a>
                 </div>
                 <div className="w-8 h-8 rounded-lg bg-[#0F5C94] text-[#F6D97B] flex items-center justify-center">
-                  <Phone className="w-4 h-4 text-[#F6D97B]" />
+                  <CustomIcon name="phone" className="w-4 h-4" />
                 </div>
               </div>
             </div>
@@ -381,5 +376,3 @@ export const Navbar: React.FC<NavbarProps> = ({
     </header>
   );
 };
-
-

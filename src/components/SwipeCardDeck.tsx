@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, useMotionValue, useTransform } from 'motion/react';
-import { Heart, X, RotateCcw, Sparkles, Eye, CheckCircle2 } from 'lucide-react';
+import { CustomIcon } from './CustomIcon';
 import { Pet } from '../types';
 
 interface SwipeCardDeckProps {
@@ -80,13 +80,13 @@ export const SwipeCardDeck: React.FC<SwipeCardDeckProps> = ({
   }, [currentIndex, currentPet]);
 
   return (
-    <div className="py-3 sm:py-5 bg-[#ffca42] min-h-[calc(100vh-4.5rem)] flex flex-col justify-center">
+    <div className="py-3 sm:py-5 min-h-[calc(100vh-4.5rem)] flex flex-col justify-center">
       <div className="max-w-3xl mx-auto px-4 w-full">
         
         {/* Page Header */}
         <div className="text-center space-y-1.5 mb-3 sm:mb-4">
           <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-lg bg-[#F6D97B] text-[#0F5C94] text-[11px] font-black uppercase tracking-wider border-2 border-[#0F5C94]">
-            <Sparkles className="w-3 h-3 text-[#FB4504]" />
+            <CustomIcon name="sparkle" className="w-3 h-3 text-[#FB4504]" />
             <span>Interactive Match Deck</span>
           </div>
 
@@ -105,7 +105,7 @@ export const SwipeCardDeck: React.FC<SwipeCardDeckProps> = ({
               onClick={onOpenMatches}
               className="px-3 py-1 rounded-lg bg-[#0F5C94] hover:bg-[#0c4975] text-white flex items-center gap-1.5 border-2 border-[#0F5C94] shadow-[2px_2px_0px_#FB4504] transition-all hover:translate-x-0.5 hover:translate-y-0.5 uppercase tracking-wider text-[10px] font-black cursor-pointer"
             >
-              <Heart className="w-3 h-3 fill-[#F6D97B] text-[#F6D97B]" />
+              <CustomIcon name="heart-filled" className="w-3 h-3 text-[#F6D97B]" />
               <span>Saved Matches ({likedPetIds.length})</span>
             </button>
           </div>
@@ -176,7 +176,7 @@ export const SwipeCardDeck: React.FC<SwipeCardDeckProps> = ({
                     style={{ opacity: opacityLike }}
                     className="absolute top-3 right-3 px-3.5 py-1 rounded-lg bg-[#0F942D] border-2 border-white text-white font-black text-xs tracking-wider uppercase shadow-md transform rotate-12 flex items-center gap-1 pointer-events-none"
                   >
-                    <Heart className="w-3.5 h-3.5 fill-white" />
+                    <CustomIcon name="heart-filled" className="w-3.5 h-3.5" />
                     <span>LIKE</span>
                   </motion.div>
 
@@ -185,7 +185,7 @@ export const SwipeCardDeck: React.FC<SwipeCardDeckProps> = ({
                     style={{ opacity: opacityPass }}
                     className="absolute top-3 left-3 px-3.5 py-1 rounded-lg bg-[#FB4504] border-2 border-white text-white font-black text-xs tracking-wider uppercase shadow-md transform -rotate-12 flex items-center gap-1 pointer-events-none"
                   >
-                    <X className="w-3.5 h-3.5 stroke-[3]" />
+                    <CustomIcon name="cross" className="w-3.5 h-3.5" />
                     <span>PASS</span>
                   </motion.div>
                 </div>
@@ -223,7 +223,7 @@ export const SwipeCardDeck: React.FC<SwipeCardDeckProps> = ({
                       }}
                       className="text-[11px] font-black text-[#0F5C94] hover:text-[#FB4504] flex items-center gap-1 transition-colors uppercase tracking-wider cursor-pointer"
                     >
-                      <Eye className="w-3.5 h-3.5 text-[#FB4504]" />
+                      <CustomIcon name="search" className="w-3.5 h-3.5" />
                       <span>Full Bio & Medical Info →</span>
                     </button>
                   </div>
@@ -234,7 +234,7 @@ export const SwipeCardDeck: React.FC<SwipeCardDeckProps> = ({
             /* Deck Finished State */
             <div className="w-full h-full bg-[#FAF5EB] rounded-2xl border-3 border-[#0F5C94] p-6 text-center flex flex-col items-center justify-center space-y-3 shadow-[6px_6px_0px_#0F5C94]">
               <div className="w-12 h-12 rounded-xl bg-[#F6D97B] border-2 border-[#0F5C94] text-[#0F942D] flex items-center justify-center mx-auto shadow-inner">
-                <CheckCircle2 className="w-6 h-6 text-[#0F942D]" />
+                <CustomIcon name="circle-tick" className="w-6 h-6" />
               </div>
               <h3 className="text-2xl font-titan text-[#0F5C94]">
                 You've seen all pets!
@@ -248,7 +248,7 @@ export const SwipeCardDeck: React.FC<SwipeCardDeckProps> = ({
                   onClick={onOpenMatches}
                   className="w-full py-2.5 rounded-xl bg-[#FB4504] hover:bg-[#e03a00] text-white font-black text-xs uppercase tracking-wider border-2 border-[#0F5C94] shadow-[3px_3px_0px_#0F5C94] flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <Heart className="w-3.5 h-3.5 fill-white" />
+                  <CustomIcon name="heart-filled" className="w-3.5 h-3.5" />
                   <span>View Saved Matches ({likedPetIds.length})</span>
                 </button>
                 <button
@@ -256,7 +256,7 @@ export const SwipeCardDeck: React.FC<SwipeCardDeckProps> = ({
                   onClick={handleReset}
                   className="w-full py-2 rounded-xl bg-white hover:bg-[#F6D97B] text-[#0F5C94] font-black text-xs uppercase tracking-wider border-2 border-[#0F5C94] shadow-[2px_2px_0px_#0F5C94] flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <RotateCcw className="w-3.5 h-3.5" />
+                  <CustomIcon name="calendar" className="w-3.5 h-3.5" />
                   <span>Restart Deck</span>
                 </button>
               </div>
@@ -276,7 +276,7 @@ export const SwipeCardDeck: React.FC<SwipeCardDeckProps> = ({
                 className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white border-2 border-[#0F5C94] text-[#9A5D16] flex items-center justify-center hover:bg-[#9A5D16] hover:text-white transition-all shadow-[3px_3px_0px_#0F5C94] hover:translate-x-0.5 hover:translate-y-0.5 cursor-pointer"
                 title="Swipe Left: Pass"
               >
-                <X className="w-6 h-6 stroke-[3]" />
+                <CustomIcon name="cross" className="w-6 h-6" />
               </button>
 
               {/* UNDO BUTTON */}
@@ -288,7 +288,7 @@ export const SwipeCardDeck: React.FC<SwipeCardDeckProps> = ({
                 title="Undo last swipe"
                 aria-label="Undo last swipe"
               >
-                <RotateCcw className="w-4 h-4" />
+                <CustomIcon name="calendar" className="w-4 h-4" />
               </button>
 
               {/* LIKE BUTTON */}
@@ -298,7 +298,7 @@ export const SwipeCardDeck: React.FC<SwipeCardDeckProps> = ({
                 className="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-[#FB4504] border-3 border-[#0F5C94] text-white flex items-center justify-center hover:bg-[#e03a00] transition-all shadow-[4px_4px_0px_#0F5C94] hover:translate-x-0.5 hover:translate-y-0.5 cursor-pointer"
                 title="Swipe Right: Like"
               >
-                <Heart className="w-8 h-8 fill-white" />
+                <CustomIcon name="heart-filled" className="w-8 h-8" />
               </button>
 
             </div>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import confetti from 'canvas-confetti';
-import { X, CheckCircle2, AlertCircle, Sparkles, ArrowRight, ShieldCheck, Heart, User, Mail, Phone, Home, MessageSquare } from 'lucide-react';
+import { CustomIcon } from './CustomIcon';
 import { Pet, AdoptionApplication } from '../types';
 import { PawIcon } from './PawDecorations';
 
@@ -122,7 +122,7 @@ export const AdoptionFormModal: React.FC<AdoptionFormModalProps> = ({
           className="absolute top-4 right-4 z-30 p-2 rounded-xl bg-white hover:bg-[#FB4504] hover:text-white text-[#0F5C94] border-2 border-[#0F5C94] shadow-[2px_2px_0px_#0F5C94] transition-all cursor-pointer"
           title="Close"
         >
-          <X className="w-4 h-4" />
+          <CustomIcon name="cross" className="w-4 h-4" />
         </button>
 
         {/* Modal Header */}
@@ -153,7 +153,7 @@ export const AdoptionFormModal: React.FC<AdoptionFormModalProps> = ({
         {submittedApp ? (
           <div className="p-7 sm:p-9 text-center space-y-5 animate-fadeIn">
             <div className="w-16 h-16 rounded-2xl bg-[#EBF7EE] text-[#0F942D] border-2 border-[#0F942D] flex items-center justify-center mx-auto shadow-[3px_3px_0px_#0F942D]">
-              <CheckCircle2 className="w-10 h-10" />
+              <CustomIcon name="circle-tick" className="w-10 h-10" />
             </div>
 
             <div>
@@ -202,7 +202,7 @@ export const AdoptionFormModal: React.FC<AdoptionFormModalProps> = ({
                 className="w-full sm:w-auto px-5 py-3 rounded-xl bg-[#0F942D] hover:bg-[#0b7423] text-white font-black text-xs uppercase tracking-wider border-2 border-[#0F5C94] shadow-[3px_3px_0px_#0F5C94] flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <span>Track Status</span>
-                <ArrowRight className="w-4 h-4" />
+                <CustomIcon name="right-arrow" className="w-4 h-4" />
               </button>
 
               <button
@@ -221,7 +221,7 @@ export const AdoptionFormModal: React.FC<AdoptionFormModalProps> = ({
             {/* Error Banner */}
             {errorMessage && (
               <div className="p-3 rounded-xl bg-red-50 border-2 border-[#FB4504] text-[#FB4504] text-xs font-black flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 shrink-0 text-[#FB4504]" />
+                <CustomIcon name="exclamation" className="w-4 h-4 shrink-0 text-[#FB4504]" />
                 <span>{errorMessage}</span>
               </div>
             )}
@@ -229,7 +229,7 @@ export const AdoptionFormModal: React.FC<AdoptionFormModalProps> = ({
             {/* Field: Full Name */}
             <div>
               <label className="block text-xs font-black text-[#0F5C94] uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                <User className="w-3.5 h-3.5 text-[#9A5D16]" />
+                <CustomIcon name="user" className="w-3.5 h-3.5 text-[#9A5D16]" />
                 Full Name <span className="text-[#FB4504]">*</span>
               </label>
               <input
@@ -247,7 +247,7 @@ export const AdoptionFormModal: React.FC<AdoptionFormModalProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-black text-[#0F5C94] uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                  <Mail className="w-3.5 h-3.5 text-[#9A5D16]" />
+                  <CustomIcon name="mail" className="w-3.5 h-3.5 text-[#9A5D16]" />
                   Email Address <span className="text-[#FB4504]">*</span>
                 </label>
                 <input
@@ -263,7 +263,7 @@ export const AdoptionFormModal: React.FC<AdoptionFormModalProps> = ({
 
               <div>
                 <label className="block text-xs font-black text-[#0F5C94] uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                  <Phone className="w-3.5 h-3.5 text-[#9A5D16]" />
+                  <CustomIcon name="phone" className="w-3.5 h-3.5 text-[#9A5D16]" />
                   Contact Number <span className="text-[#FB4504]">*</span>
                 </label>
                 <input
@@ -282,7 +282,7 @@ export const AdoptionFormModal: React.FC<AdoptionFormModalProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-black text-[#0F5C94] uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                  <Home className="w-3.5 h-3.5 text-[#9A5D16]" />
+                  <CustomIcon name="home" className="w-3.5 h-3.5 text-[#9A5D16]" />
                   Housing Type
                 </label>
                 <select
@@ -300,7 +300,7 @@ export const AdoptionFormModal: React.FC<AdoptionFormModalProps> = ({
 
               <div>
                 <label className="block text-xs font-black text-[#0F5C94] uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-[#9A5D16]" />
+                  <CustomIcon name="sparkle" className="w-3.5 h-3.5 text-[#9A5D16]" />
                   Pet Experience
                 </label>
                 <select
@@ -319,7 +319,7 @@ export const AdoptionFormModal: React.FC<AdoptionFormModalProps> = ({
             {/* Field: Why fit? */}
             <div>
               <label className="block text-xs font-black text-[#0F5C94] uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                <MessageSquare className="w-3.5 h-3.5 text-[#9A5D16]" />
+                <CustomIcon name="message" className="w-3.5 h-3.5 text-[#9A5D16]" />
                 Why would you be a good fit for this pet? <span className="text-[#FB4504]">*</span>
               </label>
               <textarea

@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Sparkles, MapPin, Check, RotateCcw, ArrowRight, Dog, Cat, Search } from 'lucide-react';
+import { CustomIcon } from './CustomIcon';
 import { Pet, AnimalType, AgeCategory, PetSize } from '../types';
 import { PetCard } from './PetCard';
 import { PawIcon } from './PawDecorations';
@@ -91,13 +91,13 @@ export const MatchQuizFinder: React.FC<MatchQuizFinderProps> = ({
   };
 
   return (
-    <div className="py-10 lg:py-16 bg-[#ffca42] min-h-screen">
+    <div className="py-10 lg:py-16 min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-10 space-y-3">
           <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-lg bg-[#F6D97B] text-[#0F5C94] text-xs font-black uppercase tracking-wider border-2 border-[#0F5C94]">
-            <Sparkles className="w-3.5 h-3.5 text-[#FB4504]" />
+            <CustomIcon name="sparkle" className="w-3.5 h-3.5 text-[#FB4504]" />
             <span>Personalized Matchmaking</span>
           </div>
 
@@ -177,7 +177,7 @@ export const MatchQuizFinder: React.FC<MatchQuizFinderProps> = ({
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-black">{opt.label}</span>
-                      {isSelected && <Check className="w-4 h-4 text-[#F6D97B]" />}
+                      {isSelected && <CustomIcon name="tick" className="w-4 h-4 text-[#F6D97B]" />}
                     </div>
                     <span className={`text-[11px] block mt-0.5 ${isSelected ? 'text-white/80' : 'text-[#0F5C94]/70'}`}>
                       {opt.desc}
@@ -214,7 +214,7 @@ export const MatchQuizFinder: React.FC<MatchQuizFinderProps> = ({
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-black">{opt.label}</span>
-                      {isSelected && <Check className="w-4 h-4 text-white" />}
+                      {isSelected && <CustomIcon name="tick" className="w-4 h-4 text-white" />}
                     </div>
                     <span className={`text-[11px] block mt-0.5 ${isSelected ? 'text-white/80' : 'text-[#0F5C94]/70'}`}>
                       {opt.desc}
@@ -237,7 +237,7 @@ export const MatchQuizFinder: React.FC<MatchQuizFinderProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
               {/* Breed Selector / Search */}
               <div className="relative">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9A5D16]" />
+                <CustomIcon name="search" className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9A5D16]" />
                 <input
                   id="quiz-breed-input"
                   type="text"
@@ -249,15 +249,17 @@ export const MatchQuizFinder: React.FC<MatchQuizFinderProps> = ({
               </div>
 
               {/* Location Selector / Search */}
-              <div className="relative">
-                <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#FB4504]" />
+              <div className="relative flex items-center">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-lg bg-[#FB4504] border border-[#0F5C94] flex items-center justify-center shadow-xs pointer-events-none">
+                  <CustomIcon name="location" white className="w-3.5 h-3.5" />
+                </div>
                 <input
                   id="quiz-location-input"
                   type="text"
                   value={locationQuery}
                   onChange={(e) => setLocationQuery(e.target.value)}
                   placeholder="Bangalore Locality (e.g. Indiranagar, Koramangala, Whitefield)..."
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border-2 border-[#0F5C94]/30 text-xs sm:text-sm text-[#0F5C94] font-bold placeholder-[#0F5C94]/40 focus:outline-none focus:border-[#0F5C94]"
+                  className="w-full pl-11 pr-4 py-2.5 rounded-xl bg-white border-2 border-[#0F5C94]/30 text-xs sm:text-sm text-[#0F5C94] font-bold placeholder-[#0F5C94]/40 focus:outline-none focus:border-[#0F5C94]"
                 />
               </div>
             </div>
@@ -282,7 +284,7 @@ export const MatchQuizFinder: React.FC<MatchQuizFinderProps> = ({
                 onClick={handleClearFilters}
                 className="px-4 py-2.5 rounded-xl bg-white hover:bg-[#F6D97B] text-[#0F5C94] border-2 border-[#0F5C94] font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-[2px_2px_0px_#0F5C94] cursor-pointer"
               >
-                <RotateCcw className="w-3.5 h-3.5" />
+                <CustomIcon name="calendar" className="w-3.5 h-3.5" />
                 <span>Clear Filters</span>
               </button>
 
@@ -293,7 +295,7 @@ export const MatchQuizFinder: React.FC<MatchQuizFinderProps> = ({
                 className="flex-1 sm:flex-initial px-6 py-3 rounded-xl bg-[#FB4504] hover:bg-[#e03a00] text-white font-black text-xs uppercase tracking-wider border-2 border-[#0F5C94] shadow-[4px_4px_0px_#0F5C94] hover:translate-x-0.5 hover:translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <span>FIND MY MATCH</span>
-                <ArrowRight className="w-4 h-4 text-[#F6D97B]" />
+                <CustomIcon name="right-arrow" className="w-4 h-4" />
               </button>
             </div>
           </div>

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { X, Heart, MapPin, CheckCircle, AlertCircle, ShieldCheck, Activity, Share2, Sparkles, UserCheck, Calendar } from 'lucide-react';
+import React, { useState } from 'react';
+import { CustomIcon } from './CustomIcon';
 import { Pet } from '../types';
 import { PawIcon } from './PawDecorations';
 
@@ -46,7 +46,7 @@ export const PetProfileModal: React.FC<PetProfileModalProps> = ({
             className="p-2 rounded-xl bg-white hover:bg-[#F6D97B] text-[#0F5C94] border-2 border-[#0F5C94] shadow-[2px_2px_0px_#0F5C94] transition-all cursor-pointer"
             title="Share pet profile"
           >
-            <Share2 className="w-4 h-4" />
+            <CustomIcon name="share" className="w-4 h-4" />
           </button>
 
           <button
@@ -55,7 +55,7 @@ export const PetProfileModal: React.FC<PetProfileModalProps> = ({
             className="p-2 rounded-xl bg-white hover:bg-[#FB4504] hover:text-white text-[#0F5C94] border-2 border-[#0F5C94] shadow-[2px_2px_0px_#0F5C94] transition-all cursor-pointer"
             title="Close profile"
           >
-            <X className="w-4 h-4" />
+            <CustomIcon name="cross" className="w-4 h-4" />
           </button>
         </div>
 
@@ -80,10 +80,9 @@ export const PetProfileModal: React.FC<PetProfileModalProps> = ({
                   className="absolute bottom-2.5 right-2.5 p-2 rounded-xl bg-white text-[#FB4504] border-2 border-[#0F5C94] shadow-[2px_2px_0px_#0F5C94] hover:bg-[#F6D97B] transition-all cursor-pointer"
                   title="Save to favorites"
                 >
-                  <Heart
-                    className={`w-4 h-4 ${
-                      isFavorite ? 'fill-[#FB4504] text-[#FB4504]' : 'text-[#9A5D16]'
-                    }`}
+                  <CustomIcon
+                    name={isFavorite ? 'heart-filled' : 'heart-unfilled'}
+                    className="w-4 h-4"
                   />
                 </button>
               </div>
@@ -94,7 +93,7 @@ export const PetProfileModal: React.FC<PetProfileModalProps> = ({
               <div className="bg-white p-2.5 rounded-xl border-2 border-[#0F5C94]/30">
                 <span className="text-[#9A5D16] block font-bold text-[10px] uppercase">Location</span>
                 <span className="text-[#0F5C94] font-black flex items-center gap-1 mt-0.5 text-xs">
-                  <MapPin className="w-3 h-3 text-[#FB4504]" />
+                  <CustomIcon name="location" className="w-3 h-3 text-[#FB4504]" />
                   {pet.location.split(',')[0]}
                 </span>
               </div>
@@ -148,7 +147,7 @@ export const PetProfileModal: React.FC<PetProfileModalProps> = ({
                       key={idx}
                       className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-black bg-[#FAF5EB] text-[#0F5C94] border border-[#0F5C94]/30"
                     >
-                      <Sparkles className="w-3 h-3 text-[#FB4504]" />
+                      <CustomIcon name="sparkle" className="w-3 h-3" />
                       {trait}
                     </span>
                   ))}
@@ -176,7 +175,7 @@ export const PetProfileModal: React.FC<PetProfileModalProps> = ({
                       key={idx}
                       className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-xs font-black bg-[#EBF7EE] text-[#0F942D] border border-[#0F942D]/40"
                     >
-                      <CheckCircle className="w-3 h-3" />
+                      <CustomIcon name="circle-tick" className="w-3 h-3" />
                       {item}
                     </span>
                   ))}
@@ -187,7 +186,7 @@ export const PetProfileModal: React.FC<PetProfileModalProps> = ({
               <div className="bg-[#FAF5EB] p-3.5 rounded-xl border-2 border-[#0F5C94]/30 space-y-2.5">
                 <div className="flex items-center justify-between">
                   <h4 className="text-xs font-black text-[#0F5C94] uppercase tracking-wider flex items-center gap-1.5">
-                    <ShieldCheck className="w-4 h-4 text-[#0F942D]" />
+                    <CustomIcon name="health-verified" className="w-4 h-4" />
                     Medical & Health Verification
                   </h4>
                   <span className="text-[10px] font-black text-[#0F942D] bg-white border border-[#0F942D]/30 px-2 py-0.5 rounded-md">
@@ -238,7 +237,7 @@ export const PetProfileModal: React.FC<PetProfileModalProps> = ({
                     disabled
                     className="w-full py-3.5 rounded-xl bg-stone-200 text-stone-500 font-black text-sm tracking-wider uppercase border-2 border-stone-300 cursor-not-allowed flex items-center justify-center gap-2"
                   >
-                    <AlertCircle className="w-4 h-4" />
+                    <CustomIcon name="exclamation" className="w-4 h-4" />
                     <span>CURRENTLY UNAVAILABLE</span>
                   </button>
                   <p className="text-center text-[11px] font-semibold text-stone-500">

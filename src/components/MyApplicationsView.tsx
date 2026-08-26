@@ -1,9 +1,5 @@
 import React, { useState } from 'react';
-import { 
-  FileText, CheckCircle2, Clock, XCircle, AlertCircle, 
-  MapPin, Calendar, User, Phone, Mail, MessageSquare, 
-  ArrowRight, Compass, ShieldCheck, ChevronRight
-} from 'lucide-react';
+import { CustomIcon } from './CustomIcon';
 import { AdoptionApplication, ApplicationStatus } from '../types';
 import { PawIcon } from './PawDecorations';
 
@@ -146,14 +142,14 @@ export const MyApplicationsView: React.FC<MyApplicationsViewProps> = ({
   };
 
   return (
-    <div className="py-10 lg:py-16 bg-[#ffca42] min-h-[calc(100vh-5rem)]">
+    <div className="py-10 lg:py-16 min-h-[calc(100vh-5rem)]">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Page Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
           <div>
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#F6D97B] text-[#0F5C94] text-xs font-black uppercase tracking-wider mb-2 border-2 border-[#0F5C94]">
-              <FileText className="w-3.5 h-3.5 text-[#0F942D]" />
+              <CustomIcon name="file" className="w-3.5 h-3.5 text-[#0F942D]" />
               <span>Real-Time Status Tracker</span>
             </div>
 
@@ -245,7 +241,7 @@ export const MyApplicationsView: React.FC<MyApplicationsViewProps> = ({
                 {app.timelineNotes?.shelterNote && (
                   <div className="p-3.5 rounded-2xl bg-white border-2 border-[#0F5C94]/20 flex items-start gap-3">
                     <div className="p-2 rounded-xl bg-[#F6D97B] border border-[#0F5C94] text-[#0F5C94] shrink-0">
-                      <MessageSquare className="w-4 h-4 text-[#0F5C94]" />
+                      <CustomIcon name="message" className="w-4 h-4 text-[#0F5C94]" />
                     </div>
                     <div>
                       <h5 className="text-xs font-black text-[#0F5C94] uppercase">
@@ -261,7 +257,7 @@ export const MyApplicationsView: React.FC<MyApplicationsViewProps> = ({
                 {/* Card Action Footer */}
                 <div className="pt-2 flex flex-wrap items-center justify-between gap-3 border-t-2 border-[#0F5C94]/15">
                   <div className="flex items-center gap-2 text-xs font-black text-[#0F942D]">
-                    <ShieldCheck className="w-4 h-4 text-[#0F942D]" />
+                    <CustomIcon name="tick" className="w-4 h-4 text-[#0F942D]" />
                     <span>Direct Shelter Application · Verified Process</span>
                   </div>
 
@@ -304,7 +300,7 @@ export const MyApplicationsView: React.FC<MyApplicationsViewProps> = ({
               onClick={onExplorePets}
               className="px-6 py-3 rounded-xl bg-[#FB4504] hover:bg-[#e03a00] text-white font-black text-xs uppercase tracking-wider border-2 border-[#0F5C94] shadow-[4px_4px_0px_#0F5C94] transition-all inline-flex items-center gap-2 cursor-pointer"
             >
-              <Compass className="w-4 h-4" />
+              <CustomIcon name="discover" className="w-4 h-4" />
               <span>Explore Available Pets</span>
             </button>
           </div>

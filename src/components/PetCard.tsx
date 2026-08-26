@@ -1,5 +1,5 @@
 import React from 'react';
-import { Heart, MapPin, Sparkles, ArrowRight, ShieldCheck } from 'lucide-react';
+import { CustomIcon } from './CustomIcon';
 import { Pet } from '../types';
 import { PawIcon } from './PawDecorations';
 
@@ -47,10 +47,9 @@ export const PetCard: React.FC<PetCardProps> = ({
             title={isFavorite ? 'Remove from saved' : 'Save to favorites'}
             aria-label={isFavorite ? 'Remove from saved' : 'Save to favorites'}
           >
-            <Heart
-              className={`w-4 h-4 transition-colors ${
-                isFavorite ? 'fill-[#FB4504] text-[#FB4504]' : 'text-[#0F5C94]'
-              }`}
+            <CustomIcon
+              name={isFavorite ? 'heart-filled' : 'heart-unfilled'}
+              className="w-4 h-4"
             />
           </button>
         </div>
@@ -58,7 +57,7 @@ export const PetCard: React.FC<PetCardProps> = ({
         {/* Quick bottom stats on top of image */}
         <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-white text-xs font-bold pointer-events-none">
           <span className="flex items-center gap-1 bg-black/60 px-2 py-1 rounded-lg border border-white/20">
-            <MapPin className="w-3 h-3 text-[#F6D97B]" />
+            <CustomIcon name="location" white className="w-3 h-3" />
             {pet.location.split(',')[0]}
           </span>
           <span className="bg-[#0F5C94] px-2.5 py-1 rounded-lg text-[#F6D97B] font-black uppercase text-[10px] tracking-wider border border-white/20">
@@ -92,7 +91,7 @@ export const PetCard: React.FC<PetCardProps> = ({
                 key={idx}
                 className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-black bg-[#FAF5EB] text-[#0F5C94] border border-[#0F5C94]/30 uppercase tracking-wider"
               >
-                <Sparkles className="w-2.5 h-2.5 text-[#FB4504]" />
+                <CustomIcon name="sparkle" className="w-2.5 h-2.5" />
                 {tag}
               </span>
             ))}
@@ -107,7 +106,7 @@ export const PetCard: React.FC<PetCardProps> = ({
         {/* Action Bottom Bar */}
         <div className="mt-4 pt-3 border-t-2 border-[#0F5C94]/15 flex items-center justify-between">
           <div className="flex items-center gap-1 text-[11px] font-black text-[#0F942D] uppercase tracking-wider">
-            <ShieldCheck className="w-3.5 h-3.5" />
+            <CustomIcon name="health-verified" className="w-3.5 h-3.5" />
             <span>Health Verified</span>
           </div>
 
@@ -120,7 +119,7 @@ export const PetCard: React.FC<PetCardProps> = ({
             className="inline-flex items-center gap-1 text-xs font-black text-[#0F5C94] group-hover:text-[#FB4504] uppercase tracking-wider transition-all"
           >
             <span>Meet {pet.name}</span>
-            <ArrowRight className="w-3.5 h-3.5" />
+            <CustomIcon name="right-arrow" className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>

@@ -1,19 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import {
-  Search,
-  Filter,
-  Sparkles,
-  SlidersHorizontal,
-  RotateCcw,
-  LayoutGrid,
-  List,
-  MapPin,
-  Heart,
-  ShieldCheck,
-  ArrowRight,
-  Info,
-  ChevronDown
-} from 'lucide-react';
+import { CustomIcon } from './CustomIcon';
 import { Pet, AnimalType, AgeCategory, PetSize, PetGender } from '../types';
 import { PetCard } from './PetCard';
 import { PawIcon } from './PawDecorations';
@@ -176,7 +162,7 @@ export const PetBrowseGrid: React.FC<PetBrowseGridProps> = ({
   const hasMore = visibleCount < filteredPets.length;
 
   return (
-    <section className="py-8 lg:py-12 bg-[#ffca42] min-h-screen">
+    <section className="py-8 lg:py-12 min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10">
         
         {/* Section Header Frame */}
@@ -201,7 +187,7 @@ export const PetBrowseGrid: React.FC<PetBrowseGridProps> = ({
                 onClick={onOpenMatchFinder}
                 className="px-5 py-3 rounded-xl bg-[#FB4504] hover:bg-[#e03a00] text-white font-black text-xs uppercase tracking-wider flex items-center gap-2 transition-all border-2 border-[#0F5C94] shadow-[3px_3px_0px_#0F5C94] hover:translate-x-0.5 hover:translate-y-0.5 cursor-pointer"
               >
-                <Sparkles className="w-4 h-4 text-[#F6D97B]" />
+                <CustomIcon name="sparkle" className="w-4 h-4 text-[#F6D97B]" />
                 <span>Interactive Match Finder</span>
               </button>
             </div>
@@ -252,7 +238,7 @@ export const PetBrowseGrid: React.FC<PetBrowseGridProps> = ({
               
               {/* Search Input */}
               <div className="lg:col-span-4 relative">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9A5D16]" />
+                <CustomIcon name="search" className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9A5D16]" />
                 <input
                   id="pet-search-input"
                   type="text"
@@ -342,7 +328,7 @@ export const PetBrowseGrid: React.FC<PetBrowseGridProps> = ({
             {/* Quick Lifestyle / Trait Filter Tags */}
             <div className="mt-3 pt-3 border-t-2 border-[#0F5C94]/10 flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
               <span className="text-[11px] font-black text-[#9A5D16] uppercase tracking-wider shrink-0 flex items-center gap-1">
-                <SlidersHorizontal className="w-3 h-3" />
+                <CustomIcon name="filter" className="w-3 h-3" />
                 <span>Traits:</span>
               </span>
               {traitFilters.map((t) => (
@@ -374,7 +360,7 @@ export const PetBrowseGrid: React.FC<PetBrowseGridProps> = ({
                     onClick={handleResetFilters}
                     className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-[#FB4504]/10 text-[#FB4504] hover:bg-[#FB4504] hover:text-white transition-all uppercase tracking-wider text-[10px] cursor-pointer"
                   >
-                    <RotateCcw className="w-3 h-3" />
+                    <CustomIcon name="cross" className="w-3 h-3" />
                     <span>Reset ({activeFilterCount})</span>
                   </button>
                 )}
@@ -392,7 +378,7 @@ export const PetBrowseGrid: React.FC<PetBrowseGridProps> = ({
                   }`}
                   title="Grid View"
                 >
-                  <LayoutGrid className="w-4 h-4" />
+                  <CustomIcon name="three lines" className="w-4 h-4" />
                 </button>
                 <button
                   id="view-mode-list-btn"
@@ -404,7 +390,7 @@ export const PetBrowseGrid: React.FC<PetBrowseGridProps> = ({
                   }`}
                   title="Detailed List View"
                 >
-                  <List className="w-4 h-4" />
+                  <CustomIcon name="file" className="w-4 h-4" />
                 </button>
               </div>
 
@@ -462,9 +448,11 @@ export const PetBrowseGrid: React.FC<PetBrowseGridProps> = ({
                         </p>
 
                         <div className="flex items-center gap-3 text-xs font-bold text-[#9A5D16] flex-wrap">
-                          <span className="flex items-center gap-1 text-[#0F5C94]">
-                            <MapPin className="w-3.5 h-3.5 text-[#FB4504]" />
-                            {pet.location}
+                          <span className="inline-flex items-center gap-1.5 text-[#0F5C94]">
+                            <span className="w-5 h-5 rounded-md bg-[#FB4504] border border-[#0F5C94] flex items-center justify-center shrink-0">
+                              <CustomIcon name="location" white className="w-3 h-3" />
+                            </span>
+                            <span>{pet.location}</span>
                           </span>
                           <span>•</span>
                           <span>{pet.gender}</span>
@@ -495,7 +483,7 @@ export const PetBrowseGrid: React.FC<PetBrowseGridProps> = ({
                         className="p-2.5 rounded-xl bg-white hover:bg-[#F6D97B] text-[#FB4504] border-2 border-[#0F5C94] shadow-[2px_2px_0px_#0F5C94] transition-all cursor-pointer"
                         title={isFavorite ? 'Remove from saved' : 'Save pet'}
                       >
-                        <Heart className={`w-4 h-4 ${isFavorite ? 'fill-[#FB4504]' : ''}`} />
+                        <CustomIcon name={isFavorite ? 'heart-filled' : 'heart-unfilled'} className="w-4 h-4" />
                       </button>
 
                       <button
@@ -506,7 +494,7 @@ export const PetBrowseGrid: React.FC<PetBrowseGridProps> = ({
                         className="px-5 py-2.5 rounded-xl bg-[#0F5C94] hover:bg-[#FB4504] text-white font-black text-xs uppercase tracking-wider flex items-center gap-2 transition-all border-2 border-[#0F5C94] shadow-[3px_3px_0px_#0F5C94] cursor-pointer"
                       >
                         <span>Meet {pet.name}</span>
-                        <ArrowRight className="w-4 h-4" />
+                        <CustomIcon name="right-arrow" className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
@@ -545,7 +533,7 @@ export const PetBrowseGrid: React.FC<PetBrowseGridProps> = ({
               className="px-7 py-3.5 rounded-xl bg-[#0F5C94] hover:bg-[#0c4b79] text-white font-black text-xs uppercase tracking-wider border-2 border-[#0F5C94] shadow-[4px_4px_0px_#FB4504] hover:translate-x-0.5 hover:translate-y-0.5 transition-all inline-flex items-center gap-2 cursor-pointer"
             >
               <span>Load More Pets ({filteredPets.length - visibleCount} remaining)</span>
-              <ChevronDown className="w-4 h-4" />
+              <CustomIcon name="right-arrow" className="w-4 h-4 rotate-90" />
             </button>
           </div>
         )}

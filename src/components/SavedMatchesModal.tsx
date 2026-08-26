@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Heart, Sparkles, ArrowRight, Trash2, MapPin } from 'lucide-react';
+import { CustomIcon } from './CustomIcon';
 import { Pet } from '../types';
 import { PawIcon } from './PawDecorations';
 
@@ -31,10 +31,10 @@ export const SavedMatchesModal: React.FC<SavedMatchesModalProps> = ({
         className="relative bg-white rounded-3xl max-w-3xl w-full overflow-hidden shadow-[8px_8px_0px_#0F5C94] border-3 border-[#0F5C94] my-8 animate-scaleUp max-h-[85vh] flex flex-col"
       >
         {/* Header */}
-        <div className="bg-[#FAF5EB] p-5 sm:p-7 border-b-3 border-[#0F5C94] flex items-center justify-between">
+          <div className="bg-[#FAF5EB] p-5 sm:p-7 border-b-3 border-[#0F5C94] flex items-center justify-between">
           <div>
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-[#F6D97B] text-[#0F5C94] border border-[#0F5C94] text-xs font-black uppercase tracking-wider mb-1">
-              <Heart className="w-3.5 h-3.5 fill-[#FB4504] text-[#FB4504]" />
+              <CustomIcon name="heart-filled" className="w-3.5 h-3.5" />
               <span>Saved Companions</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-titan text-[#0F5C94]">
@@ -51,7 +51,7 @@ export const SavedMatchesModal: React.FC<SavedMatchesModalProps> = ({
             className="p-2 rounded-xl bg-white hover:bg-[#FB4504] hover:text-white text-[#0F5C94] border-2 border-[#0F5C94] shadow-[2px_2px_0px_#0F5C94] transition-all cursor-pointer"
             title="Close"
           >
-            <X className="w-4 h-4" />
+            <CustomIcon name="cross" className="w-4 h-4" />
           </button>
         </div>
 
@@ -82,7 +82,7 @@ export const SavedMatchesModal: React.FC<SavedMatchesModalProps> = ({
                           className="p-1 text-[#0F5C94]/40 hover:text-[#FB4504] transition-colors cursor-pointer"
                           title="Remove from matches"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <CustomIcon name="cross" className="w-4 h-4" />
                         </button>
                       </div>
 
@@ -91,7 +91,7 @@ export const SavedMatchesModal: React.FC<SavedMatchesModalProps> = ({
                       </p>
 
                       <div className="flex items-center gap-1 text-[11px] text-[#0F5C94]/70 mt-1 font-bold">
-                        <MapPin className="w-3 h-3 text-[#FB4504]" />
+                        <CustomIcon name="location" className="w-3 h-3" />
                         <span>{pet.location.split(',')[0]}</span>
                         <span>·</span>
                         <span>{pet.age}</span>
@@ -121,7 +121,7 @@ export const SavedMatchesModal: React.FC<SavedMatchesModalProps> = ({
                       className="px-3.5 py-1.5 rounded-xl bg-[#FB4504] hover:bg-[#e03a00] text-white font-black text-xs uppercase tracking-wider border border-[#0F5C94] shadow-[2px_2px_0px_#0F5C94] disabled:bg-stone-300 disabled:border-stone-300 disabled:shadow-none disabled:cursor-not-allowed flex items-center gap-1 cursor-pointer"
                     >
                       <span>Apply</span>
-                      <ArrowRight className="w-3 h-3" />
+                      <CustomIcon name="right-arrow" className="w-3 h-3" />
                     </button>
                   </div>
                 </div>
@@ -130,7 +130,7 @@ export const SavedMatchesModal: React.FC<SavedMatchesModalProps> = ({
           ) : (
             <div className="p-8 text-center space-y-4">
               <div className="w-14 h-14 rounded-2xl bg-[#F6D97B] border-2 border-[#0F5C94] text-[#0F5C94] flex items-center justify-center mx-auto shadow-[3px_3px_0px_#0F5C94]">
-                <Heart className="w-7 h-7 fill-[#FB4504] text-[#FB4504]" />
+                <CustomIcon name="heart-filled" className="w-7 h-7" />
               </div>
               <h3 className="text-xl font-titan text-[#0F5C94]">
                 No saved matches yet
@@ -146,7 +146,7 @@ export const SavedMatchesModal: React.FC<SavedMatchesModalProps> = ({
                 }}
                 className="px-5 py-2.5 rounded-xl bg-[#FB4504] hover:bg-[#e03a00] text-white font-black text-xs uppercase tracking-wider border-2 border-[#0F5C94] shadow-[3px_3px_0px_#0F5C94] inline-flex items-center gap-1.5 cursor-pointer"
               >
-                <Sparkles className="w-3.5 h-3.5" />
+                <CustomIcon name="sparkle" className="w-3.5 h-3.5" />
                 <span>Start Swiping</span>
               </button>
             </div>
