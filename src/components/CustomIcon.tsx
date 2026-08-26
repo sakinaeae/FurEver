@@ -10,9 +10,9 @@ export interface CustomIconProps {
   white?: boolean;
 }
 
-// Keep the original FurEver artwork. The PNG/SVG files remain unchanged in
-// public/icons. jsDelivr serves the same repository files through a CDN,
-// avoiding Vercel's public-asset path and GitHub raw/media delivery issues.
+// Keep the original FurEver artwork. All PNG/SVG files remain unchanged in public/icons.
+// Vite copies public/ directly into the production build, so these assets are
+// served by Vercel from /icons/... with no external CDN dependency.
 const nameAliases: Record<string, string> = {
   ball: 'ball.png',
   bone: 'bone.png',
@@ -84,8 +84,6 @@ const nameAliases: Record<string, string> = {
   'all friends': 'all-pets.svg',
 };
 
-const ICONS_CDN_BASE = 'https://cdn.jsdelivr.net/gh/sakinaeae/FurEver@main/public/icons/';
-
 export const CustomIcon: React.FC<CustomIconProps> = ({
   name,
   className = 'w-5 h-5',
@@ -129,7 +127,7 @@ export const CustomIcon: React.FC<CustomIconProps> = ({
   }
 
   const mappedFileName = nameAliases[normalizedKey] || `${normalizedKey}.png`;
-  const finalSrc = `${ICONS_CDN_BASE}${mappedFileName}`;
+  const finalSrc = `/icons/${mappedFileName}`;
 
   return (
     <img
