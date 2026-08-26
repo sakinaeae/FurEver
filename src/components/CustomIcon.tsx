@@ -11,7 +11,7 @@ export interface CustomIconProps {
 }
 
 // Icons are stored in public/icons, so use stable public URLs.
-// This avoids Vite glob/module resolution issues in production builds.
+// Use Vite's BASE_URL so the same PNG assets work on root and sub-path deployments.
 const nameAliases: Record<string, string> = {
   ball: 'ball.png',
   bone: 'bone.png',
@@ -126,7 +126,7 @@ export const CustomIcon: React.FC<CustomIconProps> = ({
   }
 
   const mappedFileName = nameAliases[normalizedKey] || `${normalizedKey}.png`;
-  const finalSrc = `/icons/${mappedFileName}`;
+  const finalSrc = `${import.meta.env.BASE_URL}icons/${mappedFileName}`;
 
   return (
     <img
@@ -135,11 +135,6 @@ export const CustomIcon: React.FC<CustomIconProps> = ({
       className={`inline-block object-contain select-none shrink-0 ${scaleClass} ${className} ${white ? 'brightness-0 invert' : ''}`}
       style={style}
       onClick={onClick}
-      onError={(e) => {
-        const target = e.currentTarget;
-        if (target.src.endsWith('/paw.png')) return;
-        target.src = '/icons/paw.png';
-      }}
     />
   );
 };
