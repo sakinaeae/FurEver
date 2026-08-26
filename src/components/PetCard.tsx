@@ -1,7 +1,6 @@
 import React from 'react';
 import { CustomIcon } from './CustomIcon';
 import { Pet } from '../types';
-import { PawIcon } from './PawDecorations';
 
 interface PetCardProps {
   pet: Pet;

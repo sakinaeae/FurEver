@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Pet } from '../types';
 import { CustomIcon } from './CustomIcon';
-import { PawIcon } from './PawDecorations';
 
 interface NavbarProps {
   currentTab: string;
