@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Pet, AdoptionApplication } from './types';
 import { INITIAL_PETS } from './data/petsData';
 import { INITIAL_APPLICATIONS } from './data/initialApplications';
+import { shuffleArray } from './utils/shuffle';
 
 // Components
 import { Navbar } from './components/Navbar';
@@ -27,7 +28,11 @@ export default function App() {
   const [currentTab, setCurrentTab] = useState<string>('home');
 
   // Application Data States
-  const [pets] = useState<Pet[]>(INITIAL_PETS);
+  const [pets, setPets] = useState<Pet[]>(INITIAL_PETS);
+  
+  const handleShufflePets = () => {
+    setPets((prevPets) => shuffleArray(prevPets));
+  };
   
   // Persisted Applications
   const [applications, setApplications] = useState<AdoptionApplication[]>(() => {
@@ -235,17 +240,28 @@ export default function App() {
                     </div>
 
                     {/* Primary CTA button to match/explore */}
-                    <button
-                      id="home-find-my-match-cta"
-                      onClick={() => {
-                        setCurrentTab('swipe');
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                      }}
-                      className="self-start md:self-auto px-6 py-3.5 rounded-xl bg-[#FB4504] hover:bg-[#e03a00] text-white font-black text-xs uppercase tracking-wider border-2 border-[#0F5C94] shadow-[4px_4px_0px_#0F5C94] hover:translate-x-0.5 hover:translate-y-0.5 transition-all flex items-center gap-2 cursor-pointer"
-                    >
-                      <span>Find My Match</span>
-                      <CustomIcon name="right-arrow" className="w-4 h-4 text-white" />
-                    </button>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <button
+                        id="home-shuffle-pets-cta"
+                        onClick={handleShufflePets}
+                        className="px-5 py-3.5 rounded-xl bg-[#F6D97B] hover:bg-[#ebd070] text-[#0F5C94] font-black text-xs uppercase tracking-wider border-2 border-[#0F5C94] shadow-[4px_4px_0px_#0F5C94] hover:translate-x-0.5 hover:translate-y-0.5 transition-all flex items-center gap-2 cursor-pointer"
+                        title="Shuffle animal recommendations"
+                      >
+                        <span className="text-sm">🔀</span>
+                        <span>Shuffle Animals</span>
+                      </button>
+                      <button
+                        id="home-find-my-match-cta"
+                        onClick={() => {
+                          setCurrentTab('swipe');
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
+                        className="px-6 py-3.5 rounded-xl bg-[#FB4504] hover:bg-[#e03a00] text-white font-black text-xs uppercase tracking-wider border-2 border-[#0F5C94] shadow-[4px_4px_0px_#0F5C94] hover:translate-x-0.5 hover:translate-y-0.5 transition-all flex items-center gap-2 cursor-pointer"
+                      >
+                        <span>Find My Match</span>
+                        <CustomIcon name="right-arrow" className="w-4 h-4 text-white" />
+                      </button>
+                    </div>
                   </div>
 
                   {/* Pet Cards Grid (First 6 pets) */}
@@ -294,6 +310,7 @@ export default function App() {
               setCurrentTab('quiz');
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
+            onShufflePets={handleShufflePets}
           />
         )}
 

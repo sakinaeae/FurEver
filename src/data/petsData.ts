@@ -1,6 +1,115 @@
 import { Pet } from '../types';
+import { shuffleArray } from '../utils/shuffle';
 
-export const INITIAL_PETS: Pet[] = [
+const RAW_PETS: Pet[] = [
+  {
+    id: 'pet-speckles',
+    name: 'Speckles',
+    animalType: 'Dog',
+    breed: 'Indian Hound Mix',
+    age: '1.5 years',
+    ageCategory: 'Young',
+    gender: 'Male',
+    size: 'Medium',
+    location: 'Shelter Yard, Bengaluru',
+    description: 'Speckles is a curious, energetic Indie hound mix with a distinctive white and black spotted coat. He loves exploring outdoors, learning commands, and making new doggy friends.',
+    personality: ['Energetic', 'Curious', 'Loyal', 'Social'],
+    goodWith: ['Children', 'Dogs', 'Active Homes'],
+    status: 'AVAILABLE',
+    image: '/pets/speckles.jpg',
+    medicalInfo: {
+      vaccinated: true,
+      spayedNeutered: true,
+      microchipped: true,
+      healthNotes: 'Fully vaccinated, dewormed, healthy shelter intake.'
+    },
+    weight: '18 kg',
+    activityLevel: 'High',
+    adoptionFee: 'Free Adoption',
+    shelterName: 'CARE Bengaluru Rescue Center',
+    dateAdded: '2026-08-25'
+  },
+  {
+    id: 'pet-goldie',
+    name: 'Goldie',
+    animalType: 'Dog',
+    breed: 'Indian Pariah (Indie)',
+    age: '2 years',
+    ageCategory: 'Adult',
+    gender: 'Female',
+    size: 'Medium',
+    location: 'Shelter Yard, Bengaluru',
+    description: 'Goldie is a calm, noble golden-tan Indie with alert pointed ears and a gentle heart. She loves sunbathing on warm soil and crossing her paws in quiet companionship.',
+    personality: ['Calm', 'Gentle', 'Observant', 'Affectionate'],
+    goodWith: ['Children', 'Dogs', 'Quiet Homes', 'First-time Owners'],
+    status: 'AVAILABLE',
+    image: '/pets/goldie.jpg',
+    medicalInfo: {
+      vaccinated: true,
+      spayedNeutered: true,
+      microchipped: true,
+      healthNotes: 'Fully vaccinated, spayed, excellent general health.'
+    },
+    weight: '16 kg',
+    activityLevel: 'Moderate',
+    adoptionFee: 'Free Adoption',
+    shelterName: 'CARE Bengaluru Rescue Center',
+    dateAdded: '2026-08-25'
+  },
+  {
+    id: 'pet-rocky',
+    name: 'Rocky',
+    animalType: 'Dog',
+    breed: 'Brindle Indie Mix',
+    age: '3 years',
+    ageCategory: 'Adult',
+    gender: 'Male',
+    size: 'Medium',
+    location: 'Sanctuary Yard, Bengaluru',
+    description: 'Rocky is a resilient, cheerful brindle-coated boy with a huge heart and a warm open smile. He loves sanctuary playtimes, trot walks, and belly rubs.',
+    personality: ['Cheerful', 'Friendly', 'Resilient', 'Loving'],
+    goodWith: ['Dogs', 'Families', 'Farm Life'],
+    status: 'AVAILABLE',
+    image: '/pets/rocky.jpg',
+    medicalInfo: {
+      vaccinated: true,
+      spayedNeutered: true,
+      microchipped: true,
+      healthNotes: 'Health check completed, rabies & 9-in-1 vaccinated, neutered.'
+    },
+    weight: '20 kg',
+    activityLevel: 'Moderate',
+    adoptionFee: 'Free Adoption',
+    shelterName: 'VOSD Animal Sanctuary',
+    dateAdded: '2026-08-26'
+  },
+  {
+    id: 'pet-daisy',
+    name: 'Daisy',
+    animalType: 'Dog',
+    breed: 'Labrador Indie Mix',
+    age: '1 year',
+    ageCategory: 'Young',
+    gender: 'Female',
+    size: 'Medium',
+    location: 'Whitefield, Bengaluru',
+    description: 'Daisy is a joyful cream-colored Labrador Indie mix who spreads happiness wherever she sits. She is house-trained, affectionate, and loves relaxing outdoors.',
+    personality: ['Joyful', 'Playful', 'Smart', 'Gentle'],
+    goodWith: ['Children', 'Cats', 'Dogs', 'Apartment Living'],
+    status: 'AVAILABLE',
+    image: '/pets/daisy.jpg',
+    medicalInfo: {
+      vaccinated: true,
+      spayedNeutered: true,
+      microchipped: true,
+      healthNotes: 'Fully vaccinated, spayed, parasite treated.'
+    },
+    weight: '19 kg',
+    activityLevel: 'Moderate',
+    adoptionFee: 'Free Adoption',
+    shelterName: 'Bangalore Animal Rescue Trust',
+    dateAdded: '2026-08-26'
+  },
   {
     id: 'pet-1',
     name: 'Bruno',
@@ -380,33 +489,6 @@ export const INITIAL_PETS: Pet[] = [
     dateAdded: '2026-08-21'
   },
   {
-    id: 'pet-18',
-    name: 'Hazel',
-    animalType: 'Cat',
-    breed: 'Calico Shorthair',
-    age: '3 years',
-    ageCategory: 'Adult',
-    gender: 'Female',
-    size: 'Small',
-    location: 'BTM Layout, Bengaluru',
-    description: 'Hazel has a beautiful tricolor coat and a personality full of sweet charm. She is a queen of cuddles who loves sitting near you and purring like a motor engine.',
-    personality: ['Affectionate', 'Playful', 'Sassy', 'Devoted'],
-    goodWith: ['Cats', 'Children', 'Single Pet Households'],
-    status: 'AVAILABLE',
-    image: 'https://images.unsplash.com/photo-1526336024174-e58f5cdd8e13?auto=format&fit=crop&w=1000&q=80',
-    medicalInfo: {
-      vaccinated: true,
-      spayedNeutered: true,
-      microchipped: true,
-      healthNotes: 'Spayed, up to date on all immunizations, recent dental cleaning.'
-    },
-    weight: '3.9 kg',
-    activityLevel: 'Moderate',
-    adoptionFee: '₹1,200 donation',
-    shelterName: 'Voice for Animals (VFA), Bengaluru',
-    dateAdded: '2026-08-16'
-  },
-  {
     id: 'pet-19',
     name: 'Milo',
     animalType: 'Dog',
@@ -756,32 +838,8 @@ export const INITIAL_PETS: Pet[] = [
     adoptionFee: '₹600 for pair',
     shelterName: 'Bangalore Wildlife & Rescue Shelter, Hebbal, Bengaluru',
     dateAdded: '2026-08-22'
-  },
-  {
-    id: 'pet-32',
-    name: 'Maya',
-    animalType: 'Dog',
-    breed: 'Indie Desi Dog',
-    age: '4 years',
-    ageCategory: 'Adult',
-    gender: 'Female',
-    size: 'Medium',
-    location: 'Indiranagar, Bengaluru',
-    description: 'After nursing 6 healthy puppies who were all adopted, Maya is now ready for her own loving family. Extremely gentle, grateful, and loyal to her core.',
-    personality: ['Nurturing', 'Grateful', 'Gentle', 'Quiet'],
-    goodWith: ['Children', 'Cats', 'Dogs', 'Any Loving Home'],
-    status: 'AVAILABLE',
-    image: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&w=1000&q=80',
-    medicalInfo: {
-      vaccinated: true,
-      spayedNeutered: true,
-      microchipped: true,
-      healthNotes: 'Spayed, fully recovered, boosted vaccines and dental cleaning done.'
-    },
-    weight: '16.5 kg',
-    activityLevel: 'Moderate',
-    adoptionFee: '₹500 donation',
-    shelterName: 'Bangalore Pet Rescue Foundation, Indiranagar, Bengaluru',
-    dateAdded: '2026-08-15'
   }
 ];
+
+export const INITIAL_PETS: Pet[] = shuffleArray(RAW_PETS);
+

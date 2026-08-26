@@ -11,6 +11,7 @@ interface PetBrowseGridProps {
   onToggleFavorite: (petId: string, e: React.MouseEvent) => void;
   onSelectPet: (pet: Pet) => void;
   onOpenMatchFinder: () => void;
+  onShufflePets?: () => void;
 }
 
 export const PetBrowseGrid: React.FC<PetBrowseGridProps> = ({
@@ -19,6 +20,7 @@ export const PetBrowseGrid: React.FC<PetBrowseGridProps> = ({
   onToggleFavorite,
   onSelectPet,
   onOpenMatchFinder,
+  onShufflePets,
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<AnimalType | 'All'>('All');
   const [searchQuery, setSearchQuery] = useState('');
@@ -182,7 +184,18 @@ export const PetBrowseGrid: React.FC<PetBrowseGridProps> = ({
               </p>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
+              {onShufflePets && (
+                <button
+                  id="browse-shuffle-pets-btn"
+                  onClick={onShufflePets}
+                  className="px-4 py-3 rounded-xl bg-[#F6D97B] hover:bg-[#ebd070] text-[#0F5C94] font-black text-xs uppercase tracking-wider flex items-center gap-2 transition-all border-2 border-[#0F5C94] shadow-[3px_3px_0px_#0F5C94] hover:translate-x-0.5 hover:translate-y-0.5 cursor-pointer"
+                  title="Randomly shuffle all animals in the list"
+                >
+                  <span className="text-sm">🔀</span>
+                  <span>Shuffle Animals</span>
+                </button>
+              )}
               <button
                 id="browse-open-quiz-btn"
                 onClick={onOpenMatchFinder}
