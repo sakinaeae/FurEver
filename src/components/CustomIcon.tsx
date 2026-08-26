@@ -1,5 +1,6 @@
+/// <reference types="vite/client" />
 import React from 'react';
-import { RotateCcw, RefreshCw, Undo2 } from 'lucide-react';
+import { RotateCcw, Undo2 } from 'lucide-react';
 
 export interface CustomIconProps {
   name: string;
@@ -9,76 +10,93 @@ export interface CustomIconProps {
   white?: boolean;
 }
 
-const iconMap: Record<string, string> = {
-  ball: '/icons/ball.png',
-  bone: '/icons/bone.png',
-  calendar: '/icons/calender.png',
-  calender: '/icons/calender.png',
-  'circle-tick': '/icons/circle-with-tick.png',
-  'circle-with-tick': '/icons/circle-with-tick.png',
-  'circle with tick': '/icons/circle-with-tick.png',
-  cross: '/icons/cross.png',
-  discover: '/icons/discover.png',
-  exclamation: '/icons/exclamation.png',
-  female: '/icons/female.png',
-  file: '/icons/file.png',
-  flame: '/icons/flame.png',
-  'health-verified': '/icons/health-verified.png',
-  'health verified': '/icons/health-verified.png',
-  'heart-filled': '/icons/heart-filled.png',
-  'heart filled': '/icons/heart-filled.png',
-  'heart-illustration': '/icons/heart-illustration.png',
-  'heart illustration': '/icons/heart-illustration.png',
-  'heart-unfilled': '/icons/heart-unfilled.png',
-  'heart unfilled': '/icons/heart-unfilled.png',
-  home: '/icons/home.png',
-  'left-arrow': '/icons/left-arrow.png',
-  'left arrow': '/icons/left-arrow.png',
-  'ledt arrow': '/icons/left-arrow.png',
-  'location-pin': '/icons/location-pin.png',
-  'location pin': '/icons/location-pin.png',
-  location: '/icons/location-pin.png',
-  mail: '/icons/mail.png',
-  male: '/icons/male.png',
-  'message-box': '/icons/message-box.png',
-  'message box': '/icons/message-box.png',
-  message: '/icons/message-box.png',
-  paw: '/icons/paw.png',
-  'paw-illustration': '/icons/paw-illustration.png',
-  'paw illustration': '/icons/paw-illustration.png',
-  phone: '/icons/phone.png',
-  'right-arrow': '/icons/right-arrow.png',
-  'right arrow': '/icons/right-arrow.png',
-  search: '/icons/search.png',
-  share: '/icons/share.png',
-  smiley: '/icons/smiley.png',
-  sparkle: '/icons/sparkle.png',
-  sparkles: '/icons/sparkle.png',
-  star: '/icons/star-filled.png',
-  'star-filled': '/icons/star-filled.png',
-  'star filled': '/icons/star-filled.png',
-  'star-unfilled': '/icons/star-unfilled.png',
-  'star unfilled': '/icons/star-unfilled.png',
-  menu: '/icons/three-lines.png',
-  'three-lines': '/icons/three-lines.png',
-  'three lines': '/icons/three-lines.png',
-  tick: '/icons/tick.png',
-  user: '/icons/user.png',
-  dog: '/icons/dog.svg',
-  dogs: '/icons/dog.svg',
-  cat: '/icons/cat.svg',
-  cats: '/icons/cat.svg',
-  rabbit: '/icons/rabbit.svg',
-  rabbits: '/icons/rabbits.svg',
-  bird: '/icons/bird.svg',
-  birds: '/icons/birds.svg',
-  other: '/icons/other.svg',
-  'small-animals': '/icons/small-animals.svg',
-  'small animals': '/icons/small-animals.svg',
-  'any-pet': '/icons/any-pet.svg',
-  'any pet': '/icons/any-pet.svg',
-  'all-pets': '/icons/all-pets.svg',
-  'all friends': '/icons/all-pets.svg',
+// Eagerly load all icon assets from src/assets/icons/ via Vite glob
+const assetModules = import.meta.glob<{ default: string }>(
+  '../assets/icons/*.{png,svg}',
+  { eager: true }
+);
+
+// Build a dictionary mapping filename (without extension or with extension) to bundled asset URL
+const bundledIcons: Record<string, string> = {};
+for (const path in assetModules) {
+  const fileWithExt = path.split('/').pop() || '';
+  const fileName = fileWithExt.toLowerCase();
+  const baseName = fileName.replace(/\.[^/.]+$/, '');
+  const url = assetModules[path].default;
+  bundledIcons[fileName] = url;
+  bundledIcons[baseName] = url;
+}
+
+// Logical name mappings
+const nameAliases: Record<string, string> = {
+  ball: 'ball.png',
+  bone: 'bone.png',
+  calendar: 'calender.png',
+  calender: 'calender.png',
+  'circle-tick': 'circle-with-tick.png',
+  'circle-with-tick': 'circle-with-tick.png',
+  'circle with tick': 'circle-with-tick.png',
+  cross: 'cross.png',
+  discover: 'discover.png',
+  exclamation: 'exclamation.png',
+  female: 'female.png',
+  file: 'file.png',
+  flame: 'flame.png',
+  'health-verified': 'health-verified.png',
+  'health verified': 'health-verified.png',
+  'heart-filled': 'heart-filled.png',
+  'heart filled': 'heart-filled.png',
+  'heart-illustration': 'heart-illustration.png',
+  'heart illustration': 'heart-illustration.png',
+  'heart-unfilled': 'heart-unfilled.png',
+  'heart unfilled': 'heart-unfilled.png',
+  home: 'home.png',
+  'left-arrow': 'left-arrow.png',
+  'left arrow': 'left-arrow.png',
+  'location-pin': 'location-pin.png',
+  'location pin': 'location-pin.png',
+  location: 'location-pin.png',
+  mail: 'mail.png',
+  male: 'male.png',
+  'message-box': 'message-box.png',
+  'message box': 'message-box.png',
+  message: 'message-box.png',
+  paw: 'paw.png',
+  'paw-illustration': 'paw-illustration.png',
+  'paw illustration': 'paw-illustration.png',
+  phone: 'phone.png',
+  'right-arrow': 'right-arrow.png',
+  'right arrow': 'right-arrow.png',
+  search: 'search.png',
+  share: 'share.png',
+  smiley: 'smiley.png',
+  sparkle: 'sparkle.png',
+  sparkles: 'sparkle.png',
+  star: 'star-filled.png',
+  'star-filled': 'star-filled.png',
+  'star filled': 'star-filled.png',
+  'star-unfilled': 'star-unfilled.png',
+  'star unfilled': 'star-unfilled.png',
+  menu: 'three-lines.png',
+  'three-lines': 'three-lines.png',
+  'three lines': 'three-lines.png',
+  tick: 'tick.png',
+  user: 'user.png',
+  dog: 'dog.svg',
+  dogs: 'dog.svg',
+  cat: 'cat.svg',
+  cats: 'cat.svg',
+  rabbit: 'rabbit.svg',
+  rabbits: 'rabbits.svg',
+  bird: 'bird.svg',
+  birds: 'birds.svg',
+  other: 'other.svg',
+  'small-animals': 'small-animals.svg',
+  'small animals': 'small-animals.svg',
+  'any-pet': 'any-pet.svg',
+  'any pet': 'any-pet.svg',
+  'all-pets': 'all-pets.svg',
+  'all friends': 'all-pets.svg',
 };
 
 export const CustomIcon: React.FC<CustomIconProps> = ({
@@ -118,16 +136,26 @@ export const CustomIcon: React.FC<CustomIconProps> = ({
     );
   }
 
-  const iconSrc = iconMap[normalizedKey] || iconMap['paw'];
+  const mappedFileName = nameAliases[normalizedKey] || `${normalizedKey}.png`;
+  const baseName = mappedFileName.replace(/\.[^/.]+$/, '');
+  
+  const finalSrc = 
+    bundledIcons[mappedFileName] || 
+    bundledIcons[baseName + '.png'] || 
+    bundledIcons[baseName + '.svg'] || 
+    bundledIcons['paw.png'] || 
+    '';
 
   return (
     <img
-      src={encodeURI(iconSrc)}
+      src={finalSrc}
       alt={name}
       className={`inline-block object-contain select-none shrink-0 ${scaleClass} ${className} ${white ? 'brightness-0 invert' : ''}`}
       style={style}
       onClick={onClick}
-      referrerPolicy="no-referrer"
+      onError={(e) => {
+        (e.target as HTMLImageElement).src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"/>';
+      }}
     />
   );
 };
