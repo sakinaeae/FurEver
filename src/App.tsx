@@ -318,43 +318,7 @@ export default function App() {
               </div>
             </section>
 
-            {/* SECTION: FOSTER & PET OWNER PORTAL BANNER */}
-            <section className="py-12 bg-[#0F5C94] text-white border-y-4 border-[#FB4504] relative overflow-hidden">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 relative z-10">
-                <div className="bg-[#FAF5EB] text-[#0F5C94] rounded-3xl p-8 sm:p-12 border-3 border-[#0F5C94] shadow-[8px_8px_0px_#FB4504] flex flex-col lg:flex-row items-center justify-between gap-8">
-                  
-                  <div className="space-y-4 max-w-2xl">
-                    <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-lg bg-[#0F942D] text-white text-xs font-black uppercase tracking-wider border-2 border-[#0F5C94]">
-                      <PawIcon className="w-3.5 h-3.5 fill-white" />
-                      <span>FOSTER & PET OWNER PORTAL</span>
-                    </div>
 
-                    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-titan text-[#0F5C94] leading-tight">
-                      WANT TO PUT YOUR PET UP FOR ADOPTION?
-                    </h2>
-
-                    <p className="text-sm sm:text-base text-[#0F5C94]/85 font-medium leading-relaxed">
-                      Are you a foster parent, rescue shelter, or pet owner seeking a loving forever home for an animal in Bangalore? List your pet on FurEver today for free!
-                    </p>
-                  </div>
-
-                  <div className="shrink-0 text-center lg:text-right w-full lg:w-auto">
-                    <button
-                      id="home-list-pet-banner-btn"
-                      onClick={() => setIsListPetModalOpen(true)}
-                      className="w-full sm:w-auto px-8 py-5 rounded-2xl bg-[#0F942D] hover:bg-[#0b7523] text-white font-titan text-base uppercase tracking-wider border-3 border-[#0F5C94] shadow-[6px_6px_0px_#0F5C94] hover:translate-x-0.5 hover:translate-y-0.5 transition-all inline-flex items-center justify-center gap-3 cursor-pointer"
-                    >
-                      <PawIcon className="w-6 h-6 fill-white" />
-                      <span>+ PUT YOUR PET UP FOR ADOPTION NOW</span>
-                    </button>
-                    <p className="text-xs text-[#0F5C94]/70 font-bold mt-2.5 text-center">
-                      Takes under 2 minutes · Completely free listing
-                    </p>
-                  </div>
-
-                </div>
-              </div>
-            </section>
           </div>
         )}
 
