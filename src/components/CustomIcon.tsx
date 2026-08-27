@@ -8,11 +8,17 @@ export interface CustomIconProps {
   size?: number | string;
   onClick?: () => void;
   white?: boolean;
+  blue?: boolean;
 }
 
-// Eagerly load all icon assets from src/assets/icons/ via Vite glob
+// Eagerly load all icon assets from public/icons, public/, root, and src/assets/ via Vite glob
 const assetModules = import.meta.glob<{ default: string }>(
-  '../assets/icons/*.{png,svg}',
+  [
+    '../../public/icons/*.{png,svg}',
+    '../../public/*.{png,svg}',
+    '../../*.svg',
+    '../assets/**/*.{png,svg,jpg,jpeg}',
+  ],
   { eager: true }
 );
 
@@ -22,9 +28,16 @@ for (const path in assetModules) {
   const fileWithExt = path.split('/').pop() || '';
   const fileName = fileWithExt.toLowerCase();
   const baseName = fileName.replace(/\.[^/.]+$/, '');
-  const url = assetModules[path].default;
-  bundledIcons[fileName] = url;
-  bundledIcons[baseName] = url;
+  const mod = assetModules[path];
+  let url = typeof mod === 'string' ? mod : mod?.default || '';
+  // Clean up leading /public in dev URLs so Vite serves from root
+  if (url.startsWith('/public/')) {
+    url = url.replace(/^\/public\//, '/');
+  }
+  if (url) {
+    bundledIcons[fileName] = url;
+    bundledIcons[baseName] = url;
+  }
 }
 
 // Logical name mappings
@@ -38,6 +51,7 @@ const nameAliases: Record<string, string> = {
   'circle with tick': 'circle-with-tick.png',
   cross: 'cross.png',
   discover: 'discover.png',
+  filter: 'discover.png',
   exclamation: 'exclamation.png',
   female: 'female.png',
   file: 'file.png',
@@ -84,19 +98,20 @@ const nameAliases: Record<string, string> = {
   user: 'user.png',
   dog: 'dog.svg',
   dogs: 'dog.svg',
-  cat: 'cat.svg',
-  cats: 'cat.svg',
+  cat: 'animal icons-02.svg',
+  cats: 'animal icons-02.svg',
+  'animal icons-02': 'animal icons-02.svg',
   rabbit: 'rabbit.svg',
-  rabbits: 'rabbits.svg',
-  bird: 'bird.svg',
+  rabbits: 'rabbit.svg',
+  bird: 'birds.svg',
   birds: 'birds.svg',
   other: 'other.svg',
-  'small-animals': 'small-animals.svg',
-  'small animals': 'small-animals.svg',
+  'small-animals': 'other.svg',
+  'small animals': 'other.svg',
   'any-pet': 'any-pet.svg',
   'any pet': 'any-pet.svg',
-  'all-pets': 'all-pets.svg',
-  'all friends': 'all-pets.svg',
+  'all-pets': 'any-pet.svg',
+  'all friends': 'any-pet.svg',
 };
 
 export const CustomIcon: React.FC<CustomIconProps> = ({
@@ -105,20 +120,32 @@ export const CustomIcon: React.FC<CustomIconProps> = ({
   size,
   onClick,
   white = false,
+  blue = false,
 }) => {
   const normalizedKey = name.toLowerCase().trim();
   const isFloating = size !== undefined;
   const scaleClass = isFloating ? '' : 'scale-140 transition-transform';
 
-  const style = {
+  const isBlue = blue || className.includes('text-[#0F5C94]') || className.includes('text-blue');
+
+  const filterStyle: React.CSSProperties = blue
+    ? { filter: 'brightness(0) saturate(100%) invert(26%) sepia(90%) saturate(1500%) hue-rotate(182deg) brightness(96%) contrast(95%)' }
+    : white
+    ? { filter: 'brightness(0) invert(1)' }
+    : isBlue
+    ? { filter: 'brightness(0) saturate(100%) invert(26%) sepia(90%) saturate(1500%) hue-rotate(182deg) brightness(96%) contrast(95%)' }
+    : {};
+
+  const style: React.CSSProperties = {
     ...(size ? { width: typeof size === 'number' ? `${size}px` : size, height: typeof size === 'number' ? `${size}px` : size } : {}),
+    ...filterStyle,
   };
 
   if (['retry', 'reset', 'refresh', 'rotate'].includes(normalizedKey)) {
     return (
       <RotateCcw
-        className={`inline-block select-none shrink-0 ${scaleClass} ${className} ${white ? 'text-white' : ''}`}
-        style={style}
+        className={`inline-block select-none shrink-0 ${scaleClass} ${className} ${white ? 'text-white' : 'text-[#0F5C94]'}`}
+        style={size ? { width: typeof size === 'number' ? `${size}px` : size, height: typeof size === 'number' ? `${size}px` : size } : {}}
         onClick={onClick}
         strokeWidth={2.8}
       />
@@ -128,33 +155,44 @@ export const CustomIcon: React.FC<CustomIconProps> = ({
   if (normalizedKey === 'undo') {
     return (
       <Undo2
-        className={`inline-block select-none shrink-0 ${scaleClass} ${className} ${white ? 'text-white' : ''}`}
-        style={style}
+        className={`inline-block select-none shrink-0 ${scaleClass} ${className} ${white ? 'text-white' : 'text-[#0F5C94]'}`}
+        style={size ? { width: typeof size === 'number' ? `${size}px` : size, height: typeof size === 'number' ? `${size}px` : size } : {}}
         onClick={onClick}
         strokeWidth={2.8}
       />
     );
   }
 
-  const mappedFileName = nameAliases[normalizedKey] || `${normalizedKey}.png`;
+  const mappedFileName = nameAliases[normalizedKey] || (normalizedKey.endsWith('.png') || normalizedKey.endsWith('.svg') ? normalizedKey : `${normalizedKey}.png`);
   const baseName = mappedFileName.replace(/\.[^/.]+$/, '');
   
   const finalSrc = 
-    bundledIcons[mappedFileName] || 
-    bundledIcons[baseName + '.png'] || 
-    bundledIcons[baseName + '.svg'] || 
-    bundledIcons['paw.png'] || 
-    '';
+    bundledIcons[mappedFileName.toLowerCase()] || 
+    bundledIcons[normalizedKey] || 
+    bundledIcons[baseName.toLowerCase()] || 
+    `/icons/${mappedFileName}` ||
+    `/${mappedFileName}`;
 
   return (
     <img
       src={finalSrc}
       alt={name}
-      className={`inline-block object-contain select-none shrink-0 ${scaleClass} ${className} ${white ? 'brightness-0 invert' : ''}`}
+      className={`inline-block object-contain select-none shrink-0 ${scaleClass} ${className}`}
       style={style}
       onClick={onClick}
       onError={(e) => {
-        (e.target as HTMLImageElement).src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"/>';
+        const target = e.target as HTMLImageElement;
+        const currentSrc = target.src || '';
+        // Sequentially try fallbacks if first URL 404s
+        if (!currentSrc.includes('/icons/') && mappedFileName) {
+          target.src = `/icons/${mappedFileName}`;
+        } else if (!currentSrc.includes(`/${mappedFileName}`) && mappedFileName) {
+          target.src = `/${mappedFileName}`;
+        } else if (currentSrc.includes('/icons/')) {
+          target.src = `/${mappedFileName}`;
+        } else if (!currentSrc.includes('paw.png')) {
+          target.src = '/icons/paw.png';
+        }
       }}
     />
   );

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Pet, AdoptionApplication } from './types';
 import { INITIAL_PETS } from './data/petsData';
-import { INITIAL_APPLICATIONS } from './data/initialApplications';
 import { shuffleArray } from './utils/shuffle';
 
 // Components
@@ -14,45 +13,81 @@ import { SwipeCardDeck } from './components/SwipeCardDeck';
 import { MatchQuizFinder } from './components/MatchQuizFinder';
 import { PetProfileModal } from './components/PetProfileModal';
 import { AdoptionFormModal } from './components/AdoptionFormModal';
-import { MyApplicationsView } from './components/MyApplicationsView';
 import { SavedMatchesModal } from './components/SavedMatchesModal';
+import { UserSignInModal, UserProfile } from './components/UserSignInModal';
+import { ListPetModal } from './components/ListPetModal';
 import { Footer } from './components/Footer';
 import { FloatingBackgroundIcons } from './components/FloatingBackgroundIcons';
 import { CustomIcon } from './components/CustomIcon';
 import { PawIcon } from './components/PawDecorations';
 import { AnimalMarqueeTape } from './components/AnimalMarqueeTape';
 
-
 export default function App() {
-  // Navigation tab: 'home' | 'browse' | 'swipe' | 'quiz' | 'how-it-works' | 'applications'
+  // Navigation tab: 'home' | 'browse' | 'swipe' | 'quiz' | 'how-it-works'
   const [currentTab, setCurrentTab] = useState<string>('home');
 
-  // Application Data States
-  const [pets, setPets] = useState<Pet[]>(INITIAL_PETS);
+  // Application Data States (including custom user-listed pets)
+  const [pets, setPets] = useState<Pet[]>(() => {
+    try {
+      const savedUserPets = localStorage.getItem('furever_user_listed_pets');
+      if (savedUserPets) {
+        const parsed: Pet[] = JSON.parse(savedUserPets);
+        return [...parsed, ...INITIAL_PETS];
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    return INITIAL_PETS;
+  });
+
+  const [isListPetModalOpen, setIsListPetModalOpen] = useState(false);
   
   const handleShufflePets = () => {
     setPets((prevPets) => shuffleArray(prevPets));
   };
+
+  const handlePetListed = (newPet: Pet) => {
+    setPets((prev) => [newPet, ...prev]);
+    try {
+      const savedUserPets = localStorage.getItem('furever_user_listed_pets');
+      const existing: Pet[] = savedUserPets ? JSON.parse(savedUserPets) : [];
+      localStorage.setItem('furever_user_listed_pets', JSON.stringify([newPet, ...existing]));
+    } catch (e) {
+      console.error(e);
+    }
+    showToast(`🎉 ${newPet.name} is now listed for adoption!`);
+  };
   
-  // Persisted Applications
+  // Persisted User Profile
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(() => {
+    try {
+      const saved = localStorage.getItem('furever_user_profile');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.error(e);
+    }
+    return null;
+  });
+
+  const [isSignInModalOpen, setIsSignInModalOpen] = useState(false);
+
+  useEffect(() => {
+    try {
+      if (userProfile) {
+        localStorage.setItem('furever_user_profile', JSON.stringify(userProfile));
+      } else {
+        localStorage.removeItem('furever_user_profile');
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }, [userProfile]);
+
+  // Persisted Applications (for background state)
   const [applications, setApplications] = useState<AdoptionApplication[]>(() => {
     try {
-      const saved = localStorage.getItem('furever_applications_v4') || localStorage.getItem('furever_applications_v3');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          // Filter out pre-loaded sample mock applications so status starts empty until user fills one
-          const userSubmitted = parsed.filter(
-            (app: AdoptionApplication) => app.id !== 'FUR-2026-8942' && app.id !== 'FUR-2026-7621'
-          );
-          return userSubmitted.map((app: AdoptionApplication) => ({
-            ...app,
-            applicantName: 'You',
-            petLocation: app.petLocation?.includes('Bengaluru') ? app.petLocation : 'Jayanagar, Bengaluru',
-            applicantAddress: app.applicantAddress?.includes('Bengaluru') ? app.applicantAddress : 'Jayanagar 4th Block, Bengaluru',
-          }));
-        }
-      }
+      const saved = localStorage.getItem('furever_applications_v4');
+      if (saved) return JSON.parse(saved);
     } catch (e) {
       console.error(e);
     }
@@ -134,15 +169,7 @@ export default function App() {
   // Handle new submitted application
   const handleNewApplication = (newApp: AdoptionApplication) => {
     setApplications((prev) => [newApp, ...prev]);
-    showToast(`Application #${newApp.id} submitted successfully!`);
-  };
-
-  // Select pet by ID (from applications view)
-  const handleSelectPetById = (petId: string) => {
-    const found = pets.find((p) => p.id === petId);
-    if (found) {
-      setSelectedPetForProfile(found);
-    }
+    showToast(`Application for ${newApp.petName} submitted successfully!`);
   };
 
   const likedPetsList = pets.filter((p) => likedPetIds.includes(p.id));
@@ -165,7 +192,6 @@ export default function App() {
         currentTab={currentTab}
         onSelectTab={setCurrentTab}
         likedCount={likedPetIds.length}
-        applicationCount={applications.length}
         onOpenMatches={() => setIsMatchesModalOpen(true)}
         onFindYourMatch={() => {
           setCurrentTab('swipe');
@@ -173,6 +199,9 @@ export default function App() {
         }}
         pets={pets}
         onSelectPet={setSelectedPetForProfile}
+        currentProfile={userProfile}
+        onOpenSignIn={() => setIsSignInModalOpen(true)}
+        onOpenListPetModal={() => setIsListPetModalOpen(true)}
       />
 
       {/* Main Content View Switcher */}
@@ -208,13 +237,14 @@ export default function App() {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
               onConnectClick={() => {
-                setCurrentTab('applications');
+                setCurrentTab('browse');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
               onSwipeClick={() => {
                 setCurrentTab('swipe');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
+              onListPetClick={() => setIsListPetModalOpen(true)}
             />
 
             {/* PETS WAITING FOR YOU Showcase */}
@@ -241,15 +271,6 @@ export default function App() {
 
                     {/* Primary CTA button to match/explore */}
                     <div className="flex flex-wrap items-center gap-3">
-                      <button
-                        id="home-shuffle-pets-cta"
-                        onClick={handleShufflePets}
-                        className="px-5 py-3.5 rounded-xl bg-[#F6D97B] hover:bg-[#ebd070] text-[#0F5C94] font-black text-xs uppercase tracking-wider border-2 border-[#0F5C94] shadow-[4px_4px_0px_#0F5C94] hover:translate-x-0.5 hover:translate-y-0.5 transition-all flex items-center gap-2 cursor-pointer"
-                        title="Shuffle animal recommendations"
-                      >
-                        <span className="text-sm">🔀</span>
-                        <span>Shuffle Animals</span>
-                      </button>
                       <button
                         id="home-find-my-match-cta"
                         onClick={() => {
@@ -291,6 +312,44 @@ export default function App() {
                       <span>View All {pets.length} Available Pets</span>
                       <CustomIcon name="right-arrow" className="w-4 h-4 text-[#0F5C94]" />
                     </button>
+                  </div>
+
+                </div>
+              </div>
+            </section>
+
+            {/* SECTION: FOSTER & PET OWNER PORTAL BANNER */}
+            <section className="py-12 bg-[#0F5C94] text-white border-y-4 border-[#FB4504] relative overflow-hidden">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 relative z-10">
+                <div className="bg-[#FAF5EB] text-[#0F5C94] rounded-3xl p-8 sm:p-12 border-3 border-[#0F5C94] shadow-[8px_8px_0px_#FB4504] flex flex-col lg:flex-row items-center justify-between gap-8">
+                  
+                  <div className="space-y-4 max-w-2xl">
+                    <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-lg bg-[#0F942D] text-white text-xs font-black uppercase tracking-wider border-2 border-[#0F5C94]">
+                      <PawIcon className="w-3.5 h-3.5 fill-white" />
+                      <span>FOSTER & PET OWNER PORTAL</span>
+                    </div>
+
+                    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-titan text-[#0F5C94] leading-tight">
+                      WANT TO PUT YOUR PET UP FOR ADOPTION?
+                    </h2>
+
+                    <p className="text-sm sm:text-base text-[#0F5C94]/85 font-medium leading-relaxed">
+                      Are you a foster parent, rescue shelter, or pet owner seeking a loving forever home for an animal in Bangalore? List your pet on FurEver today for free!
+                    </p>
+                  </div>
+
+                  <div className="shrink-0 text-center lg:text-right w-full lg:w-auto">
+                    <button
+                      id="home-list-pet-banner-btn"
+                      onClick={() => setIsListPetModalOpen(true)}
+                      className="w-full sm:w-auto px-8 py-5 rounded-2xl bg-[#0F942D] hover:bg-[#0b7523] text-white font-titan text-base uppercase tracking-wider border-3 border-[#0F5C94] shadow-[6px_6px_0px_#0F5C94] hover:translate-x-0.5 hover:translate-y-0.5 transition-all inline-flex items-center justify-center gap-3 cursor-pointer"
+                    >
+                      <PawIcon className="w-6 h-6 fill-white" />
+                      <span>+ PUT YOUR PET UP FOR ADOPTION NOW</span>
+                    </button>
+                    <p className="text-xs text-[#0F5C94]/70 font-bold mt-2.5 text-center">
+                      Takes under 2 minutes · Completely free listing
+                    </p>
                   </div>
 
                 </div>
@@ -350,7 +409,7 @@ export default function App() {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
               onConnectClick={() => {
-                setCurrentTab('applications');
+                setCurrentTab('browse');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
             />
@@ -372,7 +431,7 @@ export default function App() {
                     What happens after I submit an application?
                   </h4>
                   <p className="text-xs sm:text-sm text-stone-600 font-medium mt-1 leading-relaxed">
-                    Your application goes straight to the shelter coordinator. They review your home environment preferences, conduct a brief verification, and coordinate a meet-and-greet session. You can track this in real-time under My Applications.
+                    Your application undergoes instant eligibility checks. When approved, the pet's foster or shelter owner will contact you directly to arrange a meet-and-greet!
                   </p>
                 </div>
 
@@ -398,18 +457,6 @@ export default function App() {
           </div>
         )}
 
-        {/* VIEW 6: MY APPLICATIONS */}
-        {currentTab === 'applications' && (
-          <MyApplicationsView
-            applications={applications}
-            onExplorePets={() => {
-              setCurrentTab('browse');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            onSelectPetById={handleSelectPetById}
-          />
-        )}
-
       </main>
 
       {/* Pet Profile Modal */}
@@ -431,11 +478,36 @@ export default function App() {
         isOpen={selectedPetForApplication !== null}
         onClose={() => setSelectedPetForApplication(null)}
         onSubmitSuccess={handleNewApplication}
-        onGoToApplications={() => {
+        onExplorePets={() => {
           setSelectedPetForApplication(null);
-          setCurrentTab('applications');
+          setCurrentTab('browse');
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
+        currentProfile={userProfile}
+      />
+
+      {/* User Sign In Modal */}
+      <UserSignInModal
+        isOpen={isSignInModalOpen}
+        onClose={() => setIsSignInModalOpen(false)}
+        currentProfile={userProfile}
+        onSignIn={(profile) => {
+          setUserProfile(profile);
+          showToast(`Welcome, ${profile.name}!`);
+        }}
+        onSignOut={() => {
+          setUserProfile(null);
+          showToast('Signed out successfully');
+        }}
+        onOpenListPetModal={() => setIsListPetModalOpen(true)}
+      />
+
+      {/* List Pet Modal (Foster & Owner Portal) */}
+      <ListPetModal
+        isOpen={isListPetModalOpen}
+        onClose={() => setIsListPetModalOpen(false)}
+        onPetListed={handlePetListed}
+        currentProfile={userProfile}
       />
 
       {/* Saved / Liked Matches Modal */}
@@ -466,6 +538,7 @@ export default function App() {
           setCurrentTab('swipe');
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
+        onListPetClick={() => setIsListPetModalOpen(true)}
       />
 
     </div>

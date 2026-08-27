@@ -249,7 +249,7 @@ export const SwipeCardDeck: React.FC<SwipeCardDeckProps> = ({
                   onClick={onOpenMatches}
                   className="w-full py-2.5 rounded-xl bg-[#FB4504] hover:bg-[#e03a00] text-white font-black text-xs uppercase tracking-wider border-2 border-[#0F5C94] shadow-[3px_3px_0px_#0F5C94] flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <CustomIcon name="heart-filled" className="w-3.5 h-3.5" />
+                  <CustomIcon name="heart-filled" className="w-3.5 h-3.5" white />
                   <span>View Saved Matches ({likedPetIds.length})</span>
                 </button>
                 <button
@@ -299,7 +299,7 @@ export const SwipeCardDeck: React.FC<SwipeCardDeckProps> = ({
                 className="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-[#FB4504] border-3 border-[#0F5C94] text-white flex items-center justify-center hover:bg-[#e03a00] transition-all shadow-[4px_4px_0px_#0F5C94] hover:translate-x-0.5 hover:translate-y-0.5 cursor-pointer"
                 title="Swipe Right: Like"
               >
-                <CustomIcon name="heart-filled" className="w-8 h-8" />
+                <CustomIcon name="heart-filled" className="w-8 h-8" white />
               </button>
 
             </div>

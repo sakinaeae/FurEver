@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import { CustomIcon } from './CustomIcon';
 import { Pet, AdoptionApplication } from '../types';
+import { UserProfile } from './UserSignInModal';
 import { PawIcon } from './PawDecorations';
 
 interface AdoptionFormModalProps {
@@ -9,15 +10,22 @@ interface AdoptionFormModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmitSuccess: (newApp: AdoptionApplication) => void;
-  onGoToApplications: () => void;
+  onExplorePets: () => void;
+  currentProfile?: UserProfile | null;
 }
+
+type EligibilityResult = {
+  isApplicable: boolean;
+  reason?: string;
+};
 
 export const AdoptionFormModal: React.FC<AdoptionFormModalProps> = ({
   pet,
   isOpen,
   onClose,
   onSubmitSuccess,
-  onGoToApplications,
+  onExplorePets,
+  currentProfile,
 }) => {
   // Form State
   const [fullName, setFullName] = useState('');
@@ -29,25 +37,89 @@ export const AdoptionFormModal: React.FC<AdoptionFormModalProps> = ({
   const [petExperience, setPetExperience] = useState<'First-time owner' | 'Experienced' | 'Lifelong pet parent'>('Experienced');
   const [fitReason, setFitReason] = useState('');
 
-  // UI state
+  // UI & Result states
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [submittedApp, setSubmittedApp] = useState<AdoptionApplication | null>(null);
-  const [savedJsonPath, setSavedJsonPath] = useState<string | null>(null);
+  const [eligibilityResult, setEligibilityResult] = useState<EligibilityResult | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Pre-fill user profile when modal opens or profile changes
+  useEffect(() => {
+    if (isOpen) {
+      if (currentProfile) {
+        if (!fullName) setFullName(currentProfile.name);
+        if (!email) setEmail(currentProfile.email);
+        if (!phone) setPhone(currentProfile.phone);
+      }
+    }
+  }, [isOpen, currentProfile]);
 
   if (!isOpen || !pet) return null;
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Real-time word count calculation for fitReason
+  const getWordCount = (text: string) => {
+    return text.trim().split(/\s+/).filter(Boolean).length;
+  };
+
+  const wordCount = getWordCount(fitReason);
+
+  // Eligibility Evaluation Function
+  const checkEligibility = (
+    fitText: string,
+    housing: string,
+    experience: string,
+    targetPet: Pet
+  ): EligibilityResult => {
+    // Rule 1 — Fit response length check (< 40 words)
+    const count = getWordCount(fitText);
+    if (count < 40) {
+      return {
+        isApplicable: false,
+        reason: 'Please provide a more detailed response about why you would be a good fit for this pet. A minimum of 40 words is required.',
+      };
+    }
+
+    // Rule 2 — Housing suitability check
+    // Large or high-energy pets, or pets requiring a yard, are not suitable for small apartments without yard
+    const isLargePet = targetPet.size === 'Large' || targetPet.activityLevel === 'High';
+    const requiresYard = targetPet.goodWith?.some((g) =>
+      ['Yard Homes', 'Fenced Yard', 'Farm Life', 'Spacious Homes', 'Active Runners'].includes(g)
+    );
+
+    if ((isLargePet || requiresYard) && housing === 'Apartment') {
+      return {
+        isApplicable: false,
+        reason: 'This pet requires a larger living space or a house with a yard suitable for their size and energy level.',
+      };
+    }
+
+    // Rule 3 — Pet experience check
+    const requiresExperiencedOwner = targetPet.goodWith?.some((g) =>
+      ['Experienced Owners', 'Experienced Handlers', 'Experienced'].includes(g)
+    ) || targetPet.personality?.some((p) =>
+      ['Protective', 'Genius', 'Focused', 'Athletic'].includes(p)
+    );
+
+    if (requiresExperiencedOwner && experience === 'First-time owner') {
+      return {
+        isApplicable: false,
+        reason: 'This pet requires an adopter with more experience caring for animals.',
+      };
+    }
+
+    // All rules passed!
+    return { isApplicable: true };
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
 
-    // Validation
+    // Basic Input Validation
     if (!fullName.trim() || !email.trim() || !phone.trim() || !fitReason.trim()) {
       setErrorMessage('Looks like you missed something. Please complete the required fields.');
       return;
     }
 
-    // Basic email check
     if (!email.includes('@') || !email.includes('.')) {
       setErrorMessage('Please enter a valid email address.');
       return;
@@ -55,7 +127,17 @@ export const AdoptionFormModal: React.FC<AdoptionFormModalProps> = ({
 
     setIsSubmitting(true);
 
-    // Generate Unique Application ID
+    // Perform Eligibility Check
+    const result = checkEligibility(fitReason, housingType, petExperience, pet);
+
+    if (!result.isApplicable) {
+      // OUTCOME B — NOT APPLICABLE
+      setIsSubmitting(false);
+      setEligibilityResult(result);
+      return;
+    }
+
+    // OUTCOME A — APPLICABLE
     const randomNum = Math.floor(1000 + Math.random() * 9000);
     const generatedId = `FUR-2026-${randomNum}`;
     const now = new Date();
@@ -81,55 +163,43 @@ export const AdoptionFormModal: React.FC<AdoptionFormModalProps> = ({
       currentStatus: 'Pending',
       timelineNotes: {
         appliedAt: `${dateString} ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
-        shelterNote: `Application successfully logged for ${pet.name}. Shelter coordinator is assigned to review your profile.`,
+        shelterNote: `Application successfully received for ${pet.name}.`,
       },
     };
 
-    try {
-      // Send form data to C++ backend via /api/adoption-form
-      const response = await fetch('/api/adoption-form', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newApplication),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.file) {
-          setSavedJsonPath(data.file);
-        }
-      }
-    } catch (err) {
-      console.warn('API post error:', err);
-    }
-
-    // Fire celebratory confetti!
+    // Fire celebratory confetti for Outcome A
     try {
       confetti({
-        particleCount: 100,
-        spread: 70,
+        particleCount: 120,
+        spread: 80,
         origin: { y: 0.6 },
         colors: ['#FB4504', '#0F5C94', '#0F942D', '#F6D97B', '#9A5D16'],
       });
     } catch (err) {
-      // Fallback gracefully if confetti fails
+      // Fallback if confetti is blocked
     }
 
+    // Send to C++ / Express Backend API
+    fetch('/api/adoption-form', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newApplication),
+    }).catch((err) => console.warn('[Backend Notice] Form submission fallback to local storage:', err));
+
     setIsSubmitting(false);
-    setSubmittedApp(newApplication);
+    setEligibilityResult({ isApplicable: true });
     onSubmitSuccess(newApplication);
   };
 
   const handleResetModal = () => {
-    setSubmittedApp(null);
-    setSavedJsonPath(null);
+    setEligibilityResult(null);
     setErrorMessage(null);
     onClose();
   };
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-xs animate-fadeIn">
-      <div 
+      <div
         id="adoption-form-modal-card"
         className="relative bg-white rounded-3xl max-w-2xl w-full overflow-hidden shadow-[8px_8px_0px_#0F5C94] border-3 border-[#0F5C94] my-8 animate-scaleUp"
       >
@@ -162,80 +232,89 @@ export const AdoptionFormModal: React.FC<AdoptionFormModalProps> = ({
                   {pet.age} · {pet.gender}
                 </span>
               </div>
-              <p className="text-xs font-semibold text-[#0F5C94]/70 truncate">{pet.location} · {pet.shelterName}</p>
+              <p className="text-xs font-semibold text-[#0F5C94]/70 truncate">{pet.location} · {pet.shelterName || 'Furever Shelter'}</p>
             </div>
           </div>
         </div>
 
-        {/* SUCCESS VIEW */}
-        {submittedApp ? (
-          <div className="p-7 sm:p-9 text-center space-y-5 animate-fadeIn">
-            <div className="w-16 h-16 rounded-2xl bg-[#EBF7EE] text-[#0F942D] border-2 border-[#0F942D] flex items-center justify-center mx-auto shadow-[3px_3px_0px_#0F942D]">
-              <CustomIcon name="circle-tick" className="w-10 h-10" />
+        {/* OUTCOME A — SUCCESSFUL / APPLICABLE VIEW */}
+        {eligibilityResult?.isApplicable ? (
+          <div className="p-7 sm:p-9 text-center space-y-6 animate-fadeIn">
+            <div className="w-20 h-20 rounded-2xl bg-[#EBF7EE] text-[#0F942D] border-3 border-[#0F942D] flex items-center justify-center mx-auto shadow-[4px_4px_0px_#0F942D]">
+              <CustomIcon name="circle-tick" className="w-12 h-12" />
             </div>
 
-            <div>
-              <span className="px-2.5 py-0.5 rounded-md bg-[#FAF5EB] border border-[#0F5C94]/30 text-[#9A5D16] text-[11px] font-black uppercase">
-                Reference ID: {submittedApp.id}
-              </span>
-              <h3 className="text-2xl sm:text-3xl font-titan text-[#0F5C94] mt-2">
-                Application submitted!
+            <div className="space-y-3">
+              <h3 className="text-3xl sm:text-4xl font-titan text-[#0F5C94]">
+                You're all set! 🎉
               </h3>
-              <p className="text-sm font-black text-[#0F942D] mt-1">
-                Your application is now under review.
+              <p className="text-lg font-black text-[#0F942D]">
+                Thank you for applying to adopt!
               </p>
-              <p className="text-xs sm:text-sm text-[#0F5C94]/85 max-w-md mx-auto mt-2 leading-relaxed font-medium">
-                Thank you, <strong>{submittedApp.applicantName}</strong>! The adoption coordinator for {submittedApp.petName} has received your application. You can track all stages and shelter feedback in My Applications.
+              <p className="text-sm sm:text-base text-[#0F5C94]/90 max-w-md mx-auto leading-relaxed font-semibold">
+                We'll get back to you soon. The pet's owner/foster will reach out to you shortly.
               </p>
             </div>
 
-            {/* Quick Status Preview */}
-            <div className="bg-[#FAF5EB] p-4 rounded-xl border-2 border-[#0F5C94]/30 max-w-md mx-auto text-left text-xs space-y-1.5 font-bold">
-              <div className="flex justify-between">
-                <span className="text-[#0F5C94]/60">Applicant:</span>
-                <span className="text-[#0F5C94]">{submittedApp.applicantName}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-[#0F5C94]/60">Pet:</span>
-                <span className="text-[#0F5C94]">{submittedApp.petName} ({submittedApp.petBreed})</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-[#0F5C94]/60">Date:</span>
-                <span className="text-[#0F5C94]">{submittedApp.dateApplied}</span>
-              </div>
-              <div className="flex justify-between pt-1.5 border-t border-[#0F5C94]/20">
-                <span className="text-[#0F5C94]/60">Initial Status:</span>
-                <span className="text-[#0F942D] font-black">● Under Review / Pending</span>
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
+            {/* Clear Button: BACK TO PETS */}
+            <div className="pt-4 max-w-xs mx-auto">
               <button
-                id="modal-success-view-applications-btn"
+                id="outcome-applicable-back-btn"
                 onClick={() => {
                   handleResetModal();
-                  onGoToApplications();
+                  onExplorePets();
                 }}
-                className="w-full sm:w-auto px-5 py-3 rounded-xl bg-[#0F942D] hover:bg-[#0b7423] text-white font-black text-xs uppercase tracking-wider border-2 border-[#0F5C94] shadow-[3px_3px_0px_#0F5C94] flex items-center justify-center gap-1.5 cursor-pointer"
+                className="w-full py-3.5 px-6 rounded-xl bg-[#FB4504] hover:bg-[#e03a00] text-white font-black text-sm uppercase tracking-wider border-2 border-[#0F5C94] shadow-[4px_4px_0px_#0F5C94] hover:translate-x-0.5 hover:translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
-                <span>Track Status</span>
-                <CustomIcon name="right-arrow" className="w-4 h-4" />
+                <span>BACK TO PETS</span>
+                <CustomIcon name="right-arrow" className="w-4 h-4 text-white" />
               </button>
+            </div>
+          </div>
+        ) : eligibilityResult && !eligibilityResult.isApplicable ? (
+          /* OUTCOME B — NOT APPLICABLE VIEW */
+          <div className="p-7 sm:p-9 text-center space-y-6 animate-fadeIn">
+            <div className="w-20 h-20 rounded-2xl bg-amber-50 text-[#FB4504] border-3 border-[#FB4504] flex items-center justify-center mx-auto shadow-[4px_4px_0px_#FB4504]">
+              <CustomIcon name="exclamation" className="w-12 h-12 text-[#FB4504]" />
+            </div>
 
+            <div className="space-y-3">
+              <h3 className="text-3xl sm:text-4xl font-titan text-[#FB4504]">
+                Not Applicable
+              </h3>
+              <p className="text-sm sm:text-base text-[#0F5C94] font-bold">
+                Unfortunately, this pet may not be the right fit based on the information provided.
+              </p>
+
+              {/* Specific Explanation Card */}
+              <div className="bg-[#FAF5EB] p-4 sm:p-5 rounded-2xl border-2 border-[#0F5C94]/30 max-w-md mx-auto text-left">
+                <span className="text-[10px] font-black uppercase text-[#9A5D16] tracking-wider block mb-1">
+                  Reason for Non-Suitability:
+                </span>
+                <p className="text-xs sm:text-sm font-bold text-[#0F5C94] leading-relaxed">
+                  {eligibilityResult.reason}
+                </p>
+              </div>
+            </div>
+
+            {/* Clear Button: EXPLORE OTHER PETS */}
+            <div className="pt-2 max-w-xs mx-auto">
               <button
-                id="modal-success-browse-more-btn"
-                onClick={handleResetModal}
-                className="w-full sm:w-auto px-5 py-3 rounded-xl bg-white hover:bg-[#F6D97B] text-[#0F5C94] font-black text-xs uppercase tracking-wider border-2 border-[#0F5C94] shadow-[2px_2px_0px_#0F5C94] cursor-pointer"
+                id="outcome-not-applicable-explore-btn"
+                onClick={() => {
+                  handleResetModal();
+                  onExplorePets();
+                }}
+                className="w-full py-3.5 px-6 rounded-xl bg-[#0F5C94] hover:bg-[#0b4875] text-white font-black text-sm uppercase tracking-wider border-2 border-[#0F5C94] shadow-[4px_4px_0px_#FB4504] hover:translate-x-0.5 hover:translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
-                Browse More Pets
+                <CustomIcon name="discover" className="w-4 h-4 white" />
+                <span>EXPLORE OTHER PETS</span>
               </button>
             </div>
           </div>
         ) : (
           /* APPLICATION INPUT FORM */
           <form onSubmit={handleSubmit} className="p-5 sm:p-7 space-y-4 max-h-[60vh] overflow-y-auto">
-            
             {/* Error Banner */}
             {errorMessage && (
               <div className="p-3 rounded-xl bg-red-50 border-2 border-[#FB4504] text-[#FB4504] text-xs font-black flex items-center gap-2">
@@ -336,19 +415,27 @@ export const AdoptionFormModal: React.FC<AdoptionFormModalProps> = ({
 
             {/* Field: Why fit? */}
             <div>
-              <label className="block text-xs font-black text-[#0F5C94] uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                <CustomIcon name="message-box" className="w-3.5 h-3.5 text-[#9A5D16]" />
-                Why would you be a good fit for this pet? <span className="text-[#FB4504]">*</span>
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs font-black text-[#0F5C94] uppercase tracking-wider flex items-center gap-1.5">
+                  <CustomIcon name="message-box" className="w-3.5 h-3.5 text-[#9A5D16]" />
+                  Why would you be a good fit for this pet? <span className="text-[#FB4504]">*</span>
+                </label>
+                <span className={`text-[10px] font-black px-2 py-0.5 rounded-md ${wordCount >= 40 ? 'bg-[#EBF7EE] text-[#0F942D] border border-[#0F942D]' : 'bg-[#FAF5EB] text-[#FB4504] border border-[#FB4504]/30'}`}>
+                  {wordCount} / 40 words min
+                </span>
+              </div>
               <textarea
                 id="app-textarea-fit-reason"
                 value={fitReason}
                 onChange={(e) => setFitReason(e.target.value)}
-                placeholder={`Tell us a little about your daily routine, home environment, and why ${pet.name} would be happy with you...`}
-                rows={3}
+                placeholder={`Tell us a little about your daily routine, home environment, and why ${pet.name} would be happy with you... (minimum 40 words required)`}
+                rows={4}
                 required
                 className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF5EB] border-2 border-[#0F5C94]/30 text-xs sm:text-sm text-[#0F5C94] font-bold placeholder-[#0F5C94]/40 focus:outline-none focus:border-[#0F5C94] focus:bg-white resize-none"
               />
+              <p className="text-[10px] font-semibold text-[#0F5C94]/60 mt-1">
+                Tip: A detailed response of 40+ words helps ensure a successful eligibility check.
+              </p>
             </div>
 
             {/* Submit Button */}
@@ -360,7 +447,7 @@ export const AdoptionFormModal: React.FC<AdoptionFormModalProps> = ({
                 className="w-full py-3.5 rounded-xl bg-[#FB4504] hover:bg-[#e03a00] text-white font-black text-sm tracking-wider uppercase border-2 border-[#0F5C94] shadow-[4px_4px_0px_#0F5C94] hover:translate-x-0.5 hover:translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 {isSubmitting ? (
-                  <span>ADOPTING NOW...</span>
+                  <span>CHECKING ELIGIBILITY...</span>
                 ) : (
                   <>
                     <PawIcon className="w-4 h-4 fill-white" />
@@ -370,13 +457,11 @@ export const AdoptionFormModal: React.FC<AdoptionFormModalProps> = ({
               </button>
 
               <p className="text-center text-[10px] font-bold text-[#0F5C94]/60 mt-2">
-                By submitting, you agree to a standard home check and coordinator verification.
+                By submitting, your application will undergo automated eligibility verification.
               </p>
             </div>
-
           </form>
         )}
-
       </div>
     </div>
   );

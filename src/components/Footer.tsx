@@ -5,9 +5,10 @@ import { PawIcon } from './PawDecorations';
 interface FooterProps {
   onSelectTab: (tab: string) => void;
   onFindYourMatch?: () => void;
+  onListPetClick?: () => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onSelectTab }) => {
+export const Footer: React.FC<FooterProps> = ({ onSelectTab, onListPetClick }) => {
   return (
     <footer className="bg-[#0F5C94] text-white pt-16 pb-12 border-t-8 border-[#FB4504] relative z-10 overflow-hidden">
       {/* Decorative background paw */}
@@ -23,7 +24,7 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab }) => {
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <div className="w-11 h-11 rounded-xl bg-[#F6D97B] border-2 border-white flex items-center justify-center text-[#0F5C94] shadow-[3px_3px_0px_#FB4504]">
-                <CustomIcon name="paw" className="w-7 h-7 object-contain" />
+                <CustomIcon name="paw" className="w-7 h-7 object-contain" blue />
               </div>
               <span className="text-3xl sm:text-4xl font-titan tracking-normal text-white">
                 FUREVER
@@ -31,7 +32,7 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab }) => {
             </div>
 
             <p className="text-white/85 text-xs sm:text-sm leading-relaxed max-w-sm font-medium">
-              Making pet adoption easier to discover, apply for and track. Connecting shelter animals with loving, lifelong families through modern discovery tools.
+              Making pet adoption easier to discover and apply for. Connecting shelter animals with loving, lifelong families through modern discovery tools.
             </p>
           </div>
 
@@ -96,17 +97,18 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab }) => {
                   Match Finder Quiz
                 </button>
               </li>
-              <li>
-                <button
-                  onClick={() => {
-                    onSelectTab('applications');
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }}
-                  className="hover:text-[#F6D97B] transition-colors cursor-pointer"
-                >
-                  Status
-                </button>
-              </li>
+              {onListPetClick && (
+                <li>
+                  <button
+                    onClick={() => {
+                      onListPetClick();
+                    }}
+                    className="hover:text-[#F6D97B] transition-colors cursor-pointer"
+                  >
+                    List Your Pet
+                  </button>
+                </li>
+              )}
             </ul>
           </div>
 
