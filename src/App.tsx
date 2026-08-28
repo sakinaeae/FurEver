@@ -26,39 +26,11 @@ export default function App() {
   // Navigation tab: 'home' | 'browse' | 'swipe' | 'quiz' | 'how-it-works'
   const [currentTab, setCurrentTab] = useState<string>('home');
 
-  // Application Data States (including custom user-listed pets)
-  const [pets, setPets] = useState<Pet[]>(() => {
-    try {
-      const savedUserPets = localStorage.getItem('furever_user_listed_pets');
-      if (savedUserPets) {
-        const parsed: Pet[] = JSON.parse(savedUserPets);
-        return [...parsed, ...INITIAL_PETS];
-      }
-    } catch (e) {
-      console.error(e);
-    }
-    return INITIAL_PETS;
-  });
-
+  // Application Data States (synced with C++ Backend API)
+  const [pets, setPets] = useState<Pet[]>(INITIAL_PETS);
   const [isListPetModalOpen, setIsListPetModalOpen] = useState(false);
-  
-  const handleShufflePets = () => {
-    setPets((prevPets) => shuffleArray(prevPets));
-  };
 
-  const handlePetListed = (newPet: Pet) => {
-    setPets((prev) => [newPet, ...prev]);
-    try {
-      const savedUserPets = localStorage.getItem('furever_user_listed_pets');
-      const existing: Pet[] = savedUserPets ? JSON.parse(savedUserPets) : [];
-      localStorage.setItem('furever_user_listed_pets', JSON.stringify([newPet, ...existing]));
-    } catch (e) {
-      console.error(e);
-    }
-    showToast(`🎉 ${newPet.name} is now listed for adoption!`);
-  };
-  
-  // Persisted User Profile
+  // User Profile
   const [userProfile, setUserProfile] = useState<UserProfile | null>(() => {
     try {
       const saved = localStorage.getItem('furever_user_profile');
@@ -71,6 +43,43 @@ export default function App() {
 
   const [isSignInModalOpen, setIsSignInModalOpen] = useState(false);
 
+  // Applications (background state)
+  const [applications, setApplications] = useState<AdoptionApplication[]>([]);
+
+  // Liked & Favorited Pets (synced with C++ Backend API)
+  const [likedPetIds, setLikedPetIds] = useState<string[]>(['pet-1', 'pet-2']);
+
+  // Modals & Interaction States
+  const [selectedPetForProfile, setSelectedPetForProfile] = useState<Pet | null>(null);
+  const [selectedPetForApplication, setSelectedPetForApplication] = useState<Pet | null>(null);
+  const [isMatchesModalOpen, setIsMatchesModalOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Fetch initial pets and likes from C++ Backend API on mount
+  useEffect(() => {
+    // 1. Fetch Pets from C++ Backend
+    fetch('/api/pets')
+      .then((res) => res.json())
+      .then((data: Pet[]) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setPets(data);
+        }
+      })
+      .catch((err) => console.warn('[C++ Backend API Notice] Defaulting to initial pets:', err));
+
+    // 2. Fetch Liked Pet IDs from C++ Backend
+    const userId = userProfile ? userProfile.email : 'default';
+    fetch(`/api/likes?userId=${encodeURIComponent(userId)}`)
+      .then((res) => res.json())
+      .then((data: string[]) => {
+        if (Array.isArray(data)) {
+          setLikedPetIds(data);
+        }
+      })
+      .catch((err) => console.warn('[C++ Backend API Notice] Likes default:', err));
+  }, []);
+
+  // Save profile state
   useEffect(() => {
     try {
       if (userProfile) {
@@ -83,77 +92,74 @@ export default function App() {
     }
   }, [userProfile]);
 
-  // Persisted Applications (for background state)
-  const [applications, setApplications] = useState<AdoptionApplication[]>(() => {
-    try {
-      const saved = localStorage.getItem('furever_applications_v4');
-      if (saved) return JSON.parse(saved);
-    } catch (e) {
-      console.error(e);
-    }
-    return [];
-  });
-
-  // Persisted Liked & Favorited Pets
-  const [likedPetIds, setLikedPetIds] = useState<string[]>(() => {
-    try {
-      const saved = localStorage.getItem('furever_liked_pets');
-      if (saved) return JSON.parse(saved);
-    } catch (e) {
-      console.error(e);
-    }
-    return ['pet-1', 'pet-2'];
-  });
-
-  // Modals & Interaction States
-  const [selectedPetForProfile, setSelectedPetForProfile] = useState<Pet | null>(null);
-  const [selectedPetForApplication, setSelectedPetForApplication] = useState<Pet | null>(null);
-  const [isMatchesModalOpen, setIsMatchesModalOpen] = useState(false);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-
-  // Sync to LocalStorage
-  useEffect(() => {
-    try {
-      localStorage.setItem('furever_applications_v4', JSON.stringify(applications));
-    } catch (e) {
-      console.error(e);
-    }
-  }, [applications]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('furever_liked_pets', JSON.stringify(likedPetIds));
-    } catch (e) {
-      console.error(e);
-    }
-  }, [likedPetIds]);
-
   // Toast notification helper
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  // Toggle favorite / like
+  const handleShufflePets = () => {
+    setPets((prevPets) => shuffleArray(prevPets));
+  };
+
+  // Add new pet listing via C++ API
+  const handlePetListed = (newPet: Pet) => {
+    setPets((prev) => [newPet, ...prev]);
+
+    fetch('/api/pets', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newPet),
+    })
+      .then((res) => res.json())
+      .then((savedPet: Pet) => {
+        if (savedPet && savedPet.id) {
+          setPets((prev) => prev.map((p) => (p.id === newPet.id ? savedPet : p)));
+        }
+      })
+      .catch((err) => console.error('[C++ Backend Error] Failed to persist listed pet:', err));
+
+    showToast(`🎉 ${newPet.name} is now listed for adoption!`);
+  };
+
+  // Toggle favorite / like via C++ API
   const handleToggleFavorite = (petId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    setLikedPetIds((prev) => {
-      const exists = prev.includes(petId);
-      const pet = pets.find((p) => p.id === petId);
-      if (exists) {
-        showToast(`Removed ${pet ? pet.name : 'pet'} from saved matches`);
-        return prev.filter((id) => id !== petId);
-      } else {
-        showToast(`Added ${pet ? pet.name : 'pet'} to saved matches ❤️`);
-        return [...prev, petId];
-      }
-    });
+    const exists = likedPetIds.includes(petId);
+    const pet = pets.find((p) => p.id === petId);
+    const userId = userProfile ? userProfile.email : 'default';
+
+    if (exists) {
+      showToast(`Removed ${pet ? pet.name : 'pet'} from saved matches`);
+      setLikedPetIds((prev) => prev.filter((id) => id !== petId));
+
+      fetch('/api/likes', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, petId }),
+      }).catch((err) => console.warn('[C++ API Notice] Failed to remove like:', err));
+    } else {
+      showToast(`Added ${pet ? pet.name : 'pet'} to saved matches ❤️`);
+      setLikedPetIds((prev) => [...prev, petId]);
+
+      fetch('/api/likes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, petId }),
+      }).catch((err) => console.warn('[C++ API Notice] Failed to save like:', err));
+    }
   };
 
   // Swipe handlers
   const handleSwipeRight = (pet: Pet) => {
     if (!likedPetIds.includes(pet.id)) {
       setLikedPetIds((prev) => [...prev, pet.id]);
+      const userId = userProfile ? userProfile.email : 'default';
+      fetch('/api/likes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, petId: pet.id }),
+      }).catch((err) => console.warn('[C++ API Notice] Failed swipe right:', err));
     }
     showToast(`You liked ${pet.name}! Added to matches ❤️`);
   };
@@ -164,6 +170,23 @@ export default function App() {
 
   const handleRemoveMatch = (petId: string) => {
     setLikedPetIds((prev) => prev.filter((id) => id !== petId));
+    const userId = userProfile ? userProfile.email : 'default';
+    fetch('/api/likes', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, petId }),
+    }).catch((err) => console.warn('[C++ API Notice] Failed remove match:', err));
+  };
+
+  // Handle user sign-in via C++ API
+  const handleUserSignIn = (profile: UserProfile) => {
+    setUserProfile(profile);
+    fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(profile),
+    }).catch((err) => console.warn('[C++ API Notice] Login sync:', err));
+    showToast(`Welcome, ${profile.name}!`);
   };
 
   // Handle new submitted application
@@ -318,7 +341,6 @@ export default function App() {
               </div>
             </section>
 
-
           </div>
         )}
 
@@ -455,10 +477,7 @@ export default function App() {
         isOpen={isSignInModalOpen}
         onClose={() => setIsSignInModalOpen(false)}
         currentProfile={userProfile}
-        onSignIn={(profile) => {
-          setUserProfile(profile);
-          showToast(`Welcome, ${profile.name}!`);
-        }}
+        onSignIn={handleUserSignIn}
         onSignOut={() => {
           setUserProfile(null);
           showToast('Signed out successfully');
