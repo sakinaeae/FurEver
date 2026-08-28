@@ -72,7 +72,6 @@ struct AdoptionApplication {
     std::string petExperience;
     std::string fitReason;
     std::string dateApplied;
-    std::string currentStatus; // "Pending"
     std::string eligibilityResult; // "APPLICABLE" or "NOT_APPLICABLE"
     std::string ineligibilityReason;
 };
@@ -294,7 +293,6 @@ std::string applicationToJson(const AdoptionApplication& app) {
        << "\"petExperience\":\"" << jsonEscape(app.petExperience) << "\","
        << "\"fitReason\":\"" << jsonEscape(app.fitReason) << "\","
        << "\"dateApplied\":\"" << jsonEscape(app.dateApplied) << "\","
-       << "\"currentStatus\":\"" << jsonEscape(app.currentStatus) << "\","
        << "\"eligibilityResult\":\"" << jsonEscape(app.eligibilityResult) << "\","
        << "\"ineligibilityReason\":\"" << jsonEscape(app.ineligibilityReason) << "\""
        << "}";
@@ -460,7 +458,6 @@ void loadApplications() {
         app.petExperience = extractJsonField(obj, "petExperience");
         app.fitReason = extractJsonField(obj, "fitReason");
         app.dateApplied = extractJsonField(obj, "dateApplied");
-        app.currentStatus = extractJsonField(obj, "currentStatus");
         app.eligibilityResult = extractJsonField(obj, "eligibilityResult");
         app.ineligibilityReason = extractJsonField(obj, "ineligibilityReason");
 
@@ -642,6 +639,7 @@ std::vector<Pet> filterPets(const std::string& animalType, const std::string& br
         if (!breed.empty() && breed != "All" && p.breed != breed) continue;
         if (!ageCategory.empty() && ageCategory != "All" && p.ageCategory != ageCategory) continue;
         if (!size.empty() && size != "All" && p.size != size) continue;
+        if (!location.empty() && location != "All" && p.location != location) continue;
         if (!gender.empty() && gender != "All" && p.gender != gender) continue;
         results.push_back(p);
     }
@@ -741,7 +739,6 @@ AdoptionApplication submitApplication(const std::string& petId, const std::strin
     app.petExperience = petExperience;
     app.fitReason = fitReason;
     app.dateApplied = getCurrentDateStr();
-    app.currentStatus = "Pending";
     app.eligibilityResult = eligibility.first;
     app.ineligibilityReason = eligibility.second;
 

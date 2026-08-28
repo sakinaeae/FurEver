@@ -1,32 +1,62 @@
+// Pet dataset used by FurEver.
+// This file contains a master list of all pets available for adoption,
+// managed as a collection of Pet objects.
+//
+// Each object represents one pet available for adoption.
+// This collection is used by the application for:
+// - Displaying pets in grids and lists
+// - Searching and filtering by various criteria
+// - Generating matching profiles
+// - Displaying pet detail profiles
 import { Pet } from '../types';
 import { shuffleArray } from '../utils/shuffle';
 
 const RAW_PETS: Pet[] = [
   {
+    // id: Unique identifier for the pet
     id: 'pet-speckles',
+    // name: The name of the pet
     name: 'Speckles',
+    // animalType: Type of animal (e.g., Dog, Cat)
     animalType: 'Dog',
+    // breed: The breed or mix description
     breed: 'Indian Hound Mix',
+    // age: String description of age
     age: '1.5 years',
+    // ageCategory: Simplified age category for filtering (e.g., Young, Adult)
     ageCategory: 'Young',
+    // gender: Sex of the pet
     gender: 'Male',
+    // size: Physical size category
     size: 'Medium',
+    // location: Current shelter location
     location: 'Shelter Yard, Bengaluru',
+    // description: Narrative description of the pet's personality and history
     description: 'Speckles is a curious, energetic Indie hound mix with a distinctive white and black spotted coat. He loves exploring outdoors, learning commands, and making new doggy friends.',
+    // personality: List of personality traits
     personality: ['Energetic', 'Curious', 'Loyal', 'Social'],
+    // goodWith: List of other entities the pet is compatible with
     goodWith: ['Children', 'Dogs', 'Active Homes'],
+    // status: Availability status
     status: 'AVAILABLE',
+    // image: Path or URL to the pet's image
     image: '/pets/speckles.jpg',
+    // medicalInfo: Object containing health status
     medicalInfo: {
       vaccinated: true,
       spayedNeutered: true,
       microchipped: true,
       healthNotes: 'Fully vaccinated, dewormed, healthy shelter intake.'
     },
+    // weight: Pet's weight
     weight: '18 kg',
+    // activityLevel: Energy level indicator
     activityLevel: 'High',
+    // adoptionFee: Required adoption fee or donation
     adoptionFee: 'Free Adoption',
+    // shelterName: Name of the managing shelter
     shelterName: 'CARE Bengaluru Rescue Center',
+    // dateAdded: ISO date when the pet was listed
     dateAdded: '2026-08-25'
   },
   {
