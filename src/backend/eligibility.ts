@@ -33,7 +33,7 @@ export function checkEligibility(
     pet.goodWith.some((g) => ["Experienced Owners", "Experienced Handlers", "Experienced"].includes(g)) ||
     pet.personality.some((p) => ["Protective", "Genius", "Focused", "Athletic"].includes(p));
 
-  if (requiresExperienced && petExperience === "First-time owner") {
+  if (requiresExperienced && petExperience === "First-time adopter") {
     return {
       result: "NOT_APPLICABLE",
       reason: "This pet requires an adopter with more experience caring for animals.",

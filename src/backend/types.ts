@@ -3,7 +3,7 @@ export interface User {
   name: string;
   email: string;
   phone: string;
-  role: string; // "adopter" or "owner"
+  role: string; // "adopter" or "Pet Lister"
   address: string;
   housingType: string;
   petExperience: string;
@@ -18,7 +18,7 @@ export interface MedicalInfo {
 
 export interface Pet {
   id: string;
-  ownerId: string;
+  petListerId: string;
   name: string;
   animalType: string;
   breed: string;

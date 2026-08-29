@@ -1,3 +1,7 @@
+// NOTE: This prototype uses the local filesystem for data storage. 
+// Deployed environments like Vercel have ephemeral filesystems, so JSON file updates will not persist across deployments.
+// User-generated data should be handled via browser LocalStorage for demonstration.
+
 import express from "express";
 import path from "path";
 import fs from "fs";
@@ -64,7 +68,7 @@ app.post("/api/pets", async (req, res) => {
     dateAdded: new Date().toISOString().split("T")[0],
     personality: petData.personality || ["Loving"],
     goodWith: petData.goodWith || ["Families"],
-    medicalInfo: petData.medicalInfo || { vaccinated: true, spayedNeutered: true, microchipped: true, healthNotes: "Health verified by foster owner" }
+    medicalInfo: petData.medicalInfo || { vaccinated: true, spayedNeutered: true, microchipped: true, healthNotes: "Health verified by foster parent" }
   };
   pets.push(newPet);
   savePets(pets);
@@ -72,6 +76,7 @@ app.post("/api/pets", async (req, res) => {
 });
 
 // POST /api/login - Sign-in user
+// NOTE: This is a prototype identification mechanism. No password authentication is implemented.
 app.post("/api/login", async (req, res) => {
   const userData = req.body;
   const users = loadUsers();
