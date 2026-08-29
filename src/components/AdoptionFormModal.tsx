@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import { CustomIcon } from './CustomIcon';
-import { Pet, AdoptionApplication } from '../types';
+import { Pet, AdoptionApplication } from '../backend/types';
 import { UserProfile } from './UserSignInModal';
 import { PawIcon } from './PawDecorations';
 

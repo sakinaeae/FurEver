@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { CustomIcon } from './CustomIcon';
-import { Pet, AnimalType, AgeCategory, PetSize } from '../types';
+import { Pet, AnimalType, AgeCategory, PetSize } from '../backend/types';
 import { PetCard } from './PetCard';
 import { PawIcon } from './PawDecorations';
 import { AnimalMarqueeTape } from './AnimalMarqueeTape';

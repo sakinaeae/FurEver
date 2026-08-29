@@ -8,7 +8,7 @@
 // - Searching and filtering by various criteria
 // - Generating matching profiles
 // - Displaying pet detail profiles
-import { Pet } from '../types';
+import { Pet } from '../backend/types';
 import { shuffleArray } from '../utils/shuffle';
 
 const RAW_PETS: Pet[] = [

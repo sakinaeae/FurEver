@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, useMotionValue, useTransform } from 'motion/react';
 import { CustomIcon } from './CustomIcon';
 import { AnimalMarqueeTape } from './AnimalMarqueeTape';
-import { Pet } from '../types';
+import { Pet } from '../backend/types';
 
 interface SwipeCardDeckProps {
   pets: Pet[];

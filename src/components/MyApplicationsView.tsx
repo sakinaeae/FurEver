@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { CustomIcon } from './CustomIcon';
-import { AdoptionApplication, ApplicationStatus } from '../types';
+import { AdoptionApplication, ApplicationStatus } from '../backend/types';
 import { PawIcon } from './PawDecorations';
 import { AnimalMarqueeTape } from './AnimalMarqueeTape';
 

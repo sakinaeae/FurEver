@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Pet } from '../types';
+import { Pet } from '../backend/types';
 import { CustomIcon } from './CustomIcon';
 import { UserProfile } from './UserSignInModal';
 

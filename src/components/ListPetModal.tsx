@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { CustomIcon } from './CustomIcon';
 import { PawIcon } from './PawDecorations';
-import { Pet } from '../types';
+import { Pet } from '../backend/types';
 import { UserProfile } from './UserSignInModal';
 
 interface ListPetModalProps {

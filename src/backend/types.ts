@@ -1,3 +1,10 @@
+export type AnimalType = 'Dog' | 'Cat' | 'Rabbit' | 'Bird' | 'Other';
+export type AgeCategory = 'Young' | 'Adult' | 'Senior';
+export type PetSize = 'Small' | 'Medium' | 'Large';
+export type PetGender = 'Male' | 'Female';
+export type AdoptionStatus = 'AVAILABLE' | 'CURRENTLY UNAVAILABLE' | 'ADOPTED' | 'PENDING';
+export type ApplicationStatus = 'Pending' | 'Under Review' | 'Approved' | 'Adopted' | 'Rejected';
+
 export interface User {
   userId: string;
   name: string;
@@ -20,12 +27,12 @@ export interface Pet {
   id: string;
   petListerId: string;
   name: string;
-  animalType: string;
+  animalType: AnimalType;
   breed: string;
   age: string;
-  ageCategory: string;
-  gender: string;
-  size: string;
+  ageCategory: AgeCategory;
+  gender: PetGender;
+  size: PetSize;
   location: string;
   description: string;
   personality: string[];
@@ -35,7 +42,7 @@ export interface Pet {
   activityLevel: string;
   adoptionFee: string;
   shelterName: string;
-  status: string;
+  status: AdoptionStatus;
   image: string;
   dateAdded: string;
 }
@@ -46,7 +53,7 @@ export interface AdoptionApplication {
   petName: string;
   petBreed: string;
   petImage: string;
-  petType: string;
+  petType: AnimalType;
   petLocation: string;
   applicantName: string;
   applicantEmail: string;

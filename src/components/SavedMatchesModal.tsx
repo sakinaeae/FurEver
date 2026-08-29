@@ -1,6 +1,6 @@
 import React from 'react';
 import { CustomIcon } from './CustomIcon';
-import { Pet } from '../types';
+import { Pet } from '../backend/types';
 
 interface SavedMatchesModalProps {
   isOpen: boolean;
