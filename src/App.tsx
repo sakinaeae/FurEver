@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Pet, AdoptionApplication } from './types';
+import { Pet, AdoptionApplication, User, Like } from './backend/types';
 import { INITIAL_PETS } from './data/petsData';
 import { shuffleArray } from './utils/shuffle';
+import { initializeStorage, loadPets, savePets, loadUsers, loadApplications, loadLikes, saveLikes } from './lib/storage';
+import { UserProfile } from './components/UserSignInModal';
 
 // Components
 import { Navbar } from './components/Navbar';
@@ -14,7 +16,7 @@ import { MatchQuizFinder } from './components/MatchQuizFinder';
 import { PetProfileModal } from './components/PetProfileModal';
 import { AdoptionFormModal } from './components/AdoptionFormModal';
 import { SavedMatchesModal } from './components/SavedMatchesModal';
-import { UserSignInModal, UserProfile } from './components/UserSignInModal';
+import { UserSignInModal } from './components/UserSignInModal';
 import { ListPetModal } from './components/ListPetModal';
 import { Footer } from './components/Footer';
 import { FloatingBackgroundIcons } from './components/FloatingBackgroundIcons';
@@ -26,8 +28,8 @@ export default function App() {
   // Navigation tab: 'home' | 'browse' | 'swipe' | 'quiz' | 'how-it-works'
   const [currentTab, setCurrentTab] = useState<string>('home');
 
-  // Application Data States (synced with C++ Backend API)
-  const [pets, setPets] = useState<Pet[]>(INITIAL_PETS);
+  // Application Data States (synced with localStorage)
+  const [pets, setPets] = useState<Pet[]>([]);
   const [isListPetModalOpen, setIsListPetModalOpen] = useState(false);
 
   // User Profile
@@ -43,11 +45,11 @@ export default function App() {
 
   const [isSignInModalOpen, setIsSignInModalOpen] = useState(false);
 
-  // Applications (background state)
+  // Applications
   const [applications, setApplications] = useState<AdoptionApplication[]>([]);
 
-  // Liked & Favorited Pets (synced with C++ Backend API)
-  const [likedPetIds, setLikedPetIds] = useState<string[]>(['pet-1', 'pet-2']);
+  // Liked & Favorited Pets (synced with localStorage)
+  const [likedPetIds, setLikedPetIds] = useState<string[]>([]);
 
   // Modals & Interaction States
   const [selectedPetForProfile, setSelectedPetForProfile] = useState<Pet | null>(null);
@@ -55,28 +57,15 @@ export default function App() {
   const [isMatchesModalOpen, setIsMatchesModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Fetch initial pets and likes from C++ Backend API on mount
+  // Initialize and load data on mount
   useEffect(() => {
-    // 1. Fetch Pets from C++ Backend
-    fetch('/api/pets')
-      .then((res) => res.json())
-      .then((data: Pet[]) => {
-        if (Array.isArray(data) && data.length > 0) {
-          setPets(data);
-        }
-      })
-      .catch((err) => console.warn('[C++ Backend API Notice] Defaulting to initial pets:', err));
-
-    // 2. Fetch Liked Pet IDs from C++ Backend
-    const userId = userProfile ? userProfile.email : 'default';
-    fetch(`/api/likes?userId=${encodeURIComponent(userId)}`)
-      .then((res) => res.json())
-      .then((data: string[]) => {
-        if (Array.isArray(data)) {
-          setLikedPetIds(data);
-        }
-      })
-      .catch((err) => console.warn('[C++ Backend API Notice] Likes default:', err));
+    const init = async () => {
+      await initializeStorage(INITIAL_PETS, [], [], []);
+      setPets(loadPets());
+      setLikedPetIds(loadLikes().map(l => l.petId));
+      setApplications(loadApplications());
+    };
+    init();
   }, []);
 
   // Save profile state
@@ -102,64 +91,54 @@ export default function App() {
     setPets((prevPets) => shuffleArray(prevPets));
   };
 
-  // Add new pet listing via C++ API
+  // Add new pet listing
   const handlePetListed = (newPet: Pet) => {
-    setPets((prev) => [newPet, ...prev]);
-
-    fetch('/api/pets', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newPet),
-    })
-      .then((res) => res.json())
-      .then((savedPet: Pet) => {
-        if (savedPet && savedPet.id) {
-          setPets((prev) => prev.map((p) => (p.id === newPet.id ? savedPet : p)));
-        }
-      })
-      .catch((err) => console.error('[C++ Backend Error] Failed to persist listed pet:', err));
-
+    const updatedPets = [newPet, ...pets];
+    setPets(updatedPets);
+    savePets(updatedPets);
     showToast(`🎉 ${newPet.name} is now listed for adoption!`);
   };
 
-  // Toggle favorite / like via C++ API
+  // Toggle favorite / like
   const handleToggleFavorite = (petId: string, e: React.MouseEvent) => {
     e.stopPropagation();
     const exists = likedPetIds.includes(petId);
     const pet = pets.find((p) => p.id === petId);
-    const userId = userProfile ? userProfile.email : 'default';
-
+    
     if (exists) {
       showToast(`Removed ${pet ? pet.name : 'pet'} from saved matches`);
-      setLikedPetIds((prev) => prev.filter((id) => id !== petId));
-
-      fetch('/api/likes', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, petId }),
-      }).catch((err) => console.warn('[C++ API Notice] Failed to remove like:', err));
+      const updatedLikes = likedPetIds.filter((id) => id !== petId);
+      setLikedPetIds(updatedLikes);
+      saveLikes(updatedLikes.map(id => ({ 
+        likeId: `like-${id}-${Date.now()}`,
+        userId: userProfile?.email || 'default', 
+        petId: id,
+        timestamp: new Date().toISOString()
+      })));
     } else {
       showToast(`Added ${pet ? pet.name : 'pet'} to saved matches ❤️`);
-      setLikedPetIds((prev) => [...prev, petId]);
-
-      fetch('/api/likes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, petId }),
-      }).catch((err) => console.warn('[C++ API Notice] Failed to save like:', err));
+      const updatedLikes = [...likedPetIds, petId];
+      setLikedPetIds(updatedLikes);
+      saveLikes(updatedLikes.map(id => ({ 
+        likeId: `like-${id}-${Date.now()}`,
+        userId: userProfile?.email || 'default', 
+        petId: id,
+        timestamp: new Date().toISOString()
+      })));
     }
   };
 
   // Swipe handlers
   const handleSwipeRight = (pet: Pet) => {
     if (!likedPetIds.includes(pet.id)) {
-      setLikedPetIds((prev) => [...prev, pet.id]);
-      const userId = userProfile ? userProfile.email : 'default';
-      fetch('/api/likes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, petId: pet.id }),
-      }).catch((err) => console.warn('[C++ API Notice] Failed swipe right:', err));
+      const updatedLikes = [...likedPetIds, pet.id];
+      setLikedPetIds(updatedLikes);
+      saveLikes(updatedLikes.map(id => ({ 
+        likeId: `like-${id}-${Date.now()}`,
+        userId: userProfile?.email || 'default', 
+        petId: id,
+        timestamp: new Date().toISOString()
+      })));
     }
     showToast(`You liked ${pet.name}! Added to matches ❤️`);
   };
@@ -169,31 +148,30 @@ export default function App() {
   };
 
   const handleRemoveMatch = (petId: string) => {
-    setLikedPetIds((prev) => prev.filter((id) => id !== petId));
-    const userId = userProfile ? userProfile.email : 'default';
-    fetch('/api/likes', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, petId }),
-    }).catch((err) => console.warn('[C++ API Notice] Failed remove match:', err));
+    const updatedLikes = likedPetIds.filter((id) => id !== petId);
+    setLikedPetIds(updatedLikes);
+    saveLikes(updatedLikes.map(id => ({ 
+      likeId: `like-${id}-${Date.now()}`,
+      userId: userProfile?.email || 'default', 
+      petId: id,
+      timestamp: new Date().toISOString()
+    })));
   };
 
-  // Handle user sign-in via C++ API
+  // Handle user sign-in
   const handleUserSignIn = (profile: UserProfile) => {
     setUserProfile(profile);
-    fetch('/api/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(profile),
-    }).catch((err) => console.warn('[C++ API Notice] Login sync:', err));
     showToast(`Welcome, ${profile.name}!`);
   };
 
   // Handle new submitted application
   const handleNewApplication = (newApp: AdoptionApplication) => {
-    setApplications((prev) => [newApp, ...prev]);
+    const updatedApps = [newApp, ...applications];
+    setApplications(updatedApps);
+    saveApplications(updatedApps); 
     showToast(`Application for ${newApp.petName} submitted successfully!`);
   };
+
 
   const likedPetsList = pets.filter((p) => likedPetIds.includes(p.id));
   const availablePetsCount = pets.filter((p) => p.status === 'AVAILABLE').length;
