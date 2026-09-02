@@ -17,17 +17,17 @@ const sampleUsers: User[] = [
     name: "Bob Smith",
     email: "bob@example.com",
     phone: "9876543210",
-    role: "owner",
+    role: "Pet Lister",
     address: "456 Oak St",
     housingType: "Apartment",
-    petExperience: "First-time owner"
+    petExperience: "First-time adopter"
   }
 ];
 
 const samplePets: Pet[] = [
   {
     id: "pet-1",
-    ownerId: "usr-2",
+    petListerId: "usr-2",
     name: "Buddy",
     animalType: "Dog",
     breed: "Golden Retriever",
@@ -43,7 +43,7 @@ const samplePets: Pet[] = [
       vaccinated: true,
       spayedNeutered: true,
       microchipped: true,
-      healthNotes: "Health verified by foster owner"
+      healthNotes: "Health verified by foster parent"
     },
     weight: "50lbs",
     activityLevel: "High",
@@ -55,7 +55,7 @@ const samplePets: Pet[] = [
   },
   {
     id: "pet-2",
-    ownerId: "usr-2",
+    petListerId: "usr-2",
     name: "Luna",
     animalType: "Cat",
     breed: "Siamese",

@@ -15,6 +15,7 @@ const RAW_PETS: Pet[] = [
   {
     // id: Unique identifier for the pet
     id: 'pet-speckles',
+    petListerId: 'system-admin',
     // name: The name of the pet
     name: 'Speckles',
     // animalType: Type of animal (e.g., Dog, Cat)
@@ -61,6 +62,7 @@ const RAW_PETS: Pet[] = [
   },
   {
     id: 'pet-goldie',
+    petListerId: 'system-admin',
     name: 'Goldie',
     animalType: 'Dog',
     breed: 'Indian Pariah (Indie)',
@@ -88,6 +90,7 @@ const RAW_PETS: Pet[] = [
   },
   {
     id: 'pet-rocky',
+    petListerId: 'system-admin',
     name: 'Rocky',
     animalType: 'Dog',
     breed: 'Brindle Indie Mix',
@@ -115,6 +118,7 @@ const RAW_PETS: Pet[] = [
   },
   {
     id: 'pet-daisy',
+    petListerId: 'system-admin',
     name: 'Daisy',
     animalType: 'Dog',
     breed: 'Labrador Indie Mix',
@@ -142,6 +146,7 @@ const RAW_PETS: Pet[] = [
   },
   {
     id: 'pet-1',
+    petListerId: 'system-admin',
     name: 'Bruno',
     animalType: 'Dog',
     breed: 'Golden Retriever',
@@ -169,6 +174,7 @@ const RAW_PETS: Pet[] = [
   },
   {
     id: 'pet-2',
+    petListerId: 'system-admin',
     name: 'Mochi',
     animalType: 'Cat',
     breed: 'Domestic Shorthair Tabby',
@@ -196,6 +202,7 @@ const RAW_PETS: Pet[] = [
   },
   {
     id: 'pet-3',
+    petListerId: 'system-admin',
     name: 'Rocky',
     animalType: 'Dog',
     breed: 'German Shepherd',
@@ -223,6 +230,7 @@ const RAW_PETS: Pet[] = [
   },
   {
     id: 'pet-4',
+    petListerId: 'system-admin',
     name: 'Luna',
     animalType: 'Cat',
     breed: 'Ginger Domestic Cat',
@@ -250,6 +258,7 @@ const RAW_PETS: Pet[] = [
   },
   {
     id: 'pet-5',
+    petListerId: 'system-admin',
     name: 'Clover',
     animalType: 'Rabbit',
     breed: 'Holland Lop Bunny',
@@ -277,6 +286,7 @@ const RAW_PETS: Pet[] = [
   },
   {
     id: 'pet-7',
+    petListerId: 'system-admin',
     name: 'Daisy',
     animalType: 'Dog',
     breed: 'Beagle Puppy',
@@ -304,6 +314,7 @@ const RAW_PETS: Pet[] = [
   },
   {
     id: 'pet-8',
+    petListerId: 'system-admin',
     name: 'Oliver',
     animalType: 'Cat',
     breed: 'Brown Tabby Shorthair',
@@ -331,6 +342,7 @@ const RAW_PETS: Pet[] = [
   },
   {
     id: 'pet-9',
+    petListerId: 'system-admin',
     name: 'Simba',
     animalType: 'Dog',
     breed: 'Indie Desi Dog',
@@ -358,6 +370,7 @@ const RAW_PETS: Pet[] = [
   },
   {
     id: 'pet-10',
+    petListerId: 'system-admin',
     name: 'Bella',
     animalType: 'Dog',
     breed: 'Golden Spaniel Mix',
@@ -385,6 +398,7 @@ const RAW_PETS: Pet[] = [
   },
   {
     id: 'pet-12',
+    petListerId: 'system-admin',
     name: 'Cookie & Cream',
     animalType: 'Other',
     breed: 'Abyssinian Guinea Pig Pair',
@@ -412,6 +426,7 @@ const RAW_PETS: Pet[] = [
   },
   {
     id: 'pet-13',
+    petListerId: 'system-admin',
     name: 'Bobi',
     animalType: 'Dog',
     breed: 'Fawn Pug Mix',
@@ -439,6 +454,7 @@ const RAW_PETS: Pet[] = [
   },
   {
     id: 'pet-15',
+    petListerId: 'system-admin',
     name: 'Rocky Jr.',
     animalType: 'Dog',
     breed: 'French Bulldog',
@@ -466,6 +482,7 @@ const RAW_PETS: Pet[] = [
   },
   {
     id: 'pet-16',
+    petListerId: 'system-admin',
     name: 'Rio',
     animalType: 'Bird',
     breed: 'Cockatiel',
@@ -493,6 +510,7 @@ const RAW_PETS: Pet[] = [
   },
   {
     id: 'pet-17',
+    petListerId: 'system-admin',
     name: 'Sheru',
     animalType: 'Dog',
     breed: 'Indie Hound Mix',
@@ -520,6 +538,7 @@ const RAW_PETS: Pet[] = [
   },
   {
     id: 'pet-19',
+    petListerId: 'system-admin',
     name: 'Milo',
     animalType: 'Dog',
     breed: 'Jack Russell Terrier Mix',
@@ -547,6 +566,7 @@ const RAW_PETS: Pet[] = [
   },
   {
     id: 'pet-20',
+    petListerId: 'system-admin',
     name: 'Nala',
     animalType: 'Cat',
     breed: 'Ginger Longhair Cat',
@@ -574,6 +594,7 @@ const RAW_PETS: Pet[] = [
   },
   {
     id: 'pet-21',
+    petListerId: 'system-admin',
     name: 'Toby',
     animalType: 'Dog',
     breed: 'Smooth Dachshund',
@@ -601,6 +622,7 @@ const RAW_PETS: Pet[] = [
   },
   {
     id: 'pet-22',
+    petListerId: 'system-admin',
     name: 'Marshmallow',
     animalType: 'Rabbit',
     breed: 'Netherland Dwarf Bunny',
@@ -628,6 +650,7 @@ const RAW_PETS: Pet[] = [
   },
   {
     id: 'pet-23',
+    petListerId: 'system-admin',
     name: 'Shadow',
     animalType: 'Cat',
     breed: 'Bombay Black Cat',
@@ -655,6 +678,7 @@ const RAW_PETS: Pet[] = [
   },
   {
     id: 'pet-24',
+    petListerId: 'system-admin',
     name: 'Kiwi & Sunny',
     animalType: 'Bird',
     breed: 'Peach-Faced Lovebirds',
@@ -682,6 +706,7 @@ const RAW_PETS: Pet[] = [
   },
   {
     id: 'pet-25',
+    petListerId: 'system-admin',
     name: 'Max',
     animalType: 'Dog',
     breed: 'Border Collie',
@@ -709,6 +734,7 @@ const RAW_PETS: Pet[] = [
   },
   {
     id: 'pet-26',
+    petListerId: 'system-admin',
     name: 'Barnaby',
     animalType: 'Rabbit',
     breed: 'Flemish Giant Rabbit',
@@ -736,6 +762,7 @@ const RAW_PETS: Pet[] = [
   },
   {
     id: 'pet-27',
+    petListerId: 'system-admin',
     name: 'Peanut',
     animalType: 'Other',
     breed: 'Dwarf Hamster',
@@ -763,6 +790,7 @@ const RAW_PETS: Pet[] = [
   },
   {
     id: 'pet-28',
+    petListerId: 'system-admin',
     name: 'Zoe',
     animalType: 'Dog',
     breed: 'Indie Desi Pup',
@@ -790,6 +818,7 @@ const RAW_PETS: Pet[] = [
   },
   {
     id: 'pet-29',
+    petListerId: 'system-admin',
     name: 'Leo',
     animalType: 'Cat',
     breed: 'Maine Coon Cat',
@@ -817,6 +846,7 @@ const RAW_PETS: Pet[] = [
   },
   {
     id: 'pet-30',
+    petListerId: 'system-admin',
     name: 'Apollo',
     animalType: 'Dog',
     breed: 'Rottweiler Mix',
@@ -844,6 +874,7 @@ const RAW_PETS: Pet[] = [
   },
   {
     id: 'pet-31',
+    petListerId: 'system-admin',
     name: 'Pip & Squeak',
     animalType: 'Other',
     breed: 'Rescue Pond Turtle Pair',

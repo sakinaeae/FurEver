@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Pet, AdoptionApplication, User, Like } from './backend/types';
 import { INITIAL_PETS } from './data/petsData';
 import { shuffleArray } from './utils/shuffle';
-import { initializeStorage, loadPets, savePets, loadUsers, loadApplications, loadLikes, saveLikes } from './lib/storage';
+import { initializeStorage, loadPets, savePets, loadUsers, loadApplications, saveApplications, loadLikes, saveLikes } from './lib/storage';
 import { UserProfile } from './components/UserSignInModal';
 
 // Components

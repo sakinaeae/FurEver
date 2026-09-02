@@ -105,6 +105,7 @@ export const ListPetModal: React.FC<ListPetModalProps> = ({
 
     const newPet: Pet = {
       id: `pet-${Date.now()}`,
+      petListerId: currentProfile?.userId || 'default-lister',
       name: petName.trim(),
       animalType,
       breed: breed.trim(),
@@ -126,6 +127,9 @@ export const ListPetModal: React.FC<ListPetModalProps> = ({
       shelterName: `${ownerName.trim()}'s Foster Home`,
       status: 'AVAILABLE',
       activityLevel: 'Moderate',
+      weight: 'Not specified',
+      adoptionFee: 'Free Adoption',
+      dateAdded: new Date().toISOString().split('T')[0],
     };
 
     // Send newly listed pet data to C++ / Express Backend API

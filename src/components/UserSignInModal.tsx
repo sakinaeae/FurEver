@@ -46,8 +46,19 @@ export const UserSignInModal: React.FC<UserSignInModalProps> = ({
       return;
     }
 
-    if (!email.includes('@') || !email.includes('.')) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
       setError('Please enter a valid email address.');
+      return;
+    }
+
+    if (/[a-zA-Z]/.test(phone)) {
+      setError('Phone number cannot contain letters.');
+      return;
+    }
+
+    if (phone.replace(/[^0-9]/g, '').length < 7) {
+      setError('Please enter a valid phone number.');
       return;
     }
 

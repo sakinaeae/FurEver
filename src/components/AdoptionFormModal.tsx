@@ -160,11 +160,8 @@ export const AdoptionFormModal: React.FC<AdoptionFormModalProps> = ({
       petExperience,
       fitReason: fitReason.trim(),
       dateApplied: dateString,
-      currentStatus: 'Pending',
-      timelineNotes: {
-        appliedAt: `${dateString} ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
-        shelterNote: `Application successfully received for ${pet.name}.`,
-      },
+      eligibilityResult: 'APPLICABLE',
+      ineligibilityReason: ''
     };
 
     // Fire celebratory confetti for Outcome A
