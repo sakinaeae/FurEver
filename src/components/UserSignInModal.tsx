@@ -1,14 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CustomIcon } from './CustomIcon';
 import { PawIcon } from './PawDecorations';
 
-export type UserRole = 'adopter' | 'owner';
+export type UserRole = 'adopter' | 'Pet Lister';
 
 export interface UserProfile {
   name: string;
   email: string;
   phone: string;
   role: UserRole;
+  housingType: string;
+  petExperience: string;
+}
+
+interface UserAccount {
+  password: string;
+  profile: UserProfile;
 }
 
 interface UserSignInModalProps {
@@ -16,7 +23,7 @@ interface UserSignInModalProps {
   onClose: () => void;
   onSignIn: (profile: UserProfile) => void;
   currentProfile: UserProfile | null;
-  onSignOut?: () => void;
+  onSignOut: () => void;
   onOpenListPetModal?: () => void;
 }
 
@@ -26,279 +33,457 @@ export const UserSignInModal: React.FC<UserSignInModalProps> = ({
   onSignIn,
   currentProfile,
   onSignOut,
-  onOpenListPetModal,
 }) => {
-  const [role, setRole] = useState<UserRole>(currentProfile?.role || 'adopter');
-  const [name, setName] = useState(currentProfile?.name || '');
-  const [email, setEmail] = useState(currentProfile?.email || '');
-  const [phone, setPhone] = useState(currentProfile?.phone || '');
+  const [view, setView] = useState<'login' | 'signup'>('login');
+  const [role, setRole] = useState<UserRole>('adopter');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [phone, setPhone] = useState('');
+  const [housingType, setHousingType] = useState('');
+  const [petExperience, setPetExperience] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [isEditing, setIsEditing] = useState(!currentProfile);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // Profile editing state when logged in
+  const [editName, setEditName] = useState('');
+  const [editPhone, setEditPhone] = useState('');
+  const [editHousing, setEditHousing] = useState('');
+  const [editExperience, setEditExperience] = useState('');
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+
+  const handleToggleRole = async () => {
+    if (!currentProfile) return;
+    setError(null);
+    setSuccessMessage(null);
+    const newRole = currentProfile.role === 'adopter' ? 'Pet Lister' : 'adopter';
+    
+    try {
+      const res = await fetch('/api/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: currentProfile.email,
+          role: newRole,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || 'Failed to switch role.');
+        return;
+      }
+      onSignIn(data);
+      setSuccessMessage(`Successfully switched to ${newRole === 'adopter' ? 'Adopter' : 'Pet Lister'} Mode!`);
+    } catch (err) {
+      setError('Network error. Please try again.');
+    }
+  };
+
+  useEffect(() => {
+    if (currentProfile) {
+      setEditName(currentProfile.name);
+      setEditPhone(currentProfile.phone);
+      setEditHousing(currentProfile.housingType);
+      setEditExperience(currentProfile.petExperience);
+      setIsEditingProfile(false);
+    }
+  }, [currentProfile, isOpen]);
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const getAccountsDb = (): Record<string, UserAccount> => {
+    try {
+      const data = localStorage.getItem('furever_accounts_db');
+      return data ? JSON.parse(data) : {};
+    } catch {
+      return {};
+    }
+  };
+
+  const saveAccountsDb = (db: Record<string, UserAccount>) => {
+    localStorage.setItem('furever_accounts_db', JSON.stringify(db));
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setSuccessMessage(null);
 
-    if (!name.trim() || !email.trim() || !phone.trim()) {
-      setError('Please fill in all required fields.');
-      return;
+    const emailTrim = email.trim().toLowerCase();
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: emailTrim, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || 'Failed to log in.');
+        return;
+      }
+      onSignIn(data);
+      setSuccessMessage('Logged in successfully!');
+      setTimeout(() => {
+        onClose();
+      }, 500);
+    } catch (err) {
+      setError('Network error. Please try again.');
     }
+  };
 
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setSuccessMessage(null);
+
+    const emailTrim = email.trim().toLowerCase();
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email.trim())) {
+    if (!emailRegex.test(emailTrim)) {
       setError('Please enter a valid email address.');
       return;
     }
 
-    if (/[a-zA-Z]/.test(phone)) {
-      setError('Phone number cannot contain letters.');
+    if (!password || password.length < 6) {
+      setError('Password must be at least 6 characters long.');
       return;
     }
 
-    if (phone.replace(/[^0-9]/g, '').length < 7) {
-      setError('Please enter a valid phone number.');
+    if (!name.trim() || !phone.trim() || !housingType || !petExperience) {
+      setError('Please fill in all required fields.');
       return;
     }
 
-    const profile: UserProfile = {
-      name: name.trim(),
-      email: email.trim(),
-      phone: phone.trim(),
-      role,
-    };
+    if (/\d/.test(name)) {
+      setError('Name cannot contain numbers.');
+      return;
+    }
 
-    onSignIn(profile);
-    setIsEditing(false);
-    onClose();
+    if (phone.replace(/[^0-9]/g, '').length !== 10) {
+      setError('Phone number must be exactly 10 digits.');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: name.trim(),
+          email: emailTrim,
+          password,
+          phone: phone.trim(),
+          role,
+          housingType,
+          petExperience,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || 'Failed to sign up.');
+        return;
+      }
+      onSignIn(data);
+      setSuccessMessage('Account created successfully!');
+      setTimeout(() => {
+        onClose();
+      }, 500);
+    } catch (err) {
+      setError('Network error. Please try again.');
+    }
+  };
+
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentProfile) return;
+    setError(null);
+
+    if (!editName.trim() || !editPhone.trim()) {
+      setError('Name and phone cannot be empty.');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: currentProfile.email,
+          name: editName.trim(),
+          phone: editPhone.trim(),
+          housingType: editHousing,
+          petExperience: editExperience,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || 'Failed to update profile.');
+        return;
+      }
+      onSignIn(data);
+      setSuccessMessage('Profile updated successfully!');
+      setTimeout(() => {
+        onClose();
+      }, 600);
+    } catch (err) {
+      setError('Network error. Please try again.');
+    }
   };
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-xs animate-fadeIn">
-      <div
-        id="user-signin-modal-card"
-        className="relative bg-white rounded-3xl max-w-lg w-full overflow-hidden shadow-[8px_8px_0px_#0F5C94] border-3 border-[#0F5C94] my-8 animate-scaleUp"
-      >
-        {/* Close button */}
-        <button
-          id="user-signin-close-btn"
-          onClick={onClose}
-          className="absolute top-4 right-4 z-30 p-2 rounded-xl bg-white hover:bg-[#FB4504] hover:text-white text-[#0F5C94] border-2 border-[#0F5C94] shadow-[2px_2px_0px_#0F5C94] transition-all cursor-pointer"
-          title="Close"
-        >
+      <div className="relative bg-white rounded-3xl max-w-lg w-full overflow-hidden shadow-[8px_8px_0px_#0F5C94] border-3 border-[#0F5C94] my-8 animate-scaleUp">
+        <button onClick={onClose} className="absolute top-4 right-4 z-30 p-2 rounded-xl bg-white hover:bg-[#FB4504] hover:text-white text-[#0F5C94] border-2 border-[#0F5C94] transition-all cursor-pointer">
           <CustomIcon name="cross" className="w-4 h-4" />
         </button>
 
-        {/* Header */}
-        <div className="bg-[#FAF5EB] px-6 sm:px-8 pt-7 pb-5 border-b-3 border-[#0F5C94]">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#F6D97B] text-[#0F5C94] text-xs font-black uppercase tracking-wider mb-2 border-2 border-[#0F5C94]">
-            <PawIcon className="w-3.5 h-3.5 fill-[#0F5C94]" />
-            <span>WELCOME TO FUREVER</span>
-          </div>
-          <h2 className="text-2xl sm:text-3xl font-titan text-[#0F5C94]">
-            {currentProfile && !isEditing ? 'YOUR PROFILE' : 'SIGN IN / GET STARTED'}
-          </h2>
-          <p className="text-xs sm:text-sm text-[#0F5C94]/85 font-bold mt-0.5">
-            {currentProfile && !isEditing
-              ? 'Manage your details for pet adoption applications.'
-              : 'Choose your journey and enter your details to continue.'}
-          </p>
-        </div>
-
-        {/* Content View */}
-        {currentProfile && !isEditing ? (
-          <div className="p-6 sm:p-8 space-y-5">
-            <div className="bg-[#FAF5EB] p-4 rounded-2xl border-2 border-[#0F5C94]/30 space-y-3">
-              <div className="flex items-center justify-between pb-3 border-b border-[#0F5C94]/15">
-                <span className="text-xs font-black uppercase text-[#9A5D16] tracking-wider">Role</span>
-                <span className="px-2.5 py-1 rounded-full text-xs font-black bg-[#F6D97B] text-[#0F5C94] border border-[#0F5C94]">
-                  {currentProfile.role === 'adopter' ? 'I WANT TO ADOPT' : "I'M A FOSTER / OWNER"}
-                </span>
-              </div>
-
-              <div className="space-y-2 text-xs font-bold">
-                <div className="flex justify-between">
-                  <span className="text-[#0F5C94]/60">Name:</span>
-                  <span className="text-[#0F5C94] text-sm">{currentProfile.name}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-[#0F5C94]/60">Email:</span>
-                  <span className="text-[#0F5C94]">{currentProfile.email}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-[#0F5C94]/60">Phone:</span>
-                  <span className="text-[#0F5C94]">{currentProfile.phone}</span>
-                </div>
-              </div>
+        {currentProfile ? (
+          // PROFILE & SETTINGS VIEW WHEN LOGGED IN
+          <div>
+            <div className="bg-[#FAF5EB] px-6 sm:px-8 pt-7 pb-5 border-b-3 border-[#0F5C94]">
+              <span className="px-3 py-1 rounded-full bg-[#F6D97B] text-[#0F5C94] text-[10px] font-black uppercase tracking-wider border border-[#0F5C94]">
+                {currentProfile.role === 'adopter' ? 'Adopter Account' : 'Pet Lister Account'}
+              </span>
+              <h2 className="text-2xl font-titan text-[#0F5C94] mt-2">
+                MY PROFILE & SETTINGS
+              </h2>
+              <p className="text-xs text-stone-600 font-medium mt-0.5">
+                {isEditingProfile ? 'Update your personal details below.' : 'View your profile details, edit them, or log out.'}
+              </p>
             </div>
 
-            {currentProfile.role === 'owner' && (
-              <div className="p-4 rounded-2xl bg-[#EBF7EE] border-2 border-[#0F942D] text-xs text-[#0F5C94] space-y-2">
-                <div className="flex items-center gap-2 font-black text-[#0F942D]">
-                  <PawIcon className="w-4 h-4 fill-[#0F942D]" />
-                  <span>FOSTER & PET OWNER PORTAL ACTIVE</span>
+            {isEditingProfile ? (
+              <form onSubmit={handleUpdateProfile} className="p-5 sm:p-7 space-y-4">
+                {error && <div className="p-3 rounded-xl bg-red-50 border-2 border-[#FB4504] text-[#FB4504] text-xs font-black">{error}</div>}
+                {successMessage && <div className="p-3 rounded-xl bg-green-50 border-2 border-green-500 text-green-700 text-xs font-black">{successMessage}</div>}
+
+                <div>
+                  <label className="block text-xs font-black text-[#0F5C94] uppercase tracking-wider mb-1">Email (Locked)</label>
+                  <input type="email" value={currentProfile.email} disabled className="w-full px-3.5 py-2.5 rounded-xl bg-gray-100 border-2 border-gray-300 text-gray-500 cursor-not-allowed text-xs font-bold" />
                 </div>
-                <p className="font-semibold text-[#0F5C94]/90 leading-relaxed">
-                  Have a rescue or pet looking for a home? You can put your pet up for adoption directly on FurEver!
-                </p>
-                {onOpenListPetModal && (
+
+                <div>
+                  <label className="block text-xs font-black text-[#0F5C94] uppercase tracking-wider mb-1">Full Name</label>
+                  <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} required className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF5EB] border-2 border-[#0F5C94]/30 text-xs font-bold" />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-black text-[#0F5C94] uppercase tracking-wider mb-1">Phone Number</label>
+                  <input type="tel" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} required className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF5EB] border-2 border-[#0F5C94]/30 text-xs font-bold" />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-black text-[#0F5C94] uppercase tracking-wider mb-1">Housing Type</label>
+                  <select value={editHousing} onChange={(e) => setEditHousing(e.target.value)} className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF5EB] border-2 border-[#0F5C94]/30 text-xs font-bold text-[#0F5C94]">
+                    <option value="Apartment">Apartment</option>
+                    <option value="Townhouse">Townhouse</option>
+                    <option value="House with a Yard">House with a Yard</option>
+                    <option value="Farm / Acreage">Farm / Acreage</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-black text-[#0F5C94] uppercase tracking-wider mb-1">Pet Experience</label>
+                  <select value={editExperience} onChange={(e) => setEditExperience(e.target.value)} className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF5EB] border-2 border-[#0F5C94]/30 text-xs font-bold text-[#0F5C94]">
+                    <option value="Current pet owner">Current pet owner</option>
+                    <option value="Previous pet owner">Previous pet owner</option>
+                    <option value="No experience">No experience</option>
+                  </select>
+                </div>
+
+                <div className="pt-2 flex gap-3">
+                  <button type="submit" className="flex-1 py-3.5 rounded-xl bg-[#0F5C94] text-white font-black text-xs uppercase border-2 border-[#0F5C94] shadow-[3px_3px_0px_#FB4504] cursor-pointer">
+                    Save Changes
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingProfile(false)}
+                    className="px-4 py-3.5 rounded-xl bg-stone-200 hover:bg-stone-300 text-stone-700 font-black text-xs uppercase border-2 border-stone-300 cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <div className="p-5 sm:p-7 space-y-4">
+                {successMessage && <div className="p-3 rounded-xl bg-green-50 border-2 border-green-500 text-green-700 text-xs font-black">{successMessage}</div>}
+
+                <div className="bg-[#FAF5EB] p-4 rounded-2xl border-2 border-[#0F5C94]/20 space-y-3">
+                  <div>
+                    <span className="text-[10px] font-black text-[#0F5C94]/60 uppercase tracking-wider block">Full Name</span>
+                    <span className="text-sm font-bold text-[#0F5C94]">{currentProfile.name}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-black text-[#0F5C94]/60 uppercase tracking-wider block">Email Address</span>
+                    <span className="text-sm font-bold text-[#0F5C94]">{currentProfile.email}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-black text-[#0F5C94]/60 uppercase tracking-wider block">Phone Number</span>
+                    <span className="text-sm font-bold text-[#0F5C94]">{currentProfile.phone}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-black text-[#0F5C94]/60 uppercase tracking-wider block">Housing Type</span>
+                    <span className="text-sm font-bold text-[#0F5C94]">{currentProfile.housingType || 'Not specified'}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-black text-[#0F5C94]/60 uppercase tracking-wider block">Pet Experience</span>
+                    <span className="text-sm font-bold text-[#0F5C94]">{currentProfile.petExperience || 'Not specified'}</span>
+                  </div>
+                </div>
+
+                {/* Account Role Switching Option */}
+                <div className="p-4 rounded-2xl border-2 border-[#F6D97B] bg-[#FFFBEA] flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs">
+                  <div>
+                    <span className="text-[10px] font-black text-[#9A5D16] uppercase tracking-wider block">Account Role</span>
+                    <span className="text-sm font-black text-[#0F5C94]">
+                      {currentProfile.role === 'adopter' ? 'Adopter Mode' : 'Pet Lister Mode'}
+                    </span>
+                    <p className="text-[10px] text-stone-500 font-bold mt-0.5">
+                      {currentProfile.role === 'adopter' 
+                        ? 'Want to list your foster or rescue pets?' 
+                        : 'Want to browse & apply to adopt pets?'}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleToggleRole}
+                    className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#0F5C94] text-white hover:bg-[#0b4875] font-black text-xs uppercase tracking-wider border-2 border-[#0F5C94] shadow-[2px_2px_0px_#FB4504] transition-all hover:translate-x-0.5 hover:translate-y-0.5 cursor-pointer"
+                  >
+                    Switch to {currentProfile.role === 'adopter' ? 'Pet Lister' : 'Adopter'}
+                  </button>
+                </div>
+
+                <div className="pt-2 flex gap-3">
                   <button
                     type="button"
                     onClick={() => {
-                      onClose();
-                      onOpenListPetModal();
+                      setError(null);
+                      setSuccessMessage(null);
+                      setIsEditingProfile(true);
                     }}
-                    className="w-full mt-2 py-3 px-4 rounded-xl bg-[#0F942D] hover:bg-[#0b7523] text-white font-black text-xs uppercase tracking-wider border-2 border-[#0F5C94] shadow-[3px_3px_0px_#0F5C94] cursor-pointer flex items-center justify-center gap-2"
+                    className="flex-1 py-3.5 rounded-xl bg-[#0F5C94] hover:bg-[#0b4875] text-white font-black text-xs uppercase border-2 border-[#0F5C94] shadow-[3px_3px_0px_#FB4504] cursor-pointer"
                   >
-                    <PawIcon className="w-4 h-4 fill-white" />
-                    <span>PUT A PET UP FOR ADOPTION NOW</span>
+                    Edit Details
                   </button>
-                )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSignOut();
+                      onClose();
+                    }}
+                    className="px-4 py-3.5 rounded-xl bg-red-100 hover:bg-red-200 text-red-700 font-black text-xs uppercase border-2 border-red-300 cursor-pointer"
+                  >
+                    Log Out
+                  </button>
+                </div>
               </div>
             )}
-
-            <div className="flex flex-col sm:flex-row gap-3 pt-2">
-              <button
-                onClick={() => setIsEditing(true)}
-                className="flex-1 py-3 rounded-xl bg-[#F6D97B] hover:bg-[#ebd070] text-[#0F5C94] font-black text-xs uppercase tracking-wider border-2 border-[#0F5C94] shadow-[3px_3px_0px_#0F5C94] cursor-pointer"
-              >
-                Edit Profile
-              </button>
-
-              {onSignOut && (
-                <button
-                  onClick={() => {
-                    onSignOut();
-                    onClose();
-                  }}
-                  className="py-3 px-4 rounded-xl bg-white hover:bg-[#FB4504] hover:text-white text-[#FB4504] font-black text-xs uppercase tracking-wider border-2 border-[#FB4504] shadow-[2px_2px_0px_#FB4504] cursor-pointer"
-                >
-                  Sign Out
-                </button>
-              )}
-            </div>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="p-5 sm:p-7 space-y-4">
-            {error && (
-              <div className="p-3 rounded-xl bg-red-50 border-2 border-[#FB4504] text-[#FB4504] text-xs font-black flex items-center gap-2">
-                <CustomIcon name="exclamation" className="w-4 h-4 shrink-0 text-[#FB4504]" />
-                <span>{error}</span>
-              </div>
-            )}
-
-            {/* Step 1: Role Selector */}
-            <div>
-              <label className="block text-xs font-black text-[#0F5C94] uppercase tracking-wider mb-2">
-                I am using FurEver because: <span className="text-[#FB4504]">*</span>
-              </label>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {/* Option 1: ADOPT */}
-                <button
-                  type="button"
-                  onClick={() => setRole('adopter')}
-                  className={`p-3.5 rounded-2xl border-2 text-left transition-all cursor-pointer flex flex-col justify-between ${
-                    role === 'adopter'
-                      ? 'bg-[#F6D97B] border-[#0F5C94] shadow-[4px_4px_0px_#0F5C94]'
-                      : 'bg-[#FAF5EB] border-[#0F5C94]/20 hover:border-[#0F5C94]'
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="font-titan text-xs text-[#0F5C94]">I WANT TO ADOPT</span>
-                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${role === 'adopter' ? 'border-[#0F5C94] bg-[#FB4504]' : 'border-stone-400'}`}>
-                      {role === 'adopter' && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                    </div>
-                  </div>
-                  <p className="text-[11px] text-[#0F5C94]/85 font-medium leading-snug">
-                    For people looking to adopt a pet.
-                  </p>
-                </button>
-
-                {/* Option 2: FOSTER / OWNER */}
-                <button
-                  type="button"
-                  onClick={() => setRole('owner')}
-                  className={`p-3.5 rounded-2xl border-2 text-left transition-all cursor-pointer flex flex-col justify-between ${
-                    role === 'owner'
-                      ? 'bg-[#F6D97B] border-[#0F5C94] shadow-[4px_4px_0px_#0F5C94]'
-                      : 'bg-[#FAF5EB] border-[#0F5C94]/20 hover:border-[#0F5C94]'
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="font-titan text-xs text-[#0F5C94]">I'M A FOSTER / PET OWNER</span>
-                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${role === 'owner' ? 'border-[#0F5C94] bg-[#FB4504]' : 'border-stone-400'}`}>
-                      {role === 'owner' && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                    </div>
-                  </div>
-                  <p className="text-[11px] text-[#0F5C94]/85 font-medium leading-snug">
-                    For people who currently care for a pet & want to list/manage.
-                  </p>
-                </button>
+          // LOGIN / SIGNUP VIEW
+          <div>
+            <div className="bg-[#FAF5EB] px-6 sm:px-8 pt-7 pb-5 border-b-3 border-[#0F5C94]">
+              <h2 className="text-2xl font-titan text-[#0F5C94]">
+                {view === 'login' ? 'LOG IN' : 'SIGN UP'}
+              </h2>
+              <div className="flex gap-4 mt-4">
+                <button onClick={() => { setView('login'); setError(null); }} className={`font-black pb-1 cursor-pointer ${view === 'login' ? 'text-[#0F5C94] border-b-2 border-[#0F5C94]' : 'text-gray-400'}`}>Log In</button>
+                <button onClick={() => { setView('signup'); setError(null); }} className={`font-black pb-1 cursor-pointer ${view === 'signup' ? 'text-[#0F5C94] border-b-2 border-[#0F5C94]' : 'text-gray-400'}`}>Sign Up</button>
               </div>
             </div>
 
-            {/* Inputs: Name, Email, Phone */}
-            <div>
-              <label className="block text-xs font-black text-[#0F5C94] uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                <CustomIcon name="user" className="w-3.5 h-3.5 text-[#9A5D16]" />
-                Full Name <span className="text-[#FB4504]">*</span>
-              </label>
-              <input
-                id="signin-input-name"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Maya Deshmukh"
-                required
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF5EB] border-2 border-[#0F5C94]/30 text-xs sm:text-sm text-[#0F5C94] font-bold placeholder-[#0F5C94]/40 focus:outline-none focus:border-[#0F5C94] focus:bg-white"
-              />
-            </div>
+            <form onSubmit={view === 'login' ? handleLogin : handleSignUp} className="p-5 sm:p-7 space-y-4">
+              {error && <div className="p-3 rounded-xl bg-red-50 border-2 border-[#FB4504] text-[#FB4504] text-xs font-black">{error}</div>}
+              {successMessage && <div className="p-3 rounded-xl bg-green-50 border-2 border-green-500 text-green-700 text-xs font-black">{successMessage}</div>}
+              
+              <div>
+                <label className="block text-xs font-black text-[#0F5C94] uppercase tracking-wider mb-1">Email <span className="text-[#FB4504]">*</span></label>
+                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="your.email@example.com" className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF5EB] border-2 border-[#0F5C94]/30 text-xs font-bold" />
+              </div>
+              <div>
+                <label className="block text-xs font-black text-[#0F5C94] uppercase tracking-wider mb-1">Password <span className="text-[#FB4504]">*</span></label>
+                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="At least 6 characters" className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF5EB] border-2 border-[#0F5C94]/30 text-xs font-bold" />
+              </div>
 
-            <div>
-              <label className="block text-xs font-black text-[#0F5C94] uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                <CustomIcon name="mail" className="w-3.5 h-3.5 text-[#9A5D16]" />
-                Email Address <span className="text-[#FB4504]">*</span>
-              </label>
-              <input
-                id="signin-input-email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="e.g. maya@example.com"
-                required
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF5EB] border-2 border-[#0F5C94]/30 text-xs sm:text-sm text-[#0F5C94] font-bold placeholder-[#0F5C94]/40 focus:outline-none focus:border-[#0F5C94] focus:bg-white"
-              />
-            </div>
+              {view === 'signup' && (
+                <>
+                  <div>
+                    <label className="block text-xs font-black text-[#0F5C94] uppercase tracking-wider mb-1">I want to... <span className="text-[#FB4504]">*</span></label>
+                    <div className="flex gap-4">
+                      <button
+                        type="button"
+                        onClick={() => setRole('adopter')}
+                        className={`flex-1 py-2.5 rounded-xl border-2 font-black text-xs uppercase cursor-pointer ${role === 'adopter' ? 'bg-[#0F5C94] text-white border-[#0F5C94]' : 'bg-white border-[#0F5C94]/30 text-[#0F5C94]'}`}>
+                        Adopt
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setRole('Pet Lister')}
+                        className={`flex-1 py-2.5 rounded-xl border-2 font-black text-xs uppercase cursor-pointer ${role === 'Pet Lister' ? 'bg-[#0F5C94] text-white border-[#0F5C94]' : 'bg-white border-[#0F5C94]/30 text-[#0F5C94]'}`}>
+                        List a pet
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-black text-[#0F5C94] uppercase tracking-wider mb-1">Full Name <span className="text-[#FB4504]">*</span></label>
+                    <input type="text" value={name} onChange={(e) => setName(e.target.value)} required placeholder="John Doe" className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF5EB] border-2 border-[#0F5C94]/30 text-xs font-bold" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-black text-[#0F5C94] uppercase tracking-wider mb-1">Phone Number (10 digits) <span className="text-[#FB4504]">*</span></label>
+                    <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required placeholder="9999999999" className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF5EB] border-2 border-[#0F5C94]/30 text-xs font-bold" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-black text-[#0F5C94] uppercase tracking-wider mb-1">Housing Type <span className="text-[#FB4504]">*</span></label>
+                    <select value={housingType} onChange={(e) => setHousingType(e.target.value)} required className={`w-full px-3.5 py-2.5 rounded-xl bg-[#FAF5EB] border-2 border-[#0F5C94]/30 text-xs font-bold ${housingType ? 'text-[#0F5C94]' : 'text-gray-400'}`}>
+                      <option value="" disabled>Select Housing Type...</option>
+                      <option value="Apartment">Apartment</option>
+                      <option value="Townhouse">Townhouse</option>
+                      <option value="House with a Yard">House with a Yard</option>
+                      <option value="Farm / Acreage">Farm / Acreage</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-black text-[#0F5C94] uppercase tracking-wider mb-1">Pet Experience <span className="text-[#FB4504]">*</span></label>
+                    <select value={petExperience} onChange={(e) => setPetExperience(e.target.value)} required className={`w-full px-3.5 py-2.5 rounded-xl bg-[#FAF5EB] border-2 border-[#0F5C94]/30 text-xs font-bold ${petExperience ? 'text-[#0F5C94]' : 'text-gray-400'}`}>
+                      <option value="" disabled>Select Experience...</option>
+                      <option value="Current pet owner">Current pet owner</option>
+                      <option value="Previous pet owner">Previous pet owner</option>
+                      <option value="No experience">No experience</option>
+                    </select>
+                  </div>
+                </>
+              )}
 
-            <div>
-              <label className="block text-xs font-black text-[#0F5C94] uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                <CustomIcon name="phone" className="w-3.5 h-3.5 text-[#9A5D16]" />
-                Phone Number <span className="text-[#FB4504]">*</span>
-              </label>
-              <input
-                id="signin-input-phone"
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="e.g. +91 98200 12345"
-                required
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF5EB] border-2 border-[#0F5C94]/30 text-xs sm:text-sm text-[#0F5C94] font-bold placeholder-[#0F5C94]/40 focus:outline-none focus:border-[#0F5C94] focus:bg-white"
-              />
-            </div>
-
-            <div className="pt-3">
-              <button
-                id="signin-submit-btn"
-                type="submit"
-                className="w-full py-3.5 rounded-xl bg-[#FB4504] hover:bg-[#e03a00] text-white font-black text-sm tracking-wider uppercase border-2 border-[#0F5C94] shadow-[4px_4px_0px_#0F5C94] hover:translate-x-0.5 hover:translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <PawIcon className="w-4 h-4 fill-white" />
-                <span>SIGN IN / GET STARTED</span>
+              <button type="submit" className="w-full py-3.5 rounded-xl bg-[#FB4504] hover:bg-[#e03a00] text-white font-black text-sm uppercase border-2 border-[#0F5C94] shadow-[4px_4px_0px_#0F5C94] cursor-pointer">
+                {view === 'login' ? 'LOG IN' : 'SIGN UP'}
               </button>
-            </div>
-          </form>
+
+              <div className="text-center pt-2">
+                {view === 'login' ? (
+                  <p className="text-xs font-bold text-stone-600">
+                    Don't have an account?{' '}
+                    <button
+                      type="button"
+                      onClick={() => { setView('signup'); setError(null); setSuccessMessage(null); }}
+                      className="text-[#0F5C94] font-black underline cursor-pointer hover:text-[#FB4504]"
+                    >
+                      Sign Up
+                    </button>
+                  </p>
+                ) : (
+                  <p className="text-xs font-bold text-stone-600">
+                    Already have an account?{' '}
+                    <button
+                      type="button"
+                      onClick={() => { setView('login'); setError(null); setSuccessMessage(null); }}
+                      className="text-[#0F5C94] font-black underline cursor-pointer hover:text-[#FB4504]"
+                    >
+                      Log In
+                    </button>
+                  </p>
+                )}
+              </div>
+            </form>
+          </div>
         )}
       </div>
     </div>

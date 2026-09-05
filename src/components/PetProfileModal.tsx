@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { CustomIcon } from './CustomIcon';
 import { Pet } from '../backend/types';
 import { PawIcon } from './PawDecorations';
+import { PetBudgetEstimator } from './PetBudgetEstimator';
 
 interface PetProfileModalProps {
   pet: Pet | null;
@@ -10,6 +11,7 @@ interface PetProfileModalProps {
   onClose: () => void;
   onToggleFavorite: (petId: string, e: React.MouseEvent) => void;
   onApply: (pet: Pet) => void;
+  userRole?: string;
 }
 
 export const PetProfileModal: React.FC<PetProfileModalProps> = ({
@@ -19,6 +21,7 @@ export const PetProfileModal: React.FC<PetProfileModalProps> = ({
   onClose,
   onToggleFavorite,
   onApply,
+  userRole,
 }) => {
   const [copiedLink, setCopiedLink] = useState(false);
 
@@ -63,7 +66,7 @@ export const PetProfileModal: React.FC<PetProfileModalProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-12 max-h-[85vh] overflow-y-auto">
           
           {/* Left Column: Pet Visuals & Quick Highlights */}
-          <div className="md:col-span-5 bg-[#FAF5EB] p-4 sm:p-6 flex flex-col justify-between border-b md:border-b-0 md:border-r-3 border-[#0F5C94]">
+          <div className="md:col-span-5 bg-[#FAF5EB] p-4 sm:p-6 flex flex-col justify-start gap-4 border-b md:border-b-0 md:border-r-3 border-[#0F5C94]">
             <div>
               {/* Primary Single Image */}
               <div className="relative aspect-4/5 rounded-2xl overflow-hidden border-2 border-[#0F5C94] shadow-[4px_4px_0px_#0F5C94] bg-[#FAF5EB]">
@@ -89,7 +92,7 @@ export const PetProfileModal: React.FC<PetProfileModalProps> = ({
             </div>
 
             {/* Quick Specs Grid */}
-            <div className="mt-5 pt-3 border-t-2 border-[#0F5C94]/15 grid grid-cols-2 gap-2.5 text-xs">
+            <div className="grid grid-cols-2 gap-2.5 text-xs">
               <div className="bg-white p-2.5 rounded-xl border-2 border-[#0F5C94]/30">
                 <span className="text-[#9A5D16] block font-bold text-[10px] uppercase">Location</span>
                 <span className="text-[#0F5C94] font-black flex items-center gap-1 mt-0.5 text-xs">
@@ -132,7 +135,7 @@ export const PetProfileModal: React.FC<PetProfileModalProps> = ({
                 </h2>
 
                 <p className="text-xs sm:text-sm font-bold text-[#9A5D16] mt-0.5">
-                  {pet.breed} · {pet.age} · {pet.gender}
+                  {pet.breed} · {pet.gender} · {pet.age} · {pet.weight}
                 </p>
               </div>
 
@@ -217,19 +220,28 @@ export const PetProfileModal: React.FC<PetProfileModalProps> = ({
             </div>
 
             {/* Bottom Adoption Action CTA */}
-            <div className="pt-3 border-t-2 border-[#0F5C94]/15 space-y-2">
+            <div className="pt-1 space-y-3">
+              {/* Pet Budget Estimator Component */}
+              <PetBudgetEstimator pet={pet} />
+
               {isAvailable ? (
-                <button
-                  id="profile-apply-adopt-btn"
-                  onClick={() => {
-                    onClose();
-                    onApply(pet);
-                  }}
-                  className="w-full py-3.5 rounded-xl bg-[#FB4504] hover:bg-[#e03a00] text-white font-black text-sm tracking-wider uppercase border-2 border-[#0F5C94] shadow-[4px_4px_0px_#0F5C94] hover:translate-x-0.5 hover:translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <PawIcon className="w-4 h-4 fill-white" />
-                  <span>APPLY TO ADOPT {pet.name.toUpperCase()}</span>
-                </button>
+                (userRole === 'Pet Lister' || userRole === 'pet-lister') ? (
+                  <div className="text-center p-3.5 rounded-xl bg-stone-100 text-stone-600 font-bold text-xs border border-stone-300">
+                    Pet Listers cannot fill adoption forms.
+                  </div>
+                ) : (
+                  <button
+                    id="profile-apply-adopt-btn"
+                    onClick={() => {
+                      onClose();
+                      onApply(pet);
+                    }}
+                    className="w-full py-3.5 rounded-xl bg-[#FB4504] hover:bg-[#e03a00] text-white font-black text-sm tracking-wider uppercase border-2 border-[#0F5C94] shadow-[4px_4px_0px_#0F5C94] hover:translate-x-0.5 hover:translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <PawIcon className="w-4 h-4 fill-white" />
+                    <span>APPLY TO ADOPT {pet.name.toUpperCase()}</span>
+                  </button>
+                )
               ) : (
                 <div className="space-y-1">
                   <button

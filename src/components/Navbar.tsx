@@ -25,6 +25,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenSignIn,
   onOpenListPetModal,
 }) => {
+  const isAdopter = currentProfile?.role === 'adopter';
+  const isLister = currentProfile?.role === 'Pet Lister';
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -87,6 +89,13 @@ export const Navbar: React.FC<NavbarProps> = ({
       icon: 'sparkle',
       color: '#0F942D',
       badge: 'Smart Match',
+    },
+    {
+      id: 'status',
+      label: isLister ? 'My Listed Pets' : 'My Status',
+      shortLabel: isLister ? 'My Listed Pets' : 'Status',
+      icon: 'file',
+      color: '#0F942D',
     },
   ];
 
@@ -184,31 +193,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </button>
               </nav>
 
-              {/* Action Buttons in Middle (Liked & List Pet) */}
+              {/* Action Buttons in Middle (List Pet only) */}
               <div className="flex items-center gap-1.5 sm:gap-2">
-                {/* Liked Button */}
-                <button
-                  id="header-liked-matches-btn"
-                  onClick={onOpenMatches}
-                  className="relative px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-white/10 hover:bg-[#F6D97B] hover:text-[#0F5C94] text-white transition-all hover:scale-105 active:scale-95 flex items-center gap-1.5 cursor-pointer text-xs font-black uppercase tracking-wider border border-white/20"
-                  title="Liked Pets"
-                  aria-label="Liked Pets"
-                >
-                  <CustomIcon
-                    name={likedCount > 0 ? 'heart-filled' : 'heart-unfilled'}
-                    className="w-4.5 h-4.5 sm:w-5 sm:h-5"
-                    white
-                  />
-                  <span className="hidden md:inline">Liked</span>
-                  {likedCount > 0 && (
-                    <span className="px-1.5 py-0.5 bg-[#FB4504] text-white text-[10px] sm:text-xs font-black rounded-full ring-2 ring-[#0F5C94]">
-                      {likedCount}
-                    </span>
-                  )}
-                </button>
-
                 {/* List a Pet Button (Foster / Owner Portal) */}
-                {onOpenListPetModal && (
+                {onOpenListPetModal && !isAdopter && (
                   <button
                     id="header-list-pet-btn"
                     onClick={onOpenListPetModal}
@@ -222,8 +210,44 @@ export const Navbar: React.FC<NavbarProps> = ({
               </div>
             </div>
 
-            {/* RIGHT END: Sign In / Profile Button & Mobile Toggle */}
-            <div className="shrink-0 flex items-center gap-2">
+            {/* RIGHT END: Liked, Status, Sign In / Profile Button & Mobile Toggle */}
+            <div className="shrink-0 flex items-center gap-2.5">
+
+              {/* Liked Button */}
+              <button
+                id="header-liked-matches-btn"
+                onClick={onOpenMatches}
+                className="relative px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-white/10 hover:bg-[#F6D97B] hover:text-[#0F5C94] text-white transition-all hover:scale-105 active:scale-95 flex items-center gap-1.5 cursor-pointer text-xs font-black uppercase tracking-wider border border-white/20"
+                title="Liked Pets"
+                aria-label="Liked Pets"
+              >
+                <CustomIcon
+                  name={likedCount > 0 ? 'heart-filled' : 'heart-unfilled'}
+                  className="w-4.5 h-4.5"
+                  white
+                />
+                <span className="hidden md:inline">Liked</span>
+                {likedCount > 0 && (
+                  <span className="px-1.5 py-0.5 bg-[#FB4504] text-white text-[10px] sm:text-xs font-black rounded-full ring-2 ring-[#0F5C94]">
+                    {likedCount}
+                  </span>
+                )}
+              </button>
+
+              {/* My Status Button */}
+              <button
+                id="header-my-status-btn"
+                onClick={() => handleNavClick('status')}
+                className={`px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl transition-all flex items-center gap-1.5 text-xs font-black uppercase tracking-wider cursor-pointer border-2 ${
+                  currentTab === 'status'
+                    ? 'bg-[#0F5C94] text-white border-white shadow-md'
+                    : 'bg-white/10 text-white hover:bg-white/20 border-white/20'
+                }`}
+                title={isLister ? 'My Listed Pets' : 'My Adoption Status'}
+              >
+                <CustomIcon name="file" className="w-4 h-4" white />
+                <span className="hidden sm:inline">{isLister ? 'My Listed Pets' : 'Status'}</span>
+              </button>
 
               {/* Sign In / Profile Button */}
               {onOpenSignIn && (
@@ -330,7 +354,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* Secondary actions in mobile menu */}
             <div className="pt-4 border-t border-white/15 space-y-3">
               {/* List a Pet Button in Mobile Menu */}
-              {onOpenListPetModal && (
+              {onOpenListPetModal && !isAdopter && (
                 <button
                   onClick={() => {
                     setMobileMenuOpen(false);

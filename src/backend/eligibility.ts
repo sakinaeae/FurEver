@@ -16,7 +16,7 @@ export function checkEligibility(
   }
 
   // Rule 2: Housing suitability check
-  const isLargePet = pet.size === "Large" || pet.activityLevel === "High";
+  const isLargePet = pet.activityLevel === "High";
   const requiresYard = pet.goodWith.some((g) =>
     ["Yard Homes", "Fenced Yard", "Farm Life", "Spacious Homes", "Active Runners"].includes(g)
   );

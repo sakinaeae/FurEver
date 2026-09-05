@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Pet, AdoptionApplication, User, Like } from './backend/types';
+import { Pet, AdoptionApplication, User, Like, ApplicationStatus } from './backend/types';
 import { INITIAL_PETS } from './data/petsData';
 import { shuffleArray } from './utils/shuffle';
 import { initializeStorage, loadPets, savePets, loadUsers, loadApplications, saveApplications, loadLikes, saveLikes } from './lib/storage';
@@ -23,9 +23,10 @@ import { FloatingBackgroundIcons } from './components/FloatingBackgroundIcons';
 import { CustomIcon } from './components/CustomIcon';
 import { PawIcon } from './components/PawDecorations';
 import { AnimalMarqueeTape } from './components/AnimalMarqueeTape';
+import { MyApplicationsView } from './components/MyApplicationsView';
 
 export default function App() {
-  // Navigation tab: 'home' | 'browse' | 'swipe' | 'quiz' | 'how-it-works'
+  // Navigation tab: 'home' | 'browse' | 'swipe' | 'quiz' | 'how-it-works' | 'status'
   const [currentTab, setCurrentTab] = useState<string>('home');
 
   // Application Data States (synced with localStorage)
@@ -169,7 +170,75 @@ export default function App() {
     const updatedApps = [newApp, ...applications];
     setApplications(updatedApps);
     saveApplications(updatedApps); 
+
+    // Store the ID in locally submitted IDs so they can see it under Status tab even if guest
+    try {
+      const storedIdsStr = localStorage.getItem('furever_submitted_ids');
+      const storedIds = storedIdsStr ? JSON.parse(storedIdsStr) : [];
+      storedIds.push(newApp.id);
+      localStorage.setItem('furever_submitted_ids', JSON.stringify(storedIds));
+    } catch (e) {
+      console.error(e);
+    }
+
+    const updatedPets = pets.map(p => p.id === newApp.petId ? { ...p, status: 'PENDING' as const } : p);
+    setPets(updatedPets);
+    savePets(updatedPets);
+
     showToast(`Application for ${newApp.petName} submitted successfully!`);
+  };
+
+  // Update status of an application
+  const handleUpdateApplicationStatus = async (appId: string, status: ApplicationStatus) => {
+    try {
+      const res = await fetch(`/api/applications/${appId}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      });
+      
+      const updatedApps = applications.map(app => 
+        app.id === appId ? { ...app, currentStatus: status } : app
+      );
+      setApplications(updatedApps);
+      saveApplications(updatedApps);
+
+      if (status === 'Adopted') {
+        const targetApp = applications.find(a => a.id === appId);
+        if (targetApp) {
+          const updatedPets = pets.map(p => p.id === targetApp.petId ? { ...p, status: 'ADOPTED' as const } : p);
+          setPets(updatedPets);
+          savePets(updatedPets);
+        }
+      }
+
+      showToast(`Application marked as ${status}!`);
+    } catch (err) {
+      const updatedApps = applications.map(app => 
+        app.id === appId ? { ...app, currentStatus: status } : app
+      );
+      setApplications(updatedApps);
+      saveApplications(updatedApps);
+      showToast(`Application marked as ${status}!`);
+    }
+  };
+
+  // Remove / delete a listed pet
+  const handleRemovePet = async (petId: string) => {
+    try {
+      await fetch(`/api/pets/${petId}`, {
+        method: 'DELETE',
+      });
+      const updatedPets = pets.filter(p => p.id !== petId);
+      setPets(updatedPets);
+      savePets(updatedPets);
+      showToast('🏡 Pet listing removed successfully.');
+    } catch (err) {
+      const updatedPets = pets.filter(p => p.id !== petId);
+      setPets(updatedPets);
+      savePets(updatedPets);
+      showToast('🏡 Pet listing removed.');
+    }
   };
 
 
@@ -202,7 +271,13 @@ export default function App() {
         onSelectPet={setSelectedPetForProfile}
         currentProfile={userProfile}
         onOpenSignIn={() => setIsSignInModalOpen(true)}
-        onOpenListPetModal={() => setIsListPetModalOpen(true)}
+        onOpenListPetModal={() => {
+          if (userProfile?.role === 'adopter') {
+            showToast('Adopters cannot list pets. Please sign out and sign in as a Pet Lister.');
+          } else {
+            setIsListPetModalOpen(true);
+          }
+        }}
       />
 
       {/* Main Content View Switcher */}
@@ -229,23 +304,38 @@ export default function App() {
 
             {/* How It Works Section */}
             <HowItWorks
+              userRole={userProfile?.role}
               onDiscoverClick={() => {
                 setCurrentTab('browse');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
               onMeetClick={() => {
-                setCurrentTab('quiz');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                if (userProfile?.role === 'pet-lister') {
+                  showToast('Pet listers cannot adopt pets. Please sign out and sign in as an Adopter.');
+                } else {
+                  setCurrentTab('quiz');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
               }}
               onConnectClick={() => {
                 setCurrentTab('browse');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
               onSwipeClick={() => {
-                setCurrentTab('swipe');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                if (userProfile?.role === 'pet-lister') {
+                  showToast('Pet listers cannot adopt pets. Please sign out and sign in as an Adopter.');
+                } else {
+                  setCurrentTab('swipe');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
               }}
-              onListPetClick={() => setIsListPetModalOpen(true)}
+              onListPetClick={() => {
+                if (userProfile?.role === 'adopter') {
+                  showToast('Adopters cannot list pets. Please sign out and sign in as a Pet Lister.');
+                } else {
+                  setIsListPetModalOpen(true);
+                }
+              }}
             />
 
             {/* PETS WAITING FOR YOU Showcase */}
@@ -421,6 +511,46 @@ export default function App() {
           </div>
         )}
 
+        {/* VIEW 6: APPLICATIONS STATUS */}
+        {currentTab === 'status' && (
+          <MyApplicationsView
+            applications={
+              userProfile?.role === 'Pet Lister'
+                ? applications
+                : userProfile?.role === 'Adopter'
+                ? applications.filter(app => app.applicantEmail === userProfile?.email)
+                : (() => {
+                    // Unregistered guest user - filter by locally submitted application IDs
+                    try {
+                      const storedIdsStr = localStorage.getItem('furever_submitted_ids');
+                      if (storedIdsStr) {
+                        const storedIds = JSON.parse(storedIdsStr) as string[];
+                        return applications.filter(app => storedIds.includes(app.id));
+                      }
+                    } catch (e) {
+                      console.error(e);
+                    }
+                    return [];
+                  })()
+            }
+            pets={pets}
+            userProfile={userProfile}
+            onUpdateApplicationStatus={handleUpdateApplicationStatus}
+            onRemovePet={handleRemovePet}
+            onExplorePets={() => {
+              setCurrentTab('browse');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            onSelectPetById={(petId) => {
+              const pet = pets.find(p => p.id === petId);
+              if (pet) {
+                setSelectedPetForProfile(pet);
+              }
+            }}
+            showToast={showToast}
+          />
+        )}
+
       </main>
 
       {/* Pet Profile Modal */}
@@ -434,6 +564,7 @@ export default function App() {
           setSelectedPetForProfile(null);
           setSelectedPetForApplication(pet);
         }}
+        userRole={userProfile?.role}
       />
 
       {/* Adoption Form Application Modal */}
@@ -442,12 +573,18 @@ export default function App() {
         isOpen={selectedPetForApplication !== null}
         onClose={() => setSelectedPetForApplication(null)}
         onSubmitSuccess={handleNewApplication}
+        onTrackStatus={() => {
+          setSelectedPetForApplication(null);
+          setCurrentTab('status');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
         onExplorePets={() => {
           setSelectedPetForApplication(null);
           setCurrentTab('browse');
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
         currentProfile={userProfile}
+        applications={applications}
       />
 
       {/* User Sign In Modal */}

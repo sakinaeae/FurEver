@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CustomIcon } from './CustomIcon';
 import { PawIcon } from './PawDecorations';
 import { Pet } from '../backend/types';
@@ -11,6 +11,45 @@ interface ListPetModalProps {
   currentProfile?: UserProfile | null;
 }
 
+const COMMON_BREEDS = [
+  'Golden Retriever',
+  'Indie',
+  'Beagle',
+  'German Shepherd',
+  'Poodle',
+  'Bulldog',
+  'Labrador',
+  'Persian',
+  'Siamese',
+  'Maine Coon',
+  'British Shorthair',
+  'Ragdoll',
+  'Lop',
+  'Netherland Dwarf',
+  'Lionhead',
+];
+
+const BANGALORE_LOCALITIES = [
+  'Indiranagar',
+  'Koramangala',
+  'Whitefield',
+  'HSR Layout',
+  'Jayanagar',
+  'JP Nagar',
+  'Hebbal',
+  'Sarjapur Road',
+  'Sadashivanagar',
+  'Banashankari',
+  'Yelahanka',
+  'Kalyan Nagar',
+  'Rajajinagar',
+  'Basavanagudi',
+  'Malleshwaram',
+  'Ulsoor',
+  'Marathahalli',
+  'Bellandur',
+];
+
 export const ListPetModal: React.FC<ListPetModalProps> = ({
   isOpen,
   onClose,
@@ -18,12 +57,27 @@ export const ListPetModal: React.FC<ListPetModalProps> = ({
   currentProfile,
 }) => {
   const [petName, setPetName] = useState('');
-  const [animalType, setAnimalType] = useState<'Dog' | 'Cat' | 'Rabbit' | 'Bird' | 'Other'>('Dog');
-  const [breed, setBreed] = useState('');
-  const [age, setAge] = useState('');
-  const [gender, setGender] = useState<'Male' | 'Female'>('Male');
-  const [size, setSize] = useState<'Small' | 'Medium' | 'Large'>('Medium');
-  const [location, setLocation] = useState('Indiranagar, Bengaluru');
+  const [animalType, setAnimalType] = useState<'Dog' | 'Cat' | 'Rabbit' | 'Bird' | 'Other' | ''>('');
+  
+  // Breed Selection State
+  const [selectedBreed, setSelectedBreed] = useState('');
+  const [customBreed, setCustomBreed] = useState('');
+  
+  // Numeric Inputs
+  const [ageNum, setAgeNum] = useState('');
+  const [weightNum, setWeightNum] = useState('');
+  const [gender, setGender] = useState<'Male' | 'Female' | ''>('');
+  
+  // Location Selection State
+  const [selectedLocality, setSelectedLocality] = useState('');
+  const [customLocality, setCustomLocality] = useState('');
+
+  // Medical Information Fields
+  const [isVaccinated, setIsVaccinated] = useState(true);
+  const [isSpayedNeutered, setIsSpayedNeutered] = useState(true);
+  const [isMicrochipped, setIsMicrochipped] = useState(true);
+  const [healthNotes, setHealthNotes] = useState('Fully vaccinated & active');
+
   const [description, setDescription] = useState('');
   const [uploadedImagePreview, setUploadedImagePreview] = useState<string | null>(null);
   const [uploadedFileName, setUploadedFileName] = useState<string>('');
@@ -34,6 +88,43 @@ export const ListPetModal: React.FC<ListPetModalProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
   const [newlyCreatedPet, setNewlyCreatedPet] = useState<Pet | null>(null);
+
+  // Dynamic traits/personality tags (up to 5)
+  const [traits, setTraits] = useState<string[]>(['Friendly', 'Playful', 'Loving']);
+  const [customTrait, setCustomTrait] = useState('');
+
+  const popularTraits = ['Friendly', 'Playful', 'Calm', 'Energetic', 'Loving', 'Smart', 'Shy', 'Independent', 'Cuddly', 'Protective'];
+
+  // Reset breed when animal type changes to force manual selection
+  useEffect(() => {
+    setSelectedBreed('');
+    setCustomBreed('');
+  }, [animalType]);
+
+  // Pre-fill contact details when currentProfile finishes loading or changes
+  useEffect(() => {
+    if (currentProfile) {
+      if (!ownerName) setOwnerName(currentProfile.name || '');
+      if (!ownerPhone) setOwnerPhone(currentProfile.phone || '');
+      if (!ownerEmail) setOwnerEmail(currentProfile.email || '');
+    }
+  }, [currentProfile]);
+
+  const handleAddTrait = (traitToAdd: string) => {
+    const trimmed = traitToAdd.trim();
+    if (!trimmed) return;
+    if (traits.includes(trimmed)) return;
+    if (traits.length >= 5) {
+      setError('You can select or add up to 5 personality traits.');
+      return;
+    }
+    setTraits([...traits, trimmed]);
+    setError(null);
+  };
+
+  const handleRemoveTrait = (traitToRemove: string) => {
+    setTraits(traits.filter(t => t !== traitToRemove));
+  };
 
   if (!isOpen) return null;
 
@@ -93,13 +184,84 @@ export const ListPetModal: React.FC<ListPetModalProps> = ({
       return;
     }
 
-    if (!petName.trim() || !breed.trim() || !age.trim() || !description.trim()) {
-      setError('Please fill in all required fields about the pet.');
+    if (!petName.trim()) {
+      setError('Please provide a pet name.');
       return;
     }
 
+    if (description.trim().length < 40) {
+      setError(`Pet Story & Behavior Notes must be at least 40 characters long (currently ${description.trim().length} characters).`);
+      return;
+    }
+
+    if (!animalType) {
+      setError('Please select an animal type.');
+      return;
+    }
+
+    if (!gender) {
+      setError('Please select a gender.');
+      return;
+    }
+
+    if (!selectedLocality) {
+      setError('Please select a pet location locality.');
+      return;
+    }
+
+    // Determine final breed
+    const finalBreed = selectedBreed === 'Other' ? customBreed.trim() : selectedBreed;
+    if (!selectedBreed) {
+      setError('Please select a breed.');
+      return;
+    }
+    if (selectedBreed === 'Other' && !customBreed.trim()) {
+      setError('Please type your custom breed.');
+      return;
+    }
+
+    // Validate Age
+    const ageInteger = parseInt(ageNum, 10);
+    if (isNaN(ageInteger) || ageInteger < 0 || ageInteger > 100) {
+      setError('Age must be a valid number between 0 and 100 years.');
+      return;
+    }
+
+    // Validate Weight
+    const weightInteger = parseInt(weightNum, 10);
+    if (isNaN(weightInteger) || weightInteger < 1 || weightInteger > 99) {
+      setError('Weight must be a valid 1 or 2-digit number (1-99 kg).');
+      return;
+    }
+
+    // Determine Location
+    const finalLocation = selectedLocality === 'Other' 
+      ? `${customLocality.trim() || 'Bengaluru'}` 
+      : `${selectedLocality}, Bengaluru`;
+
     if (!ownerName.trim() || !ownerPhone.trim()) {
       setError('Please provide your foster/owner contact details.');
+      return;
+    }
+
+    if (/\d/.test(petName)) {
+      setError('Pet Name must not contain numbers.');
+      return;
+    }
+
+    if (/\d/.test(ownerName)) {
+      setError('Your Name must not contain numbers.');
+      return;
+    }
+
+    if (ownerPhone.length !== 10) {
+      setError('Phone number must be exactly 10 digits.');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (ownerEmail.trim() && !emailRegex.test(ownerEmail.trim())) {
+      setError('Please provide a valid standard email address.');
       return;
     }
 
@@ -108,31 +270,30 @@ export const ListPetModal: React.FC<ListPetModalProps> = ({
       petListerId: currentProfile?.userId || 'default-lister',
       name: petName.trim(),
       animalType,
-      breed: breed.trim(),
-      age: age.trim(),
-      ageCategory: 'Young',
+      breed: finalBreed,
+      age: `${ageInteger} Years`,
+      ageCategory: ageInteger < 2 ? 'Young' : ageInteger < 8 ? 'Adult' : 'Senior',
       gender,
-      size,
-      location: location.trim() || 'Bengaluru',
+      weight: `${weightInteger} kg`,
+      location: finalLocation,
       image: uploadedImagePreview,
       description: description.trim(),
       medicalInfo: {
-        vaccinated: true,
-        spayedNeutered: true,
-        microchipped: true,
-        healthNotes: 'Health verified by foster owner',
+        vaccinated: isVaccinated,
+        spayedNeutered: isSpayedNeutered,
+        microchipped: isMicrochipped,
+        healthNotes: healthNotes.trim() || 'Health verified by foster parent',
       },
       goodWith: ['Families', 'Kids', 'Friendly Homes'],
-      personality: ['Loving', 'Friendly', 'Rescued'],
+      personality: traits,
       shelterName: `${ownerName.trim()}'s Foster Home`,
       status: 'AVAILABLE',
       activityLevel: 'Moderate',
-      weight: 'Not specified',
       adoptionFee: 'Free Adoption',
       dateAdded: new Date().toISOString().split('T')[0],
     };
 
-    // Send newly listed pet data to C++ / Express Backend API
+    // Send newly listed pet data to Express Backend API
     fetch('/api/adoption-form', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -155,11 +316,21 @@ export const ListPetModal: React.FC<ListPetModalProps> = ({
   const handleReset = () => {
     setIsSuccess(false);
     setPetName('');
-    setBreed('');
-    setAge('');
+    setAgeNum('');
+    setWeightNum('');
+    setSelectedBreed('');
+    setCustomBreed('');
+    setSelectedLocality('Indiranagar');
+    setCustomLocality('');
     setDescription('');
+    setIsVaccinated(true);
+    setIsSpayedNeutered(true);
+    setIsMicrochipped(true);
+    setHealthNotes('Fully vaccinated & active');
     setUploadedImagePreview(null);
     setUploadedFileName('');
+    setTraits(['Friendly', 'Playful', 'Loving']);
+    setCustomTrait('');
     setError(null);
     onClose();
   };
@@ -203,7 +374,7 @@ export const ListPetModal: React.FC<ListPetModalProps> = ({
 
             <div className="space-y-3">
               <h3 className="text-3xl sm:text-4xl font-titan text-[#0F5C94]">
-                {newlyCreatedPet.name} is now listed! 🎉
+                {newlyCreatedPet.name} is now listed!
               </h3>
               <p className="text-sm sm:text-base text-[#0F942D] font-black">
                 Your pet listing is now live on FurEver.
@@ -257,7 +428,7 @@ export const ListPetModal: React.FC<ListPetModalProps> = ({
                   id="list-pet-input-name"
                   type="text"
                   value={petName}
-                  onChange={(e) => setPetName(e.target.value)}
+                  onChange={(e) => setPetName(e.target.value.replace(/[0-9]/g, ''))}
                   placeholder="e.g. Milo, Bella, Bruno"
                   required
                   className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF5EB] border-2 border-[#0F5C94]/30 text-xs sm:text-sm text-[#0F5C94] font-bold placeholder-[#0F5C94]/40 focus:outline-none focus:border-[#0F5C94] focus:bg-white"
@@ -274,90 +445,185 @@ export const ListPetModal: React.FC<ListPetModalProps> = ({
                   onChange={(e) => setAnimalType(e.target.value as any)}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF5EB] border-2 border-[#0F5C94]/30 text-xs font-black text-[#0F5C94] focus:outline-none focus:border-[#0F5C94] focus:bg-white"
                 >
-                  <option value="Dog">Dog 🐶</option>
-                  <option value="Cat">Cat 🐱</option>
-                  <option value="Rabbit">Rabbit 🐰</option>
-                  <option value="Bird">Bird 🦜</option>
-                  <option value="Other">Other 🐾</option>
+                  <option value="" disabled>Select Animal Type</option>
+                  <option value="Dog">Dog</option>
+                  <option value="Cat">Cat</option>
+                  <option value="Rabbit">Rabbit</option>
+                  <option value="Bird">Bird</option>
+                  <option value="Other">Other</option>
                 </select>
               </div>
             </div>
 
-            {/* Row 2: Breed, Age, Gender, Size */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {/* Row 2: Breed & Age */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-black text-[#0F5C94] uppercase tracking-wider mb-1">
-                  Breed <span className="text-[#FB4504]">*</span>
+                  Breed / Variant <span className="text-[#FB4504]">*</span>
                 </label>
-                <input
-                  id="list-pet-input-breed"
-                  type="text"
-                  value={breed}
-                  onChange={(e) => setBreed(e.target.value)}
-                  placeholder="e.g. Golden Retriever / Indie"
-                  required
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF5EB] border-2 border-[#0F5C94]/30 text-xs sm:text-sm text-[#0F5C94] font-bold placeholder-[#0F5C94]/40 focus:outline-none focus:border-[#0F5C94] focus:bg-white"
-                />
+                <select
+                  value={selectedBreed}
+                  onChange={(e) => setSelectedBreed(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF5EB] border-2 border-[#0F5C94]/30 text-xs font-black text-[#0F5C94] focus:outline-none focus:border-[#0F5C94]"
+                >
+                  <option value="" disabled>Select Breed</option>
+                  {COMMON_BREEDS.map((b) => (
+                    <option key={b} value={b}>
+                      {b}
+                    </option>
+                  ))}
+                  <option value="Other">Other (Type custom breed)</option>
+                </select>
+                {selectedBreed === 'Other' && (
+                  <input
+                    type="text"
+                    value={customBreed}
+                    onChange={(e) => setCustomBreed(e.target.value)}
+                    placeholder="Enter breed name..."
+                    required
+                    className="w-full mt-2 px-3.5 py-2.5 rounded-xl bg-[#FAF5EB] border-2 border-[#0F5C94]/30 text-xs sm:text-sm text-[#0F5C94] font-bold placeholder-[#0F5C94]/40"
+                  />
+                )}
               </div>
 
               <div>
                 <label className="block text-xs font-black text-[#0F5C94] uppercase tracking-wider mb-1">
-                  Age <span className="text-[#FB4504]">*</span>
+                  Age (Years) <span className="text-[#FB4504]">*</span>
                 </label>
                 <input
-                  id="list-pet-input-age"
-                  type="text"
-                  value={age}
-                  onChange={(e) => setAge(e.target.value)}
-                  placeholder="e.g. 1.5 years / 4 months"
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={ageNum}
+                  onChange={(e) => setAgeNum(e.target.value)}
+                  placeholder="e.g. 2 (Only numbers <= 100)"
                   required
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF5EB] border-2 border-[#0F5C94]/30 text-xs sm:text-sm text-[#0F5C94] font-bold placeholder-[#0F5C94]/40 focus:outline-none focus:border-[#0F5C94] focus:bg-white"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF5EB] border-2 border-[#0F5C94]/30 text-xs sm:text-sm text-[#0F5C94] font-bold placeholder-[#0F5C94]/40"
                 />
-              </div>
-
-              <div>
-                <label className="block text-xs font-black text-[#0F5C94] uppercase tracking-wider mb-1">
-                  Gender & Size
-                </label>
-                <div className="flex gap-2">
-                  <select
-                    id="list-pet-select-gender"
-                    value={gender}
-                    onChange={(e) => setGender(e.target.value as any)}
-                    className="w-1/2 px-2 py-2.5 rounded-xl bg-[#FAF5EB] border-2 border-[#0F5C94]/30 text-xs font-black text-[#0F5C94]"
-                  >
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                  </select>
-
-                  <select
-                    id="list-pet-select-size"
-                    value={size}
-                    onChange={(e) => setSize(e.target.value as any)}
-                    className="w-1/2 px-2 py-2.5 rounded-xl bg-[#FAF5EB] border-2 border-[#0F5C94]/30 text-xs font-black text-[#0F5C94]"
-                  >
-                    <option value="Small">Small</option>
-                    <option value="Medium">Medium</option>
-                    <option value="Large">Large</option>
-                  </select>
-                </div>
               </div>
             </div>
 
-            {/* Row 3: Location */}
+            {/* Row 3: Gender & Weight */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-black text-[#0F5C94] uppercase tracking-wider mb-1">
+                  Gender <span className="text-[#FB4504]">*</span>
+                </label>
+                <select
+                  value={gender}
+                  onChange={(e) => setGender(e.target.value as any)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF5EB] border-2 border-[#0F5C94]/30 text-xs font-black text-[#0F5C94]"
+                >
+                  <option value="" disabled>Select Gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-black text-[#0F5C94] uppercase tracking-wider mb-1">
+                  Weight (kg) <span className="text-[#FB4504]">*</span>
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="99"
+                  value={weightNum}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val.length <= 2) {
+                      setWeightNum(val);
+                    }
+                  }}
+                  placeholder="e.g. 12 (Max 2 digits)"
+                  required
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF5EB] border-2 border-[#0F5C94]/30 text-xs sm:text-sm text-[#0F5C94] font-bold placeholder-[#0F5C94]/40"
+                />
+              </div>
+            </div>
+
+            {/* Row 4: Pet Location Dropdown (Matching rest of app) */}
             <div>
               <label className="block text-xs font-black text-[#0F5C94] uppercase tracking-wider mb-1 flex items-center gap-1">
                 <CustomIcon name="location" className="w-3.5 h-3.5 text-[#9A5D16]" />
-                Pet Location
+                Pet Location / Locality <span className="text-[#FB4504]">*</span>
               </label>
-              <input
-                id="list-pet-input-location"
-                type="text"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder="e.g. Indiranagar, Bengaluru"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF5EB] border-2 border-[#0F5C94]/30 text-xs sm:text-sm text-[#0F5C94] font-bold placeholder-[#0F5C94]/40 focus:outline-none focus:border-[#0F5C94] focus:bg-white"
-              />
+              <select
+                value={selectedLocality}
+                onChange={(e) => setSelectedLocality(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF5EB] border-2 border-[#0F5C94]/30 text-xs font-black text-[#0F5C94] focus:outline-none focus:border-[#0F5C94]"
+              >
+                <option value="" disabled>Select Locality</option>
+                {BANGALORE_LOCALITIES.map((loc) => (
+                  <option key={loc} value={loc}>
+                    {loc}
+                  </option>
+                ))}
+                <option value="Other">Other (Custom area)</option>
+              </select>
+              {selectedLocality === 'Other' && (
+                <input
+                  type="text"
+                  value={customLocality}
+                  onChange={(e) => setCustomLocality(e.target.value)}
+                  placeholder="Type Bangalore locality name..."
+                  required
+                  className="w-full mt-2 px-3.5 py-2.5 rounded-xl bg-[#FAF5EB] border-2 border-[#0F5C94]/30 text-xs sm:text-sm text-[#0F5C94] font-bold placeholder-[#0F5C94]/40"
+                />
+              )}
+            </div>
+
+            {/* NEW: Comprehensive Medical Data Inputs */}
+            <div className="p-4 rounded-2xl border-2 border-[#F6D97B] bg-[#FFFBEA] space-y-3.5 shadow-xs">
+              <span className="text-xs font-black uppercase text-[#9A5D16] tracking-wider flex items-center gap-1">
+                Medical & Veterinary Records
+              </span>
+
+              <div className="grid grid-cols-3 gap-2">
+                <label className="flex flex-col items-center justify-center p-2.5 rounded-xl bg-white border border-[#0F5C94]/15 hover:border-[#0F5C94]/30 cursor-pointer text-center">
+                  <span className="text-[10px] font-black text-stone-500 uppercase">Vaccinated</span>
+                  <input
+                    type="checkbox"
+                    checked={isVaccinated}
+                    onChange={(e) => setIsVaccinated(e.target.checked)}
+                    className="w-4 h-4 mt-1.5 accent-[#0F5C94] cursor-pointer"
+                  />
+                  <span className="text-[10px] font-bold text-[#0F5C94] mt-1">{isVaccinated ? 'Yes' : 'No'}</span>
+                </label>
+
+                <label className="flex flex-col items-center justify-center p-2.5 rounded-xl bg-white border border-[#0F5C94]/15 hover:border-[#0F5C94]/30 cursor-pointer text-center">
+                  <span className="text-[10px] font-black text-stone-500 uppercase">Spayed/Neutered</span>
+                  <input
+                    type="checkbox"
+                    checked={isSpayedNeutered}
+                    onChange={(e) => setIsSpayedNeutered(e.target.checked)}
+                    className="w-4 h-4 mt-1.5 accent-[#0F5C94] cursor-pointer"
+                  />
+                  <span className="text-[10px] font-bold text-[#0F5C94] mt-1">{isSpayedNeutered ? 'Yes' : 'No'}</span>
+                </label>
+
+                <label className="flex flex-col items-center justify-center p-2.5 rounded-xl bg-white border border-[#0F5C94]/15 hover:border-[#0F5C94]/30 cursor-pointer text-center">
+                  <span className="text-[10px] font-black text-stone-500 uppercase">Microchipped</span>
+                  <input
+                    type="checkbox"
+                    checked={isMicrochipped}
+                    onChange={(e) => setIsMicrochipped(e.target.checked)}
+                    className="w-4 h-4 mt-1.5 accent-[#0F5C94] cursor-pointer"
+                  />
+                  <span className="text-[10px] font-bold text-[#0F5C94] mt-1">{isMicrochipped ? 'Yes' : 'No'}</span>
+                </label>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-black text-[#9A5D16] uppercase mb-1">Health & Medical Notes</label>
+                <input
+                  type="text"
+                  value={healthNotes}
+                  onChange={(e) => setHealthNotes(e.target.value)}
+                  placeholder="e.g. Fully vaccinated & dewormed"
+                  className="w-full px-3 py-2 rounded-xl bg-white border border-[#0F5C94]/20 text-xs font-bold text-[#0F5C94]"
+                />
+              </div>
             </div>
 
             {/* Upload Pet Photo Section */}
@@ -435,11 +701,99 @@ export const ListPetModal: React.FC<ListPetModalProps> = ({
               )}
             </div>
 
+            {/* Personality & Traits Tags Selector (Up to 5) */}
+            <div className="p-4 rounded-2xl border-2 border-[#0F5C94]/30 bg-[#FAF5EB]/50 space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-black text-[#0F5C94] uppercase tracking-wider">
+                  Personality & Traits <span className="text-[#0F5C94]/60">(Select or Add up to 5)</span>
+                </label>
+                <span className="text-[10px] font-black text-[#0F5C94]/70 bg-white px-2 py-0.5 rounded-md border border-[#0F5C94]/20">
+                  {traits.length}/5 Selected
+                </span>
+              </div>
+
+              {/* Popular Selectable Tags */}
+              <div className="flex flex-wrap gap-1.5">
+                {popularTraits.map((trait) => {
+                  const isSelected = traits.includes(trait);
+                  return (
+                    <button
+                      key={trait}
+                      type="button"
+                      onClick={() => isSelected ? handleRemoveTrait(trait) : handleAddTrait(trait)}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-black border transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-[#0F5C94] text-white border-[#0F5C94] shadow-[1px_1px_0px_#FB4504]'
+                          : 'bg-white text-[#0F5C94] border-[#0F5C94]/20 hover:border-[#0F5C94]/40'
+                      }`}
+                    >
+                      {trait} {isSelected ? '✓' : '+'}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Custom Tag Input */}
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={customTrait}
+                  onChange={(e) => setCustomTrait(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleAddTrait(customTrait);
+                      setCustomTrait('');
+                    }
+                  }}
+                  placeholder="Type custom trait (e.g. Toilet Trained)"
+                  className="flex-1 px-3 py-2 rounded-xl bg-white border border-[#0F5C94]/30 text-xs font-bold text-[#0F5C94]"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleAddTrait(customTrait);
+                    setCustomTrait('');
+                  }}
+                  className="px-4 py-2 rounded-xl bg-[#0F5C94] text-white hover:bg-[#0b4875] font-black text-xs uppercase tracking-wider border border-[#0F5C94] cursor-pointer"
+                >
+                  Add
+                </button>
+              </div>
+
+              {/* Selected tags list */}
+              {traits.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 pt-1.5 border-t border-[#0F5C94]/10">
+                  <span className="text-[10px] font-black text-[#9A5D16] uppercase self-center mr-1">Your tags:</span>
+                  {traits.map((trait) => (
+                    <span
+                      key={trait}
+                      className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-xs font-black bg-white text-[#FB4504] border border-[#FB4504]/30 shadow-xs"
+                    >
+                      {trait}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveTrait(trait)}
+                        className="text-[#FB4504] hover:text-[#e03a00] font-black ml-1 text-[11px] cursor-pointer"
+                      >
+                        ✕
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
             {/* Description / Story */}
             <div>
-              <label className="block text-xs font-black text-[#0F5C94] uppercase tracking-wider mb-1">
-                Pet Story & Behavior Notes <span className="text-[#FB4504]">*</span>
-              </label>
+              <div className="flex justify-between items-center mb-1">
+                <label className="block text-xs font-black text-[#0F5C94] uppercase tracking-wider">
+                  Pet Story & Behavior Notes <span className="text-[#FB4504]">*</span>
+                </label>
+                <span className={`text-[10px] font-black uppercase tracking-wider ${description.trim().length < 40 ? 'text-[#FB4504]' : 'text-[#0F942D]'}`}>
+                  {description.trim().length} / 40 min chars
+                </span>
+              </div>
               <textarea
                 id="list-pet-textarea-description"
                 value={description}
@@ -460,25 +814,30 @@ export const ListPetModal: React.FC<ListPetModalProps> = ({
                 <input
                   type="text"
                   value={ownerName}
-                  onChange={(e) => setOwnerName(e.target.value)}
+                  onChange={(e) => setOwnerName(e.target.value.replace(/[0-9]/g, ''))}
                   placeholder="Your Full Name *"
                   required
-                  className="px-3 py-2 rounded-xl bg-white border border-[#0F5C94]/30 text-xs text-[#0F5C94] font-bold"
+                  className="px-3 py-2 rounded-xl bg-stone-100 border border-stone-300 text-xs text-[#0F5C94] font-bold placeholder-stone-400 focus:bg-white focus:outline-none"
                 />
                 <input
                   type="tel"
                   value={ownerPhone}
-                  onChange={(e) => setOwnerPhone(e.target.value)}
+                  onChange={(e) => {
+                    const onlyDigits = e.target.value.replace(/\D/g, '');
+                    if (onlyDigits.length <= 10) {
+                      setOwnerPhone(onlyDigits);
+                    }
+                  }}
                   placeholder="Phone Number *"
                   required
-                  className="px-3 py-2 rounded-xl bg-white border border-[#0F5C94]/30 text-xs text-[#0F5C94] font-bold"
+                  className="px-3 py-2 rounded-xl bg-stone-100 border border-stone-300 text-xs text-[#0F5C94] font-bold placeholder-stone-400 focus:bg-white focus:outline-none"
                 />
                 <input
                   type="email"
                   value={ownerEmail}
                   onChange={(e) => setOwnerEmail(e.target.value)}
                   placeholder="Email Address"
-                  className="px-3 py-2 rounded-xl bg-white border border-[#0F5C94]/30 text-xs text-[#0F5C94] font-bold"
+                  className="px-3 py-2 rounded-xl bg-stone-100 border border-stone-300 text-xs text-[#0F5C94] font-bold placeholder-stone-400 focus:bg-white focus:outline-none"
                 />
               </div>
             </div>

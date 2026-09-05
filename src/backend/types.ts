@@ -1,7 +1,7 @@
 export type AnimalType = 'Dog' | 'Cat' | 'Rabbit' | 'Bird' | 'Other';
 export type AgeCategory = 'Young' | 'Adult' | 'Senior';
-export type PetSize = 'Small' | 'Medium' | 'Large';
 export type PetGender = 'Male' | 'Female';
+export type PetSize = 'Small' | 'Medium' | 'Large';
 export type AdoptionStatus = 'AVAILABLE' | 'CURRENTLY UNAVAILABLE' | 'ADOPTED' | 'PENDING';
 export type ApplicationStatus = 'Pending' | 'Under Review' | 'Approved' | 'Adopted' | 'Rejected';
 
@@ -32,13 +32,12 @@ export interface Pet {
   age: string;
   ageCategory: AgeCategory;
   gender: PetGender;
-  size: PetSize;
+  weight: string;
   location: string;
   description: string;
   personality: string[];
   goodWith: string[];
   medicalInfo: MedicalInfo;
-  weight: string;
   activityLevel: string;
   adoptionFee: string;
   shelterName: string;
@@ -66,6 +65,7 @@ export interface AdoptionApplication {
   dateApplied: string;
   eligibilityResult: string; // "APPLICABLE" or "NOT_APPLICABLE"
   ineligibilityReason: string;
+  currentStatus?: ApplicationStatus;
 }
 
 export interface Like {

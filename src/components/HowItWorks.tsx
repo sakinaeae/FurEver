@@ -3,6 +3,7 @@ import { CustomIcon } from './CustomIcon';
 import { PawIcon } from './PawDecorations';
 
 interface HowItWorksProps {
+  userRole?: string;
   onDiscoverClick: () => void;
   onMeetClick: () => void;
   onConnectClick: () => void;
@@ -11,6 +12,7 @@ interface HowItWorksProps {
 }
 
 export const HowItWorks: React.FC<HowItWorksProps> = ({
+  userRole,
   onDiscoverClick,
   onMeetClick,
   onConnectClick,
@@ -75,7 +77,7 @@ export const HowItWorks: React.FC<HowItWorksProps> = ({
                   </button>
 
                   <button
-                    onClick={onSwipeClick || onDiscoverClick}
+                    onClick={onSwipeClick}
                     className="w-full p-2 rounded-xl bg-[#FAF5EB] hover:bg-[#FB4504] text-[#0F5C94] hover:text-white border-2 border-[#0F5C94] text-[11px] font-black uppercase tracking-wider flex items-center justify-between transition-all cursor-pointer shadow-[2px_2px_0px_#0F5C94] group"
                   >
                     <span className="flex items-center gap-1.5">

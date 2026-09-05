@@ -36,6 +36,14 @@ export const PetCard: React.FC<PetCardProps> = ({
         {/* Subtle bottom gradient overlay for legibility */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
 
+        {!isAvailable && (
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px] flex items-center justify-center p-4 z-20 text-center">
+            <span className="bg-[#FB4504] text-white px-3 py-2 rounded-xl text-xs font-black uppercase tracking-wider border-2 border-white shadow-lg">
+              This pet is under adoption process
+            </span>
+          </div>
+        )}
+
         {/* Top Action Button */}
         <div className="absolute top-3 right-3 pointer-events-none">
           {/* Favorite Toggle Button */}
@@ -60,7 +68,7 @@ export const PetCard: React.FC<PetCardProps> = ({
             {pet.location.split(',')[0]}
           </span>
           <span className="bg-[#0F5C94] px-2.5 py-1 rounded-lg text-[#F6D97B] font-black uppercase text-[10px] tracking-wider border border-white/20">
-            {pet.gender} · {pet.age}
+            {pet.gender} · {pet.age} · {pet.weight}
           </span>
         </div>
       </div>
@@ -75,12 +83,9 @@ export const PetCard: React.FC<PetCardProps> = ({
                 {pet.name}
               </h3>
               <p className="text-xs font-bold text-[#9A5D16] uppercase tracking-wider mt-0.5">
-                {pet.breed}
+                {pet.breed} · {pet.gender} · {pet.age} · {pet.weight}
               </p>
             </div>
-            <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-[#F6D97B] border border-[#0F5C94] text-[#0F5C94] uppercase tracking-wider">
-              {pet.size}
-            </span>
           </div>
 
           {/* Personality Tags */}
@@ -115,10 +120,10 @@ export const PetCard: React.FC<PetCardProps> = ({
               e.stopPropagation();
               onSelectPet(pet);
             }}
-            className="inline-flex items-center gap-1 text-xs font-black text-[#0F5C94] group-hover:text-[#FB4504] uppercase tracking-wider transition-all"
+            className={`inline-flex items-center gap-1 text-xs font-black uppercase tracking-wider transition-all ${isAvailable ? 'text-[#0F5C94] group-hover:text-[#FB4504]' : 'text-gray-400 cursor-not-allowed'}`}
           >
-            <span>Meet {pet.name}</span>
-            <CustomIcon name="right-arrow" className="w-3.5 h-3.5" />
+            <span>{isAvailable ? `Meet ${pet.name}` : 'Under Adoption Process'}</span>
+            {isAvailable && <CustomIcon name="right-arrow" className="w-3.5 h-3.5" />}
           </button>
         </div>
       </div>

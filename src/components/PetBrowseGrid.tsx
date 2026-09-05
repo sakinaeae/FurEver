@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { CustomIcon } from './CustomIcon';
-import { Pet, AnimalType, AgeCategory, PetSize, PetGender } from '../backend/types';
+import { Pet, AnimalType, AgeCategory, PetGender, PetSize } from '../backend/types';
 import { PetCard } from './PetCard';
 import { PawIcon } from './PawDecorations';
 import { AnimalMarqueeTape } from './AnimalMarqueeTape';
@@ -14,6 +14,14 @@ interface PetBrowseGridProps {
   onShufflePets?: () => void;
 }
 
+const getPetSize = (weightStr: string): PetSize => {
+  const weight = parseFloat(weightStr);
+  if (isNaN(weight)) return 'Medium';
+  if (weight < 10) return 'Small';
+  if (weight <= 25) return 'Medium';
+  return 'Large';
+};
+
 export const PetBrowseGrid: React.FC<PetBrowseGridProps> = ({
   pets,
   favoriteIds,
@@ -22,17 +30,54 @@ export const PetBrowseGrid: React.FC<PetBrowseGridProps> = ({
   onOpenMatchFinder,
   onShufflePets,
 }) => {
-  const [selectedCategory, setSelectedCategory] = useState<AnimalType | 'All'>('All');
+  const [selectedCategory, setSelectedCategory] = useState<AnimalType | ''>('');
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedAge, setSelectedAge] = useState<AgeCategory | 'All'>('All');
-  const [selectedSize, setSelectedSize] = useState<PetSize | 'All'>('All');
-  const [selectedGender, setSelectedGender] = useState<PetGender | 'All'>('All');
-  const [selectedActivity, setSelectedActivity] = useState<string>('All');
-  const [selectedLocation, setSelectedLocation] = useState<string>('All');
-  const [selectedTrait, setSelectedTrait] = useState<string>('All');
-  const [sortBy, setSortBy] = useState<'featured' | 'recent' | 'name' | 'age'>('featured');
+  const [selectedAge, setSelectedAge] = useState<AgeCategory | ''>('');
+  const [selectedSize, setSelectedSize] = useState<PetSize | ''>('');
+  const [selectedGender, setSelectedGender] = useState<PetGender | ''>('');
+  const [selectedActivity, setSelectedActivity] = useState<string>('');
+  const [selectedLocation, setSelectedLocation] = useState<string>('');
+  const [selectedTrait, setSelectedTrait] = useState<string>('');
+  const [selectedBreed, setSelectedBreed] = useState<string>('');
+  const [customBreed, setCustomBreed] = useState('');
+  const [customLocation, setCustomLocation] = useState('');
+  const [sortBy, setSortBy] = useState<'' | 'featured' | 'recent' | 'name' | 'age'>('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [visibleCount, setVisibleCount] = useState<number>(12);
+
+  const commonBreeds = [
+    'Golden Retriever',
+    'Indie',
+    'Beagle',
+    'German Shepherd',
+    'Poodle',
+    'Bulldog',
+    'Labrador',
+    'Persian',
+    'Siamese',
+    'Maine Coon',
+    'British Shorthair',
+    'Ragdoll',
+    'Lop',
+    'Netherland Dwarf',
+    'Lionhead',
+  ];
+
+  const bangaloreLocalities = [
+    'Indiranagar',
+    'Koramangala',
+    'HSR Layout',
+    'Whitefield',
+    'Jayanagar',
+    'Malleshwaram',
+    'JP Nagar',
+    'Marathahalli',
+    'Electronic City',
+    'Hebbal',
+    'Basavanagudi',
+    'Frazer Town',
+    'Richmond Town',
+  ];
 
   const categories: { type: AnimalType | 'All'; label: string; icon: string }[] = [
     { type: 'All', label: 'All Friends', icon: 'any-pet' },
@@ -75,7 +120,7 @@ export const PetBrowseGrid: React.FC<PetBrowseGridProps> = ({
           return false;
         }
         // Size filter
-        if (selectedSize !== 'All' && pet.size !== selectedSize) {
+        if (selectedSize !== 'All' && getPetSize(pet.weight) !== selectedSize) {
           return false;
         }
         // Gender filter
@@ -87,8 +132,11 @@ export const PetBrowseGrid: React.FC<PetBrowseGridProps> = ({
           return false;
         }
         // Location filter
-        if (selectedLocation !== 'All' && !pet.location.toLowerCase().includes(selectedLocation.toLowerCase())) {
-          return false;
+        if (selectedLocation !== 'All') {
+          const locationToMatch = selectedLocation === 'Other' ? customLocation.toLowerCase() : selectedLocation.toLowerCase();
+          if (locationToMatch.trim() !== '' && !pet.location.toLowerCase().includes(locationToMatch)) {
+            return false;
+          }
         }
         // Trait filter
         if (selectedTrait !== 'All') {
@@ -107,6 +155,13 @@ export const PetBrowseGrid: React.FC<PetBrowseGridProps> = ({
           const matchesShelter = (pet.shelterName || '').toLowerCase().includes(q);
           const matchesPersonality = pet.personality.some((p) => p.toLowerCase().includes(q));
           if (!matchesName && !matchesBreed && !matchesLocation && !matchesShelter && !matchesPersonality) {
+            return false;
+          }
+        }
+        // Breed filter
+        if (selectedBreed !== 'All') {
+          const breedToMatch = selectedBreed === 'Other' ? customBreed.toLowerCase() : selectedBreed.toLowerCase();
+          if (breedToMatch.trim() !== '' && !pet.breed.toLowerCase().includes(breedToMatch)) {
             return false;
           }
         }
@@ -133,8 +188,11 @@ export const PetBrowseGrid: React.FC<PetBrowseGridProps> = ({
     selectedGender,
     selectedActivity,
     selectedLocation,
+    customLocation,
     selectedTrait,
     sortBy,
+    selectedBreed,
+    customBreed,
   ]);
 
   const activeFilterCount = [
@@ -156,7 +214,10 @@ export const PetBrowseGrid: React.FC<PetBrowseGridProps> = ({
     setSelectedGender('All');
     setSelectedActivity('All');
     setSelectedLocation('All');
+    setCustomLocation('');
     setSelectedTrait('All');
+    setSelectedBreed('All');
+    setCustomBreed('');
     setSortBy('featured');
     setVisibleCount(12);
   };
@@ -273,6 +334,38 @@ export const PetBrowseGrid: React.FC<PetBrowseGridProps> = ({
                 </select>
               </div>
 
+              {/* Breed Selector */}
+              <div className="lg:col-span-2">
+                <div className="relative">
+                  <CustomIcon name="paw" className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9A5D16]" />
+                  <select
+                    id="browse-breed-select"
+                    value={selectedBreed}
+                    onChange={(e) => {
+                      setSelectedBreed(e.target.value);
+                      setVisibleCount(12);
+                    }}
+                    className={`w-full pl-10 pr-3 py-2 rounded-xl bg-white border-2 border-[#0F5C94]/30 text-xs font-black ${selectedBreed ? 'text-[#0F5C94]' : 'text-gray-400'} uppercase tracking-wider focus:outline-none focus:border-[#0F5C94]`}
+                  >
+                    <option value="" disabled hidden>Select Breed...</option>
+                    {commonBreeds.map(breed => <option key={breed} value={breed}>{breed}</option>)}
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                {selectedBreed === 'Other' && (
+                  <div className="relative mt-2">
+                    <input
+                      id="browse-custom-breed-input"
+                      type="text"
+                      value={customBreed}
+                      onChange={(e) => setCustomBreed(e.target.value)}
+                      placeholder="Enter breed..."
+                      className="w-full pl-4 pr-4 py-2.5 rounded-xl bg-white border-2 border-[#0F5C94]/30 text-xs sm:text-sm text-[#0F5C94] font-bold placeholder-[#0F5C94]/40 focus:outline-none focus:border-[#0F5C94]"
+                    />
+                  </div>
+                )}
+              </div>
+
               {/* Size Filter */}
               <div className="lg:col-span-2">
                 <select
@@ -293,22 +386,34 @@ export const PetBrowseGrid: React.FC<PetBrowseGridProps> = ({
 
               {/* Location Filter */}
               <div className="lg:col-span-2">
-                <select
-                  id="filter-location-select"
-                  value={selectedLocation}
-                  onChange={(e) => {
-                    setSelectedLocation(e.target.value);
-                    setVisibleCount(12);
-                  }}
-                  className="w-full px-3 py-2 rounded-xl bg-white border-2 border-[#0F5C94]/30 text-xs font-black text-[#0F5C94] uppercase tracking-wider focus:outline-none focus:border-[#0F5C94]"
-                >
-                  <option value="All">All Localities</option>
-                  {availableLocations.filter((l) => l !== 'All').map((loc) => (
-                    <option key={loc} value={loc}>
-                      {loc}
-                    </option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <CustomIcon name="location" className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9A5D16]" />
+                  <select
+                    id="browse-location-select"
+                    value={selectedLocation}
+                    onChange={(e) => {
+                      setSelectedLocation(e.target.value);
+                      setVisibleCount(12);
+                    }}
+                    className={`w-full pl-10 pr-3 py-2 rounded-xl bg-white border-2 border-[#0F5C94]/30 text-xs font-black ${selectedLocation ? 'text-[#0F5C94]' : 'text-gray-400'} uppercase tracking-wider focus:outline-none focus:border-[#0F5C94]`}
+                  >
+                    <option value="" disabled hidden>Select Locality...</option>
+                    {bangaloreLocalities.map(loc => <option key={loc} value={loc}>{loc}</option>)}
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                {selectedLocation === 'Other' && (
+                  <div className="relative mt-2">
+                    <input
+                      id="browse-custom-location-input"
+                      type="text"
+                      value={customLocation}
+                      onChange={(e) => setCustomLocation(e.target.value)}
+                      placeholder="Enter locality..."
+                      className="w-full pl-4 pr-4 py-2.5 rounded-xl bg-white border-2 border-[#0F5C94]/30 text-xs sm:text-sm text-[#0F5C94] font-bold placeholder-[#0F5C94]/40 focus:outline-none focus:border-[#0F5C94]"
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Sort Dropdown */}

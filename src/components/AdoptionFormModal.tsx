@@ -11,7 +11,9 @@ interface AdoptionFormModalProps {
   onClose: () => void;
   onSubmitSuccess: (newApp: AdoptionApplication) => void;
   onExplorePets: () => void;
+  onTrackStatus?: () => void;
   currentProfile?: UserProfile | null;
+  applications?: AdoptionApplication[];
 }
 
 type EligibilityResult = {
@@ -25,14 +27,15 @@ export const AdoptionFormModal: React.FC<AdoptionFormModalProps> = ({
   onClose,
   onSubmitSuccess,
   onExplorePets,
+  onTrackStatus,
   currentProfile,
+  applications = [],
 }) => {
   // Form State
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
-  const [housingType, setHousingType] = useState<'House with Yard' | 'Apartment' | 'Townhouse' | 'Farm / Acreage'>('Apartment');
   const [hasOtherPets, setHasOtherPets] = useState(false);
   const [petExperience, setPetExperience] = useState<'First-time owner' | 'Experienced' | 'Lifelong pet parent'>('Experienced');
   const [fitReason, setFitReason] = useState('');
@@ -80,7 +83,7 @@ export const AdoptionFormModal: React.FC<AdoptionFormModalProps> = ({
 
     // Rule 2 — Housing suitability check
     // Large or high-energy pets, or pets requiring a yard, are not suitable for small apartments without yard
-    const isLargePet = targetPet.size === 'Large' || targetPet.activityLevel === 'High';
+    const isLargePet = targetPet.activityLevel === 'High';
     const requiresYard = targetPet.goodWith?.some((g) =>
       ['Yard Homes', 'Fenced Yard', 'Farm Life', 'Spacious Homes', 'Active Runners'].includes(g)
     );
@@ -114,6 +117,12 @@ export const AdoptionFormModal: React.FC<AdoptionFormModalProps> = ({
     e.preventDefault();
     setErrorMessage(null);
 
+    const alreadyApplied = applications.some(app => app.petId === pet.id);
+    if (alreadyApplied) {
+      setErrorMessage('This pet is already under the adoption process and cannot accept further applications.');
+      return;
+    }
+
     // Basic Input Validation
     if (!fullName.trim() || !email.trim() || !phone.trim() || !fitReason.trim()) {
       setErrorMessage('Looks like you missed something. Please complete the required fields.');
@@ -128,7 +137,7 @@ export const AdoptionFormModal: React.FC<AdoptionFormModalProps> = ({
     setIsSubmitting(true);
 
     // Perform Eligibility Check
-    const result = checkEligibility(fitReason, housingType, petExperience, pet);
+    const result = checkEligibility(fitReason, currentProfile?.housingType || 'Apartment', currentProfile?.petExperience || 'No experience', pet);
 
     if (!result.isApplicable) {
       // OUTCOME B — NOT APPLICABLE
@@ -155,9 +164,9 @@ export const AdoptionFormModal: React.FC<AdoptionFormModalProps> = ({
       applicantEmail: email.trim(),
       applicantPhone: phone.trim(),
       applicantAddress: address.trim() || pet.location,
-      housingType,
+      housingType: currentProfile?.housingType || 'Apartment',
       hasOtherPets,
-      petExperience,
+      petExperience: currentProfile?.petExperience || 'No experience',
       fitReason: fitReason.trim(),
       dateApplied: dateString,
       eligibilityResult: 'APPLICABLE',
@@ -181,11 +190,24 @@ export const AdoptionFormModal: React.FC<AdoptionFormModalProps> = ({
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newApplication),
-    }).catch((err) => console.warn('[Backend Notice] Form submission fallback to local storage:', err));
-
-    setIsSubmitting(false);
-    setEligibilityResult({ isApplicable: true });
-    onSubmitSuccess(newApplication);
+    })
+    .then(async (res) => {
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to submit application');
+      }
+      return res.json();
+    })
+    .then(() => {
+        setIsSubmitting(false);
+        setEligibilityResult({ isApplicable: true });
+        onSubmitSuccess(newApplication);
+    })
+    .catch((err) => {
+      console.error(err);
+      setErrorMessage(err.message);
+      setIsSubmitting(false);
+    });
   };
 
   const handleResetModal = () => {
@@ -236,34 +258,55 @@ export const AdoptionFormModal: React.FC<AdoptionFormModalProps> = ({
 
         {/* OUTCOME A — SUCCESSFUL / APPLICABLE VIEW */}
         {eligibilityResult?.isApplicable ? (
-          <div className="p-7 sm:p-9 text-center space-y-6 animate-fadeIn">
-            <div className="w-20 h-20 rounded-2xl bg-[#EBF7EE] text-[#0F942D] border-3 border-[#0F942D] flex items-center justify-center mx-auto shadow-[4px_4px_0px_#0F942D]">
-              <CustomIcon name="circle-tick" className="w-12 h-12" />
+          <div className="p-7 sm:p-9 text-center space-y-6 animate-fadeIn bg-emerald-50/20">
+            {/* Pop-up Alert Card */}
+            <div className="bg-white p-6 rounded-3xl border-3 border-[#0F5C94] shadow-[6px_6px_0px_#0F942D] max-w-md mx-auto space-y-4 animate-scaleUp">
+              <div className="w-16 h-16 rounded-2xl bg-[#EBF7EE] text-[#0F942D] border-2 border-[#0F5C94] flex items-center justify-center mx-auto shadow-[3px_3px_0px_#0F942D]">
+                <CustomIcon name="circle-tick" className="w-10 h-10" />
+              </div>
+
+              <div className="space-y-2">
+                <span className="inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#EBF7EE] text-[#0F942D] border border-[#0F942D]/20 animate-pulse">
+                  System Pre-Approval Verified
+                </span>
+                <h3 className="text-2xl sm:text-3xl font-titan text-[#0F5C94]">
+                  You are eligible! 🎉
+                </h3>
+                <p className="text-xs sm:text-sm text-[#0F5C94] font-black leading-relaxed">
+                  The pet lister will contact you shortly.
+                </p>
+              </div>
+
+              <div className="bg-[#FAF5EB] p-3 rounded-2xl border-2 border-dashed border-[#0F5C94]/20 text-[11px] text-[#9A5D16] font-bold">
+                🐾 Your contact details and adoption compatibility scores have been successfully delivered to the foster's dashboard.
+              </div>
             </div>
 
-            <div className="space-y-3">
-              <h3 className="text-3xl sm:text-4xl font-titan text-[#0F5C94]">
-                You're all set! 🎉
-              </h3>
-              <p className="text-lg font-black text-[#0F942D]">
-                Thank you for applying to adopt!
-              </p>
-              <p className="text-sm sm:text-base text-[#0F5C94]/90 max-w-md mx-auto leading-relaxed font-semibold">
-                We'll get back to you soon. The pet's owner/foster will reach out to you shortly.
-              </p>
-            </div>
+            {/* Action Buttons */}
+            <div className="pt-4 max-w-sm mx-auto flex flex-col sm:flex-row gap-3 justify-center">
+              {onTrackStatus && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleResetModal();
+                    onTrackStatus();
+                  }}
+                  className="w-full py-3.5 px-6 rounded-xl bg-[#0F5C94] hover:bg-[#0b4875] text-white font-black text-xs uppercase tracking-wider border-2 border-[#0F5C94] shadow-[4px_4px_0px_#FB4504] hover:translate-x-0.5 hover:translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <span>Track Status</span>
+                  <CustomIcon name="file" className="w-4 h-4 text-white" />
+                </button>
+              )}
 
-            {/* Clear Button: BACK TO PETS */}
-            <div className="pt-4 max-w-xs mx-auto">
               <button
                 id="outcome-applicable-back-btn"
                 onClick={() => {
                   handleResetModal();
                   onExplorePets();
                 }}
-                className="w-full py-3.5 px-6 rounded-xl bg-[#FB4504] hover:bg-[#e03a00] text-white font-black text-sm uppercase tracking-wider border-2 border-[#0F5C94] shadow-[4px_4px_0px_#0F5C94] hover:translate-x-0.5 hover:translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-3.5 px-6 rounded-xl bg-[#FB4504] hover:bg-[#e03a00] text-white font-black text-xs uppercase tracking-wider border-2 border-[#0F5C94] shadow-[4px_4px_0px_#0F5C94] hover:translate-x-0.5 hover:translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
-                <span>BACK TO PETS</span>
+                <span>Browse More Pets</span>
                 <CustomIcon name="right-arrow" className="w-4 h-4 text-white" />
               </button>
             </div>
@@ -306,6 +349,29 @@ export const AdoptionFormModal: React.FC<AdoptionFormModalProps> = ({
               >
                 <CustomIcon name="discover" className="w-4 h-4 white" />
                 <span>EXPLORE OTHER PETS</span>
+              </button>
+            </div>
+          </div>
+        ) : currentProfile?.role === 'Pet Lister' ? (
+          <div className="p-7 sm:p-9 text-center space-y-4 animate-fadeIn">
+            <div className="w-16 h-16 rounded-2xl bg-stone-50 border-3 border-stone-300 flex items-center justify-center mx-auto shadow-[4px_4px_0px_#A3A3A3]">
+              <CustomIcon name="cross" className="w-8 h-8 text-stone-500" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-xl sm:text-2xl font-titan text-[#0F5C94]">
+                Form Disabled
+              </h3>
+              <p className="text-xs sm:text-sm text-stone-600 font-bold max-w-sm mx-auto">
+                Your account is currently registered as a Pet Lister. Pet Listers cannot fill adoption forms for any animals.
+              </p>
+            </div>
+            <div className="pt-3 max-w-xs mx-auto">
+              <button
+                type="button"
+                onClick={onClose}
+                className="w-full py-2.5 px-4 rounded-xl bg-stone-200 hover:bg-stone-300 text-stone-700 font-black text-xs uppercase border border-stone-300 cursor-pointer"
+              >
+                Close Window
               </button>
             </div>
           </div>
@@ -379,17 +445,12 @@ export const AdoptionFormModal: React.FC<AdoptionFormModalProps> = ({
                   <CustomIcon name="home" className="w-3.5 h-3.5 text-[#9A5D16]" />
                   Housing Type
                 </label>
-                <select
-                  id="app-select-housing"
-                  value={housingType}
-                  onChange={(e) => setHousingType(e.target.value as any)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF5EB] border-2 border-[#0F5C94]/30 text-xs font-black text-[#0F5C94] focus:outline-none focus:border-[#0F5C94] focus:bg-white"
-                >
-                  <option value="Apartment">Apartment</option>
-                  <option value="House with Yard">House with Yard</option>
-                  <option value="Townhouse">Townhouse</option>
-                  <option value="Farm / Acreage">Farm / Acreage</option>
-                </select>
+                <input
+                  type="text"
+                  value={currentProfile?.housingType || 'Not specified'}
+                  disabled
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-stone-100 border-2 border-[#0F5C94]/10 text-xs font-black text-[#0F5C94]/60 cursor-not-allowed"
+                />
               </div>
 
               <div>
@@ -397,16 +458,12 @@ export const AdoptionFormModal: React.FC<AdoptionFormModalProps> = ({
                   <CustomIcon name="sparkle" className="w-3.5 h-3.5 text-[#9A5D16]" />
                   Pet Experience
                 </label>
-                <select
-                  id="app-select-experience"
-                  value={petExperience}
-                  onChange={(e) => setPetExperience(e.target.value as any)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF5EB] border-2 border-[#0F5C94]/30 text-xs font-black text-[#0F5C94] focus:outline-none focus:border-[#0F5C94] focus:bg-white"
-                >
-                  <option value="Experienced">Experienced pet parent</option>
-                  <option value="First-time owner">First-time pet owner</option>
-                  <option value="Lifelong pet parent">Lifelong pet parent</option>
-                </select>
+                <input
+                  type="text"
+                  value={currentProfile?.petExperience || 'Not specified'}
+                  disabled
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-stone-100 border-2 border-[#0F5C94]/10 text-xs font-black text-[#0F5C94]/60 cursor-not-allowed"
+                />
               </div>
             </div>
 

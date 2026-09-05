@@ -5,6 +5,14 @@ import { PetCard } from './PetCard';
 import { PawIcon } from './PawDecorations';
 import { AnimalMarqueeTape } from './AnimalMarqueeTape';
 
+const getPetSize = (weightStr: string): PetSize => {
+  const weight = parseFloat(weightStr);
+  if (isNaN(weight)) return 'Medium';
+  if (weight < 10) return 'Small';
+  if (weight <= 25) return 'Medium';
+  return 'Large';
+};
+
 interface MatchQuizFinderProps {
   pets: Pet[];
   favoriteIds: string[];
@@ -21,9 +29,45 @@ export const MatchQuizFinder: React.FC<MatchQuizFinderProps> = ({
   const [selectedType, setSelectedType] = useState<AnimalType | 'All'>('All');
   const [selectedAge, setSelectedAge] = useState<AgeCategory | 'All'>('All');
   const [selectedSize, setSelectedSize] = useState<PetSize | 'All'>('All');
-  const [breedQuery, setBreedQuery] = useState('');
-  const [locationQuery, setLocationQuery] = useState('');
+  const [selectedBreed, setSelectedBreed] = useState<string>('');
+  const [customBreed, setCustomBreed] = useState('');
+  const [selectedLocation, setSelectedLocation] = useState<string>('');
+  const [customLocation, setCustomLocation] = useState('');
   const [hasSearched, setHasSearched] = useState(false);
+
+  const commonBreeds = [
+    'Golden Retriever',
+    'Indie',
+    'Beagle',
+    'German Shepherd',
+    'Poodle',
+    'Bulldog',
+    'Labrador',
+    'Persian',
+    'Siamese',
+    'Maine Coon',
+    'British Shorthair',
+    'Ragdoll',
+    'Lop',
+    'Netherland Dwarf',
+    'Lionhead',
+  ];
+
+  const bangaloreLocalities = [
+    'Indiranagar',
+    'Koramangala',
+    'HSR Layout',
+    'Whitefield',
+    'Jayanagar',
+    'Malleshwaram',
+    'JP Nagar',
+    'Marathahalli',
+    'Electronic City',
+    'Hebbal',
+    'Basavanagudi',
+    'Frazer Town',
+    'Richmond Town',
+  ];
 
   const animalTypes: { type: AnimalType | 'All'; label: string; iconKey: string }[] = [
     { type: 'All', label: 'Any Pet', iconKey: 'any-pet' },
@@ -42,10 +86,10 @@ export const MatchQuizFinder: React.FC<MatchQuizFinderProps> = ({
   ];
 
   const sizeOptions: { value: PetSize | 'All'; label: string; desc: string }[] = [
-    { value: 'All', label: 'Any Size', desc: 'All sizes welcome' },
-    { value: 'Small', label: 'Small', desc: 'Under 10 kg · Apartment friendly' },
-    { value: 'Medium', label: 'Medium', desc: '10 - 25 kg · Versatile' },
-    { value: 'Large', label: 'Large', desc: '25+ kg · Energetic' },
+    { value: 'All', label: 'Any Size', desc: 'Based on weight' },
+    { value: 'Small', label: 'Small', desc: '< 10kg' },
+    { value: 'Medium', label: 'Medium', desc: '10 - 25kg' },
+    { value: 'Large', label: 'Large', desc: '> 25kg' },
   ];
 
   // Real filtering calculation
@@ -57,29 +101,33 @@ export const MatchQuizFinder: React.FC<MatchQuizFinderProps> = ({
       if (selectedAge !== 'All' && pet.ageCategory !== selectedAge) {
         return false;
       }
-      if (selectedSize !== 'All' && pet.size !== selectedSize) {
+      if (selectedSize !== 'All' && getPetSize(pet.weight) !== selectedSize) {
         return false;
       }
-      if (breedQuery.trim() !== '') {
-        if (!pet.breed.toLowerCase().includes(breedQuery.toLowerCase())) {
+      if (selectedBreed !== '' && selectedBreed !== 'All') {
+        const breedToMatch = selectedBreed === 'Other' ? customBreed.toLowerCase() : selectedBreed.toLowerCase();
+        if (breedToMatch.trim() !== '' && !pet.breed.toLowerCase().includes(breedToMatch)) {
           return false;
         }
       }
-      if (locationQuery.trim() !== '') {
-        if (!pet.location.toLowerCase().includes(locationQuery.toLowerCase())) {
+      if (selectedLocation !== '' && selectedLocation !== 'All') {
+        const locationToMatch = selectedLocation === 'Other' ? customLocation.toLowerCase() : selectedLocation.toLowerCase();
+        if (locationToMatch.trim() !== '' && !pet.location.toLowerCase().includes(locationToMatch)) {
           return false;
         }
       }
       return true;
     });
-  }, [pets, selectedType, selectedAge, selectedSize, breedQuery, locationQuery]);
+  }, [pets, selectedType, selectedAge, selectedSize, selectedBreed, customBreed, selectedLocation, customLocation]);
 
   const handleClearFilters = () => {
     setSelectedType('All');
     setSelectedAge('All');
     setSelectedSize('All');
-    setBreedQuery('');
-    setLocationQuery('');
+    setSelectedBreed('');
+    setCustomBreed('');
+    setSelectedLocation('');
+    setCustomLocation('');
     setHasSearched(false);
   };
 
@@ -189,12 +237,12 @@ export const MatchQuizFinder: React.FC<MatchQuizFinderProps> = ({
             </div>
           </div>
 
-          {/* STEP 3: Size Selection */}
+          {/* STEP 3: Size Category Pills */}
           <div>
             <div className="flex items-center justify-between mb-3">
               <label className="text-xs sm:text-sm font-black text-[#0F5C94] uppercase tracking-wider flex items-center gap-2">
-                <span className="w-6 h-6 rounded-lg bg-[#0F942D] text-white flex items-center justify-center text-xs font-titan">3</span>
-                PET SIZE
+                <span className="w-6 h-6 rounded-lg bg-[#FB4504] text-white flex items-center justify-center text-xs font-titan">3</span>
+                SIZE PREFERENCE
               </label>
             </div>
 
@@ -209,13 +257,13 @@ export const MatchQuizFinder: React.FC<MatchQuizFinderProps> = ({
                     onClick={() => setSelectedSize(opt.value)}
                     className={`p-3.5 rounded-2xl border-2 text-left transition-all cursor-pointer ${
                       isSelected
-                        ? 'bg-[#0F942D] border-[#0F5C94] text-white shadow-[3px_3px_0px_#0F5C94]'
+                        ? 'bg-[#FB4504] border-[#0F5C94] text-white shadow-[3px_3px_0px_#0F5C94]'
                         : 'bg-white border-[#0F5C94]/30 text-[#0F5C94] hover:bg-[#F6D97B]/30 shadow-[2px_2px_0px_#0F5C94]'
                     }`}
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-black">{opt.label}</span>
-                      {isSelected && <CustomIcon name="tick" className="w-4 h-4 text-white" />}
+                      {isSelected && <CustomIcon name="tick" className="w-4 h-4 text-[#F6D97B]" />}
                     </div>
                     <span className={`text-[11px] block mt-0.5 ${isSelected ? 'text-white/80' : 'text-[#0F5C94]/70'}`}>
                       {opt.desc}
@@ -237,31 +285,61 @@ export const MatchQuizFinder: React.FC<MatchQuizFinderProps> = ({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
               {/* Breed Selector / Search */}
-              <div className="relative">
-                <CustomIcon name="search" className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9A5D16]" />
-                <input
-                  id="quiz-breed-input"
-                  type="text"
-                  value={breedQuery}
-                  onChange={(e) => setBreedQuery(e.target.value)}
-                  placeholder="Breed preference (e.g. Retriever, Indie, Lop, Beagle)..."
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border-2 border-[#0F5C94]/30 text-xs sm:text-sm text-[#0F5C94] font-bold placeholder-[#0F5C94]/40 focus:outline-none focus:border-[#0F5C94]"
-                />
+              <div>
+                <div className="relative">
+                  <CustomIcon name="paw" className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9A5D16]" />
+                  <select
+                    id="quiz-breed-select"
+                    value={selectedBreed}
+                    onChange={(e) => setSelectedBreed(e.target.value)}
+                    className={`w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border-2 border-[#0F5C94]/30 text-xs sm:text-sm ${selectedBreed ? 'text-[#0F5C94]' : 'text-gray-400'} font-bold focus:outline-none focus:border-[#0F5C94]`}
+                  >
+                    <option value="" disabled hidden>Select Breed...</option>
+                    {commonBreeds.map(breed => <option key={breed} value={breed}>{breed}</option>)}
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                {selectedBreed === 'Other' && (
+                  <div className="relative mt-2">
+                    <input
+                      id="quiz-custom-breed-input"
+                      type="text"
+                      value={customBreed}
+                      onChange={(e) => setCustomBreed(e.target.value)}
+                      placeholder="Enter breed..."
+                      className="w-full pl-4 pr-4 py-2.5 rounded-xl bg-white border-2 border-[#0F5C94]/30 text-xs sm:text-sm text-[#0F5C94] font-bold placeholder-[#0F5C94]/40 focus:outline-none focus:border-[#0F5C94]"
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Location Selector / Search */}
-              <div className="relative flex items-center">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-lg bg-[#FB4504] border border-[#0F5C94] flex items-center justify-center shadow-xs pointer-events-none">
-                  <CustomIcon name="location" white className="w-3.5 h-3.5" />
+              <div>
+                <div className="relative">
+                  <CustomIcon name="location" className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9A5D16]" />
+                  <select
+                    id="quiz-location-select"
+                    value={selectedLocation}
+                    onChange={(e) => setSelectedLocation(e.target.value)}
+                    className={`w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border-2 border-[#0F5C94]/30 text-xs sm:text-sm ${selectedLocation ? 'text-[#0F5C94]' : 'text-gray-400'} font-bold focus:outline-none focus:border-[#0F5C94]`}
+                  >
+                    <option value="" disabled hidden>Select Locality...</option>
+                    {bangaloreLocalities.map(loc => <option key={loc} value={loc}>{loc}</option>)}
+                    <option value="Other">Other</option>
+                  </select>
                 </div>
-                <input
-                  id="quiz-location-input"
-                  type="text"
-                  value={locationQuery}
-                  onChange={(e) => setLocationQuery(e.target.value)}
-                  placeholder="Bangalore Locality (e.g. Indiranagar, Koramangala, Whitefield)..."
-                  className="w-full pl-11 pr-4 py-2.5 rounded-xl bg-white border-2 border-[#0F5C94]/30 text-xs sm:text-sm text-[#0F5C94] font-bold placeholder-[#0F5C94]/40 focus:outline-none focus:border-[#0F5C94]"
-                />
+                {selectedLocation === 'Other' && (
+                  <div className="relative mt-2">
+                    <input
+                      id="quiz-custom-location-input"
+                      type="text"
+                      value={customLocation}
+                      onChange={(e) => setCustomLocation(e.target.value)}
+                      placeholder="Enter locality..."
+                      className="w-full pl-4 pr-4 py-2.5 rounded-xl bg-white border-2 border-[#0F5C94]/30 text-xs sm:text-sm text-[#0F5C94] font-bold placeholder-[#0F5C94]/40 focus:outline-none focus:border-[#0F5C94]"
+                    />
+                  </div>
+                )}
               </div>
             </div>
           </div>

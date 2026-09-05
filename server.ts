@@ -9,6 +9,7 @@ import { createServer as createViteServer } from "vite";
 import { loadUsers, saveUsers, loadPets, savePets, loadApplications, saveApplications, loadLikes, saveLikes } from "./src/backend/db";
 import { checkEligibility } from "./src/backend/eligibility";
 import { Pet, AdoptionApplication } from "./src/backend/types";
+import { INITIAL_PETS } from "./src/data/petsData";
 
 const app = express();
 const PORT = 3000;
@@ -75,29 +76,108 @@ app.post("/api/pets", async (req, res) => {
   res.json(newPet);
 });
 
-// POST /api/login - Sign-in user
-// NOTE: This is a prototype identification mechanism. No password authentication is implemented.
-app.post("/api/login", async (req, res) => {
-  const userData = req.body;
-  const users = loadUsers();
-  let user = users.find(u => u.email === userData.email);
-  if (!user) {
-    user = {
-      ...userData,
-      userId: `usr-${Date.now()}`,
-      role: userData.role || "adopter"
-    };
-    users.push(user);
-    saveUsers(users);
+// DELETE /api/pets/:id - Remove a pet listing
+app.delete("/api/pets/:id", async (req, res) => {
+  const { id } = req.params;
+  const pets = loadPets();
+  const filtered = pets.filter(p => p.id !== id);
+  if (pets.length === filtered.length) {
+    return res.status(404).json({ error: "Pet not found" });
   }
-  res.json(user);
+  savePets(filtered);
+  res.json({ status: "success", message: `Pet ${id} deleted` });
+});
+
+// POST /api/signup - Register new user in cloud database
+app.post("/api/signup", async (req, res) => {
+  const { name, email, password, phone, role, housingType, petExperience } = req.body;
+  const users = loadUsers() as any[];
+  const emailTrim = (email || "").trim().toLowerCase();
+  
+  if (users.find(u => u.email === emailTrim)) {
+    return res.status(400).json({ error: "An account with this email already exists." });
+  }
+
+  const newUser = {
+    userId: `usr-${Date.now()}`,
+    name: name.trim(),
+    email: emailTrim,
+    password,
+    phone: phone.trim(),
+    role: role || "adopter",
+    address: "",
+    housingType: housingType || "",
+    petExperience: petExperience || ""
+  };
+
+  users.push(newUser);
+  saveUsers(users);
+
+  const { password: _, ...userProfile } = newUser;
+  res.json(userProfile);
+});
+
+// POST /api/login - Authenticate user against cloud database
+app.post("/api/login", async (req, res) => {
+  const { email, password } = req.body;
+  const users = loadUsers() as any[];
+  const emailTrim = (email || "").trim().toLowerCase();
+
+  const user = users.find(u => u.email === emailTrim);
+  if (!user) {
+    return res.status(404).json({ error: "No account found with this email. Please sign up first." });
+  }
+
+  if (user.password && user.password !== password) {
+    return res.status(401).json({ error: "Incorrect password. Please try again." });
+  }
+
+  const { password: _, ...userProfile } = user;
+  res.json(userProfile);
+});
+
+// PUT /api/profile - Update user profile in cloud database
+app.put("/api/profile", async (req, res) => {
+  const { email, name, phone, housingType, petExperience, role } = req.body;
+  const users = loadUsers() as any[];
+  const emailTrim = (email || "").trim().toLowerCase();
+
+  const index = users.findIndex(u => u.email === emailTrim);
+  if (index === -1) {
+    return res.status(404).json({ error: "User not found." });
+  }
+
+  users[index] = {
+    ...users[index],
+    name: name !== undefined ? name.trim() : users[index].name,
+    phone: phone !== undefined ? phone.trim() : users[index].phone,
+    housingType: housingType !== undefined ? housingType : users[index].housingType,
+    petExperience: petExperience !== undefined ? petExperience : users[index].petExperience,
+    role: role !== undefined ? role : users[index].role,
+  };
+
+  saveUsers(users);
+
+  const { password: _, ...userProfile } = users[index];
+  res.json(userProfile);
 });
 
 // POST /api/applications - Submit adoption form
 app.post(["/api/applications", "/api/adoption-form"], async (req, res) => {
   const body = req.body;
   const pets = loadPets();
-  const targetPet = pets.find(p => p.id === body.petId);
+  let targetPet = pets.find(p => p.id === body.petId);
+  
+  if (!targetPet) {
+    // Try to find the pet in our master INITIAL_PETS list
+    const initialPet = INITIAL_PETS.find(p => p.id === body.petId);
+    if (initialPet) {
+      // Auto-save the master pet to pets.json so it exists in our JSON database
+      pets.push(initialPet);
+      savePets(pets);
+      targetPet = initialPet;
+    }
+  }
   
   if (!targetPet) return res.status(404).json({ error: "Pet not found" });
 
@@ -117,6 +197,9 @@ app.post(["/api/applications", "/api/adoption-form"], async (req, res) => {
   };
 
   const applications = loadApplications();
+  const existingApp = applications.find(a => a.applicantEmail === body.applicantEmail && a.petId === body.petId);
+  if (existingApp) return res.status(400).json({ error: "You have already applied for this pet." });
+  
   applications.push(newApp);
   saveApplications(applications);
 
@@ -127,6 +210,23 @@ app.post(["/api/applications", "/api/adoption-form"], async (req, res) => {
     eligibilityResult: eligibility.result,
     ineligibilityReason: eligibility.reason,
   });
+});
+
+// PUT /api/applications/:id/status - Update application status (Approved, Rejected, etc.)
+app.put("/api/applications/:id/status", async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+  const applications = loadApplications();
+  const index = applications.findIndex(a => a.id === id);
+
+  if (index === -1) {
+    return res.status(404).json({ error: "Application not found" });
+  }
+
+  applications[index].currentStatus = status;
+  saveApplications(applications);
+
+  res.json({ status: "success", application: applications[index] });
 });
 
 // GET /api/likes - Get liked pet IDs
