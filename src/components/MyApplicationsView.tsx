@@ -14,6 +14,7 @@ interface MyApplicationsViewProps {
   userProfile?: UserProfile | null;
   onUpdateApplicationStatus?: (appId: string, status: ApplicationStatus) => void;
   onRemovePet?: (petId: string) => void;
+  onDeleteApplication?: (appId: string) => void;
 }
 
 export const MyApplicationsView: React.FC<MyApplicationsViewProps> = ({
@@ -25,9 +26,11 @@ export const MyApplicationsView: React.FC<MyApplicationsViewProps> = ({
   userProfile = null,
   onUpdateApplicationStatus,
   onRemovePet,
+  onDeleteApplication,
 }) => {
   const [activeAppDetail, setActiveAppDetail] = useState<AdoptionApplication | null>(null);
   const [petIdToRemoveConfirm, setPetIdToRemoveConfirm] = useState<string | null>(null);
+  const [appToDeleteConfirm, setAppToDeleteConfirm] = useState<AdoptionApplication | null>(null);
 
   const isLister = userProfile?.role === 'Pet Lister';
 
@@ -407,21 +410,6 @@ export const MyApplicationsView: React.FC<MyApplicationsViewProps> = ({
                   {renderStatusMessage(app.currentStatus)}
                 </div>
 
-                {/* Shelter Note or Info Summary */}
-                <div className="p-3.5 rounded-2xl bg-white border-2 border-[#0F5C94]/20 flex items-start gap-3">
-                  <div className="p-2 rounded-xl bg-[#F6D97B] border border-[#0F5C94] text-[#0F5C94] shrink-0">
-                    <CustomIcon name="message" className="w-4 h-4 text-[#0F5C94]" />
-                  </div>
-                  <div>
-                    <h5 className="text-xs font-black text-[#0F5C94] uppercase">
-                      Coordinator Update
-                    </h5>
-                    <p className="text-xs text-[#0F5C94]/85 font-medium mt-0.5 leading-relaxed">
-                      Your eligibility is currently checked. If there are additional documents needed, our counselors will contact you.
-                    </p>
-                  </div>
-                </div>
-
                 {/* Card Action Footer */}
                 <div className="pt-2 flex flex-wrap items-center justify-between gap-3 border-t-2 border-[#0F5C94]/15">
                   <div className="flex items-center gap-2 text-xs font-black text-[#0F942D]">
@@ -429,22 +417,54 @@ export const MyApplicationsView: React.FC<MyApplicationsViewProps> = ({
                     <span>Direct Shelter Application · Verified Process</span>
                   </div>
 
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2.5">
                     <button
                       id={`app-view-pet-btn-${app.id}`}
                       onClick={() => onSelectPetById(app.petId)}
-                      className="px-4 py-2 rounded-xl bg-white hover:bg-[#F6D97B] text-[#0F5C94] font-black text-xs uppercase tracking-wider border-2 border-[#0F5C94] shadow-[2px_2px_0px_#0F5C94] transition-all cursor-pointer"
+                      className="px-3.5 py-2 rounded-xl bg-white hover:bg-[#F6D97B] text-[#0F5C94] font-black text-xs uppercase tracking-wider border-2 border-[#0F5C94] shadow-[2px_2px_0px_#0F5C94] transition-all cursor-pointer"
                     >
-                      View {app.petName}'s Profile
+                      View {app.petName}
                     </button>
 
                     <button
                       id={`app-details-btn-${app.id}`}
                       onClick={() => setActiveAppDetail(app)}
-                      className="px-4 py-2 rounded-xl bg-[#0F5C94] hover:bg-[#0b4875] text-white font-black text-xs uppercase tracking-wider border-2 border-[#0F5C94] shadow-[2px_2px_0px_#FB4504] transition-all cursor-pointer"
+                      className="px-3.5 py-2 rounded-xl bg-[#0F5C94] hover:bg-[#0b4875] text-white font-black text-xs uppercase tracking-wider border-2 border-[#0F5C94] shadow-[2px_2px_0px_#FB4504] transition-all cursor-pointer"
                     >
-                      Application Details
+                      Details
                     </button>
+
+                    {appToDeleteConfirm?.id === app.id ? (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (onDeleteApplication) onDeleteApplication(app.id);
+                            setAppToDeleteConfirm(null);
+                          }}
+                          className="px-3 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-black text-xs uppercase tracking-wider border-2 border-red-800 shadow-[2px_2px_0px_#991b1b] transition-all cursor-pointer flex items-center gap-1 animate-pulse"
+                        >
+                          ⚠️ Confirm?
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setAppToDeleteConfirm(null)}
+                          className="px-3 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-600 font-black text-xs uppercase tracking-wider border-2 border-stone-300 transition-all cursor-pointer flex items-center gap-1"
+                        >
+                          Cancel
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        id={`app-delete-btn-${app.id}`}
+                        onClick={() => setAppToDeleteConfirm(app)}
+                        className="px-3.5 py-2 rounded-xl bg-red-100 hover:bg-red-200 text-red-700 font-black text-xs uppercase tracking-wider border-2 border-red-300 shadow-[2px_2px_0px_#dc2626] transition-all cursor-pointer flex items-center gap-1"
+                        title="Withdraw and delete this application"
+                      >
+                        <CustomIcon name="cross" className="w-3.5 h-3.5 text-red-700" />
+                        <span>Delete</span>
+                      </button>
+                    )}
                   </div>
                 </div>
 

@@ -58,18 +58,16 @@ export default function App() {
   const [isMatchesModalOpen, setIsMatchesModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Initialize and load data on mount
+  // Initialize and load base pets data on mount
   useEffect(() => {
     const init = async () => {
       await initializeStorage(INITIAL_PETS, [], [], []);
       setPets(loadPets());
-      setLikedPetIds(loadLikes().map(l => l.petId));
-      setApplications(loadApplications());
     };
     init();
   }, []);
 
-  // Save profile state
+  // Sync user-specific Likes & Applications whenever userProfile changes
   useEffect(() => {
     try {
       if (userProfile) {
@@ -80,7 +78,68 @@ export default function App() {
     } catch (e) {
       console.error(e);
     }
+
+    const currentEmail = userProfile?.email?.toLowerCase() || 'default';
+
+    // 1. Filter likes matching current user or default guest
+    const masterLikes = loadLikes();
+    const userLikes = masterLikes.filter(l => (l.userId || 'default').toLowerCase() === currentEmail);
+    setLikedPetIds(userLikes.map(l => l.petId));
+
+    // 2. Filter applications matching current user email or locally submitted IDs for guests
+    const masterApps = loadApplications();
+    if (userProfile?.email) {
+      const userApps = masterApps.filter(app => (app.applicantEmail || '').toLowerCase() === currentEmail);
+      setApplications(userApps);
+    } else {
+      // Guest mode: show applications submitted locally in this browser session
+      try {
+        const storedIdsStr = localStorage.getItem('furever_submitted_ids');
+        const storedIds: string[] = storedIdsStr ? JSON.parse(storedIdsStr) : [];
+        const guestApps = masterApps.filter(app => storedIds.includes(app.id) || (app.applicantEmail || '').toLowerCase() === 'default');
+        setApplications(guestApps);
+      } catch (e) {
+        setApplications([]);
+      }
+    }
   }, [userProfile]);
+
+  // Helper to persist likes for current user without erasing other users' likes
+  const updateLikesForCurrentUser = (newUserLikedPetIds: string[]) => {
+    const currentEmail = userProfile?.email?.toLowerCase() || 'default';
+    const masterLikes = loadLikes();
+    
+    // Keep all likes from other users
+    const otherUsersLikes = masterLikes.filter(l => (l.userId || 'default').toLowerCase() !== currentEmail);
+    
+    // Map current user's active likes
+    const currentUserLikes = newUserLikedPetIds.map(petId => ({
+      likeId: `like-${petId}-${currentEmail}`,
+      userId: currentEmail,
+      petId,
+      timestamp: new Date().toISOString()
+    }));
+
+    const mergedLikes = [...otherUsersLikes, ...currentUserLikes];
+    saveLikes(mergedLikes);
+    setLikedPetIds(newUserLikedPetIds);
+  };
+
+  // Helper to persist applications for current user without erasing other users' applications
+  const updateApplicationsForCurrentUser = (newUserApps: AdoptionApplication[]) => {
+    const currentEmail = userProfile?.email?.toLowerCase() || 'default';
+    const masterApps = loadApplications();
+
+    // Keep all applications from other users
+    const otherUsersApps = masterApps.filter(app => {
+      const appEmail = (app.applicantEmail || 'default').toLowerCase();
+      return userProfile?.email ? appEmail !== currentEmail : true;
+    });
+
+    const mergedApps = [...newUserApps, ...otherUsersApps];
+    saveApplications(mergedApps);
+    setApplications(newUserApps);
+  };
 
   // Toast notification helper
   const showToast = (msg: string) => {
@@ -109,23 +168,11 @@ export default function App() {
     if (exists) {
       showToast(`Removed ${pet ? pet.name : 'pet'} from saved matches`);
       const updatedLikes = likedPetIds.filter((id) => id !== petId);
-      setLikedPetIds(updatedLikes);
-      saveLikes(updatedLikes.map(id => ({ 
-        likeId: `like-${id}-${Date.now()}`,
-        userId: userProfile?.email || 'default', 
-        petId: id,
-        timestamp: new Date().toISOString()
-      })));
+      updateLikesForCurrentUser(updatedLikes);
     } else {
       showToast(`Added ${pet ? pet.name : 'pet'} to saved matches ❤️`);
       const updatedLikes = [...likedPetIds, petId];
-      setLikedPetIds(updatedLikes);
-      saveLikes(updatedLikes.map(id => ({ 
-        likeId: `like-${id}-${Date.now()}`,
-        userId: userProfile?.email || 'default', 
-        petId: id,
-        timestamp: new Date().toISOString()
-      })));
+      updateLikesForCurrentUser(updatedLikes);
     }
   };
 
@@ -133,13 +180,7 @@ export default function App() {
   const handleSwipeRight = (pet: Pet) => {
     if (!likedPetIds.includes(pet.id)) {
       const updatedLikes = [...likedPetIds, pet.id];
-      setLikedPetIds(updatedLikes);
-      saveLikes(updatedLikes.map(id => ({ 
-        likeId: `like-${id}-${Date.now()}`,
-        userId: userProfile?.email || 'default', 
-        petId: id,
-        timestamp: new Date().toISOString()
-      })));
+      updateLikesForCurrentUser(updatedLikes);
     }
     showToast(`You liked ${pet.name}! Added to matches ❤️`);
   };
@@ -150,13 +191,7 @@ export default function App() {
 
   const handleRemoveMatch = (petId: string) => {
     const updatedLikes = likedPetIds.filter((id) => id !== petId);
-    setLikedPetIds(updatedLikes);
-    saveLikes(updatedLikes.map(id => ({ 
-      likeId: `like-${id}-${Date.now()}`,
-      userId: userProfile?.email || 'default', 
-      petId: id,
-      timestamp: new Date().toISOString()
-    })));
+    updateLikesForCurrentUser(updatedLikes);
   };
 
   // Handle user sign-in
@@ -168,8 +203,7 @@ export default function App() {
   // Handle new submitted application
   const handleNewApplication = (newApp: AdoptionApplication) => {
     const updatedApps = [newApp, ...applications];
-    setApplications(updatedApps);
-    saveApplications(updatedApps); 
+    updateApplicationsForCurrentUser(updatedApps);
 
     // Store the ID in locally submitted IDs so they can see it under Status tab even if guest
     try {
@@ -239,6 +273,31 @@ export default function App() {
       savePets(updatedPets);
       showToast('🏡 Pet listing removed.');
     }
+  };
+
+  // Delete / Withdraw an application (for adopters)
+  const handleDeleteApplication = async (appId: string) => {
+    try {
+      await fetch(`/api/applications/${appId}`, { method: 'DELETE' });
+    } catch (e) {
+      // Ignore network errors on static host
+    }
+
+    const updatedApps = applications.filter(app => app.id !== appId);
+    updateApplicationsForCurrentUser(updatedApps);
+
+    try {
+      const storedIdsStr = localStorage.getItem('furever_submitted_ids');
+      if (storedIdsStr) {
+        const storedIds: string[] = JSON.parse(storedIdsStr);
+        const updatedIds = storedIds.filter(id => id !== appId);
+        localStorage.setItem('furever_submitted_ids', JSON.stringify(updatedIds));
+      }
+    } catch (e) {
+      console.error(e);
+    }
+
+    showToast('🗑️ Application withdrawn and deleted successfully.');
   };
 
 
@@ -537,6 +596,7 @@ export default function App() {
             userProfile={userProfile}
             onUpdateApplicationStatus={handleUpdateApplicationStatus}
             onRemovePet={handleRemovePet}
+            onDeleteApplication={handleDeleteApplication}
             onExplorePets={() => {
               setCurrentTab('browse');
               window.scrollTo({ top: 0, behavior: 'smooth' });

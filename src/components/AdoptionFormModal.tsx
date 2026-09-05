@@ -309,7 +309,7 @@ export const AdoptionFormModal: React.FC<AdoptionFormModalProps> = ({
                   className="w-full py-3.5 px-6 rounded-xl bg-[#0F5C94] hover:bg-[#0b4875] text-white font-black text-xs uppercase tracking-wider border-2 border-[#0F5C94] shadow-[4px_4px_0px_#FB4504] hover:translate-x-0.5 hover:translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <span>Track Status</span>
-                  <CustomIcon name="file" className="w-4 h-4 text-white" />
+                  <CustomIcon name="file" className="w-4 h-4 text-white" white />
                 </button>
               )}
 
@@ -322,7 +322,7 @@ export const AdoptionFormModal: React.FC<AdoptionFormModalProps> = ({
                 className="w-full py-3.5 px-6 rounded-xl bg-[#FB4504] hover:bg-[#e03a00] text-white font-black text-xs uppercase tracking-wider border-2 border-[#0F5C94] shadow-[4px_4px_0px_#0F5C94] hover:translate-x-0.5 hover:translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <span>Browse More Pets</span>
-                <CustomIcon name="right-arrow" className="w-4 h-4 text-white" />
+                <CustomIcon name="right-arrow" className="w-4 h-4 text-white" white />
               </button>
             </div>
           </div>

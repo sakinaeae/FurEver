@@ -126,11 +126,10 @@ export const CustomIcon: React.FC<CustomIconProps> = ({
   const isFloating = size !== undefined;
   const scaleClass = isFloating ? '' : 'scale-140 transition-transform';
 
-  const isBlue = blue || className.includes('text-[#0F5C94]') || className.includes('text-blue');
+  const isWhite = white || className.includes('text-white') || className.includes('white');
+  const isBlue = !isWhite && (blue || className.includes('text-[#0F5C94]') || className.includes('text-blue'));
 
-  const filterStyle: React.CSSProperties = blue
-    ? { filter: 'brightness(0) saturate(100%) invert(26%) sepia(90%) saturate(1500%) hue-rotate(182deg) brightness(96%) contrast(95%)' }
-    : white
+  const filterStyle: React.CSSProperties = isWhite
     ? { filter: 'brightness(0) invert(1)' }
     : isBlue
     ? { filter: 'brightness(0) saturate(100%) invert(26%) sepia(90%) saturate(1500%) hue-rotate(182deg) brightness(96%) contrast(95%)' }
