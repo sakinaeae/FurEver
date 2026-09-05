@@ -116,7 +116,16 @@ export const UserSignInModal: React.FC<UserSignInModalProps> = ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: emailTrim, password }),
       });
-      const data = await res.json();
+      
+      let data: any;
+      const contentType = res.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        data = await res.json();
+      } else {
+        const text = await res.text();
+        data = { error: text || `HTTP Status: ${res.status}` };
+      }
+
       if (!res.ok) {
         setError(data.error || 'Failed to log in.');
         return;
@@ -126,8 +135,9 @@ export const UserSignInModal: React.FC<UserSignInModalProps> = ({
       setTimeout(() => {
         onClose();
       }, 500);
-    } catch (err) {
-      setError('Network error. Please try again.');
+    } catch (err: any) {
+      console.error('Login error details:', err);
+      setError(err?.message || 'Network error. Please try again.');
     }
   };
 
@@ -177,7 +187,16 @@ export const UserSignInModal: React.FC<UserSignInModalProps> = ({
           petExperience,
         }),
       });
-      const data = await res.json();
+
+      let data: any;
+      const contentType = res.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        data = await res.json();
+      } else {
+        const text = await res.text();
+        data = { error: text || `HTTP Status: ${res.status}` };
+      }
+
       if (!res.ok) {
         setError(data.error || 'Failed to sign up.');
         return;
@@ -187,8 +206,9 @@ export const UserSignInModal: React.FC<UserSignInModalProps> = ({
       setTimeout(() => {
         onClose();
       }, 500);
-    } catch (err) {
-      setError('Network error. Please try again.');
+    } catch (err: any) {
+      console.error('Signup error details:', err);
+      setError(err?.message || 'Network error. Please try again.');
     }
   };
 
@@ -214,7 +234,16 @@ export const UserSignInModal: React.FC<UserSignInModalProps> = ({
           petExperience: editExperience,
         }),
       });
-      const data = await res.json();
+
+      let data: any;
+      const contentType = res.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        data = await res.json();
+      } else {
+        const text = await res.text();
+        data = { error: text || `HTTP Status: ${res.status}` };
+      }
+
       if (!res.ok) {
         setError(data.error || 'Failed to update profile.');
         return;
@@ -224,8 +253,9 @@ export const UserSignInModal: React.FC<UserSignInModalProps> = ({
       setTimeout(() => {
         onClose();
       }, 600);
-    } catch (err) {
-      setError('Network error. Please try again.');
+    } catch (err: any) {
+      console.error('Update profile error details:', err);
+      setError(err?.message || 'Network error. Please try again.');
     }
   };
 
