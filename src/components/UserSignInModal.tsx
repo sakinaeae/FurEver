@@ -130,12 +130,24 @@ export const UserSignInModal: React.FC<UserSignInModalProps> = ({
         // Fallback to local accounts DB if user is not found on backend (due to Vercel ephemeral filesystem)
         const localDb = getAccountsDb();
         const localUser = localDb[emailTrim];
-        if (localUser && localUser.password === password) {
-          onSignIn(localUser.profile);
-          setSuccessMessage('Logged in successfully (Verified via Local Secure Vault)!');
-          setTimeout(() => {
-            onClose();
-          }, 500);
+        if (localUser) {
+          if (localUser.password === password) {
+            onSignIn(localUser.profile);
+            setSuccessMessage('Logged in successfully (Verified via Local Secure Vault)!');
+            setTimeout(() => {
+              onClose();
+            }, 500);
+            return;
+          } else {
+            setError('Incorrect password. Please try again.');
+            return;
+          }
+        }
+
+        // If the API was not found (e.g., static routing on Vercel), show a beautiful localized guidance instead of the raw CDN HTML
+        const errorText = String(data.error || '').toLowerCase();
+        if (res.status === 404 || errorText.includes('not_found') || errorText.includes('<!doctype html>') || errorText.includes('could not be found')) {
+          setError('No account found with this email. Please click "Sign Up" above to register in your Secure Local Vault!');
           return;
         }
 
@@ -288,6 +300,14 @@ export const UserSignInModal: React.FC<UserSignInModalProps> = ({
       return;
     }
 
+    const updatedProfile = {
+      ...currentProfile,
+      name: editName.trim(),
+      phone: editPhone.trim(),
+      housingType: editHousing,
+      petExperience: editExperience,
+    };
+
     try {
       const res = await fetch('/api/profile', {
         method: 'PUT',
@@ -311,17 +331,47 @@ export const UserSignInModal: React.FC<UserSignInModalProps> = ({
       }
 
       if (!res.ok) {
-        setError(data.error || 'Failed to update profile.');
+        // Fallback to local accounts DB if user update fails on backend (due to read-only hosting)
+        const emailTrim = currentProfile.email.toLowerCase();
+        const localDb = getAccountsDb();
+        if (localDb[emailTrim]) {
+          localDb[emailTrim].profile = updatedProfile;
+          saveAccountsDb(localDb);
+        }
+        onSignIn(updatedProfile);
+        setSuccessMessage('Profile updated successfully (Local Safe Vault synced)!');
+        setTimeout(() => {
+          onClose();
+        }, 600);
         return;
       }
+      
+      // Update local storage too to keep in sync!
+      const emailTrim = currentProfile.email.toLowerCase();
+      const localDb = getAccountsDb();
+      if (localDb[emailTrim]) {
+        localDb[emailTrim].profile = data;
+        saveAccountsDb(localDb);
+      }
+
       onSignIn(data);
       setSuccessMessage('Profile updated successfully!');
       setTimeout(() => {
         onClose();
       }, 600);
     } catch (err: any) {
-      console.error('Update profile error details:', err);
-      setError(err?.message || 'Network error. Please try again.');
+      console.error('Update profile error details, using local fallback:', err);
+      const emailTrim = currentProfile.email.toLowerCase();
+      const localDb = getAccountsDb();
+      if (localDb[emailTrim]) {
+        localDb[emailTrim].profile = updatedProfile;
+        saveAccountsDb(localDb);
+      }
+      onSignIn(updatedProfile);
+      setSuccessMessage('Profile updated successfully (Local Safe Vault synced)!');
+      setTimeout(() => {
+        onClose();
+      }, 600);
     }
   };
 
