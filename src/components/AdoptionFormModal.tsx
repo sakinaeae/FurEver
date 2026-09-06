@@ -170,7 +170,10 @@ export const AdoptionFormModal: React.FC<AdoptionFormModalProps> = ({
       fitReason: fitReason.trim(),
       dateApplied: dateString,
       eligibilityResult: 'APPLICABLE',
-      ineligibilityReason: ''
+      ineligibilityReason: '',
+      userId: '',
+      petListerId: pet.petListerId || 'system',
+      currentStatus: 'Pending'
     };
 
     // Fire celebratory confetti for Outcome A

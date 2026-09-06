@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { CustomIcon } from './CustomIcon';
 import { PawIcon } from './PawDecorations';
+import { auth, db } from '../lib/firebase';
+import { createUserProfile, updateUserProfile } from '../lib/db';
+import { signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 export type UserRole = 'adopter' | 'Pet Lister';
 
@@ -11,11 +15,6 @@ export interface UserProfile {
   role: UserRole;
   housingType: string;
   petExperience: string;
-}
-
-interface UserAccount {
-  password: string;
-  profile: UserProfile;
 }
 
 interface UserSignInModalProps {
@@ -34,11 +33,9 @@ export const UserSignInModal: React.FC<UserSignInModalProps> = ({
   currentProfile,
   onSignOut,
 }) => {
-  const [view, setView] = useState<'login' | 'signup'>('login');
+  const [view, setView] = useState<'login' | 'signup' | 'complete_profile'>('login');
   const [role, setRole] = useState<UserRole>('adopter');
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [phone, setPhone] = useState('');
   const [housingType, setHousingType] = useState('');
   const [petExperience, setPetExperience] = useState('');
@@ -52,71 +49,6 @@ export const UserSignInModal: React.FC<UserSignInModalProps> = ({
   const [editExperience, setEditExperience] = useState('');
   const [isEditingProfile, setIsEditingProfile] = useState(false);
 
-  const handleToggleRole = async () => {
-    if (!currentProfile) return;
-    setError(null);
-    setSuccessMessage(null);
-    const newRole = currentProfile.role === 'adopter' ? 'Pet Lister' : 'adopter';
-    
-    const updatedProfile = {
-      ...currentProfile,
-      role: newRole,
-    };
-
-    try {
-      const res = await fetch('/api/profile', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: currentProfile.email,
-          role: newRole,
-        }),
-      });
-
-      let data: any;
-      const contentType = res.headers.get('content-type');
-      if (contentType && contentType.includes('application/json')) {
-        data = await res.json();
-      } else {
-        data = { error: 'Fallback success' };
-      }
-
-      if (!res.ok) {
-        // Fallback to local accounts DB
-        const emailTrim = currentProfile.email.toLowerCase();
-        const localDb = getAccountsDb();
-        if (localDb[emailTrim]) {
-          localDb[emailTrim].profile = updatedProfile;
-          saveAccountsDb(localDb);
-        }
-        onSignIn(updatedProfile);
-        setSuccessMessage(`Successfully switched to ${newRole === 'adopter' ? 'Adopter' : 'Pet Lister'} Mode!`);
-        return;
-      }
-
-      // Sync local copy
-      const emailTrim = currentProfile.email.toLowerCase();
-      const localDb = getAccountsDb();
-      if (localDb[emailTrim]) {
-        localDb[emailTrim].profile = data;
-        saveAccountsDb(localDb);
-      }
-
-      onSignIn(data);
-      setSuccessMessage(`Successfully switched to ${newRole === 'adopter' ? 'Adopter' : 'Pet Lister'} Mode!`);
-    } catch (err) {
-      console.warn('Switch role API warning, using local fallback:', err);
-      const emailTrim = currentProfile.email.toLowerCase();
-      const localDb = getAccountsDb();
-      if (localDb[emailTrim]) {
-        localDb[emailTrim].profile = updatedProfile;
-        saveAccountsDb(localDb);
-      }
-      onSignIn(updatedProfile);
-      setSuccessMessage(`Successfully switched to ${newRole === 'adopter' ? 'Adopter' : 'Pet Lister'} Mode!`);
-    }
-  };
-
   useEffect(() => {
     if (currentProfile) {
       setEditName(currentProfile.name);
@@ -127,119 +59,56 @@ export const UserSignInModal: React.FC<UserSignInModalProps> = ({
     }
   }, [currentProfile, isOpen]);
 
-  if (!isOpen) return null;
+  const handleToggleRole = async () => {
+    if (!currentProfile || !auth.currentUser) return;
+    setError(null);
+    setSuccessMessage(null);
+    const newRole = currentProfile.role === 'adopter' ? 'Pet Lister' : 'adopter';
+    
+    const updatedProfile = {
+      ...currentProfile,
+      role: newRole,
+    };
 
-  const getAccountsDb = (): Record<string, UserAccount> => {
     try {
-      const data = localStorage.getItem('furever_accounts_db');
-      return data ? JSON.parse(data) : {};
-    } catch {
-      return {};
+      await updateUserProfile(auth.currentUser.uid, { role: newRole });
+      onSignIn(updatedProfile);
+      setSuccessMessage(`Successfully switched to ${newRole === 'adopter' ? 'Adopter' : 'Pet Lister'} Mode!`);
+    } catch (err) {
+      setError('Failed to switch role.');
     }
   };
 
-  const saveAccountsDb = (db: Record<string, UserAccount>) => {
-    localStorage.setItem('furever_accounts_db', JSON.stringify(db));
-  };
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleGoogleSignIn = async () => {
     setError(null);
-    setSuccessMessage(null);
-
-    const emailTrim = email.trim().toLowerCase();
     try {
-      const res = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: emailTrim, password }),
-      });
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
       
-      let data: any;
-      const contentType = res.headers.get('content-type');
-      if (contentType && contentType.includes('application/json')) {
-        data = await res.json();
+      // Check if user exists in Firestore
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      if (userDoc.exists()) {
+        const profile = userDoc.data() as UserProfile;
+        onSignIn(profile);
+        setSuccessMessage('Logged in successfully!');
+        setTimeout(() => onClose(), 500);
       } else {
-        const text = await res.text();
-        data = { error: text || `HTTP Status: ${res.status}` };
+        // Needs to complete profile
+        setName(user.displayName || '');
+        setView('complete_profile');
       }
-
-      if (!res.ok) {
-        // Fallback to local accounts DB if user is not found on backend (due to Vercel ephemeral filesystem)
-        const localDb = getAccountsDb();
-        const localUser = localDb[emailTrim];
-        if (localUser) {
-          if (localUser.password === password) {
-            onSignIn(localUser.profile);
-            setSuccessMessage('Logged in successfully (Verified via Local Secure Vault)!');
-            setTimeout(() => {
-              onClose();
-            }, 500);
-            return;
-          } else {
-            setError('Incorrect password. Please try again.');
-            return;
-          }
-        }
-
-        // If the API was not found (e.g., static routing on Vercel), show a beautiful localized guidance instead of the raw CDN HTML
-        const errorText = String(data.error || '').toLowerCase();
-        if (res.status === 404 || errorText.includes('not_found') || errorText.includes('<!doctype html>') || errorText.includes('could not be found')) {
-          setError('No account found with this email. Please click "Sign Up" above to register in your Secure Local Vault!');
-          return;
-        }
-
-        setError(data.error || 'Failed to log in.');
-        return;
-      }
-      onSignIn(data);
-      setSuccessMessage('Logged in successfully!');
-      setTimeout(() => {
-        onClose();
-      }, 500);
     } catch (err: any) {
-      console.error('Login error details, checking local fallback:', err);
-      
-      // Fallback to local accounts DB if completely offline or network error
-      const localDb = getAccountsDb();
-      const localUser = localDb[emailTrim];
-      if (localUser && localUser.password === password) {
-        onSignIn(localUser.profile);
-        setSuccessMessage('Logged in successfully (Verified via Local Secure Vault)!');
-        setTimeout(() => {
-          onClose();
-        }, 500);
-        return;
-      }
-
-      setError(err?.message || 'Network error. Please try again.');
+      setError(err.message || 'Failed to sign in with Google.');
     }
   };
 
-  const handleSignUp = async (e: React.FormEvent) => {
+  const handleCompleteProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    setSuccessMessage(null);
-
-    const emailTrim = email.trim().toLowerCase();
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(emailTrim)) {
-      setError('Please enter a valid email address.');
-      return;
-    }
-
-    if (!password || password.length < 6) {
-      setError('Password must be at least 6 characters long.');
-      return;
-    }
-
+    if (!auth.currentUser) return;
+    
     if (!name.trim() || !phone.trim() || !housingType || !petExperience) {
       setError('Please fill in all required fields.');
-      return;
-    }
-
-    if (/\d/.test(name)) {
-      setError('Name cannot contain numbers.');
       return;
     }
 
@@ -248,89 +117,34 @@ export const UserSignInModal: React.FC<UserSignInModalProps> = ({
       return;
     }
 
-    // Prepare local fallback account object
-    const localDb = getAccountsDb();
-    const newUserAccount: UserAccount = {
-      password,
-      profile: {
-        name: name.trim(),
-        email: emailTrim,
-        phone: phone.trim(),
-        role,
-        housingType,
-        petExperience,
-      }
+    const newProfile: UserProfile = {
+      name: name.trim(),
+      email: auth.currentUser.email || '',
+      phone: phone.trim(),
+      role,
+      housingType,
+      petExperience,
     };
 
     try {
-      const res = await fetch('/api/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: name.trim(),
-          email: emailTrim,
-          password,
-          phone: phone.trim(),
-          role,
-          housingType,
-          petExperience,
-        }),
-      });
-
-      let data: any;
-      const contentType = res.headers.get('content-type');
-      if (contentType && contentType.includes('application/json')) {
-        data = await res.json();
-      } else {
-        const text = await res.text();
-        data = { error: text || `HTTP Status: ${res.status}` };
-      }
-
-      if (!res.ok) {
-        // If the email is already registered on the backend, display that specific error
-        if (data.error && data.error.toLowerCase().includes('exists')) {
-          setError(data.error);
-          return;
-        }
-
-        // Otherwise, allow fallback to local signup so it works on read-only systems
-        localDb[emailTrim] = newUserAccount;
-        saveAccountsDb(localDb);
-        onSignIn(newUserAccount.profile);
-        setSuccessMessage('Account created successfully (Local Safe Vault)!');
-        setTimeout(() => {
-          onClose();
-        }, 500);
-        return;
-      }
+      // The User interface in types.ts is what createUserProfile expects. 
+      // We will cast it for now to match the frontend expectations, or structure it correctly.
+      await createUserProfile({
+        userId: auth.currentUser.uid,
+        ...newProfile
+      } as any);
       
-      // Save local copy as well for dual-sync reliability!
-      localDb[emailTrim] = newUserAccount;
-      saveAccountsDb(localDb);
-
-      onSignIn(data);
+      onSignIn(newProfile);
       setSuccessMessage('Account created successfully!');
-      setTimeout(() => {
-        onClose();
-      }, 500);
+      setTimeout(() => onClose(), 500);
     } catch (err: any) {
-      console.error('Signup error details, falling back to local registration:', err);
-      
-      // Fallback: Save local copy to furever_accounts_db
-      localDb[emailTrim] = newUserAccount;
-      saveAccountsDb(localDb);
-
-      onSignIn(newUserAccount.profile);
-      setSuccessMessage('Account created successfully (Local Safe Vault)!');
-      setTimeout(() => {
-        onClose();
-      }, 500);
+      setError('Failed to create account.');
     }
   };
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!currentProfile) return;
+    if (!currentProfile || !auth.currentUser) return;
     setError(null);
 
     if (!editName.trim() || !editPhone.trim()) {
@@ -347,71 +161,22 @@ export const UserSignInModal: React.FC<UserSignInModalProps> = ({
     };
 
     try {
-      const res = await fetch('/api/profile', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: currentProfile.email,
-          name: editName.trim(),
-          phone: editPhone.trim(),
-          housingType: editHousing,
-          petExperience: editExperience,
-        }),
+      await updateUserProfile(auth.currentUser.uid, {
+        name: editName.trim(),
+        phone: editPhone.trim(),
+        housingType: editHousing,
+        petExperience: editExperience,
       });
 
-      let data: any;
-      const contentType = res.headers.get('content-type');
-      if (contentType && contentType.includes('application/json')) {
-        data = await res.json();
-      } else {
-        const text = await res.text();
-        data = { error: text || `HTTP Status: ${res.status}` };
-      }
-
-      if (!res.ok) {
-        // Fallback to local accounts DB if user update fails on backend (due to read-only hosting)
-        const emailTrim = currentProfile.email.toLowerCase();
-        const localDb = getAccountsDb();
-        if (localDb[emailTrim]) {
-          localDb[emailTrim].profile = updatedProfile;
-          saveAccountsDb(localDb);
-        }
-        onSignIn(updatedProfile);
-        setSuccessMessage('Profile updated successfully (Local Safe Vault synced)!');
-        setTimeout(() => {
-          onClose();
-        }, 600);
-        return;
-      }
-      
-      // Update local storage too to keep in sync!
-      const emailTrim = currentProfile.email.toLowerCase();
-      const localDb = getAccountsDb();
-      if (localDb[emailTrim]) {
-        localDb[emailTrim].profile = data;
-        saveAccountsDb(localDb);
-      }
-
-      onSignIn(data);
-      setSuccessMessage('Profile updated successfully!');
-      setTimeout(() => {
-        onClose();
-      }, 600);
-    } catch (err: any) {
-      console.error('Update profile error details, using local fallback:', err);
-      const emailTrim = currentProfile.email.toLowerCase();
-      const localDb = getAccountsDb();
-      if (localDb[emailTrim]) {
-        localDb[emailTrim].profile = updatedProfile;
-        saveAccountsDb(localDb);
-      }
       onSignIn(updatedProfile);
-      setSuccessMessage('Profile updated successfully (Local Safe Vault synced)!');
-      setTimeout(() => {
-        onClose();
-      }, 600);
+      setSuccessMessage('Profile updated successfully!');
+      setTimeout(() => setIsEditingProfile(false), 500);
+    } catch (err: any) {
+      setError('Failed to update profile.');
     }
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-xs animate-fadeIn">
@@ -421,7 +186,6 @@ export const UserSignInModal: React.FC<UserSignInModalProps> = ({
         </button>
 
         {currentProfile ? (
-          // PROFILE & SETTINGS VIEW WHEN LOGGED IN
           <div>
             <div className="bg-[#FAF5EB] px-6 sm:px-8 pt-7 pb-5 border-b-3 border-[#0F5C94]">
               <span className="px-3 py-1 rounded-full bg-[#F6D97B] text-[#0F5C94] text-[10px] font-black uppercase tracking-wider border border-[#0F5C94]">
@@ -514,7 +278,6 @@ export const UserSignInModal: React.FC<UserSignInModalProps> = ({
                   </div>
                 </div>
 
-                {/* Account Role Switching Option */}
                 <div className="p-4 rounded-2xl border-2 border-[#F6D97B] bg-[#FFFBEA] flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs">
                   <div>
                     <span className="text-[10px] font-black text-[#9A5D16] uppercase tracking-wider block">Account Role</span>
@@ -539,18 +302,15 @@ export const UserSignInModal: React.FC<UserSignInModalProps> = ({
                 <div className="pt-2 flex gap-3">
                   <button
                     type="button"
-                    onClick={() => {
-                      setError(null);
-                      setSuccessMessage(null);
-                      setIsEditingProfile(true);
-                    }}
+                    onClick={() => setIsEditingProfile(true)}
                     className="flex-1 py-3.5 rounded-xl bg-[#0F5C94] hover:bg-[#0b4875] text-white font-black text-xs uppercase border-2 border-[#0F5C94] shadow-[3px_3px_0px_#FB4504] cursor-pointer"
                   >
                     Edit Details
                   </button>
                   <button
                     type="button"
-                    onClick={() => {
+                    onClick={async () => {
+                      await signOut(auth);
                       onSignOut();
                       onClose();
                     }}
@@ -563,33 +323,34 @@ export const UserSignInModal: React.FC<UserSignInModalProps> = ({
             )}
           </div>
         ) : (
-          // LOGIN / SIGNUP VIEW
           <div>
             <div className="bg-[#FAF5EB] px-6 sm:px-8 pt-7 pb-5 border-b-3 border-[#0F5C94]">
               <h2 className="text-2xl font-titan text-[#0F5C94]">
-                {view === 'login' ? 'LOG IN' : 'SIGN UP'}
+                {view === 'complete_profile' ? 'COMPLETE PROFILE' : 'WELCOME'}
               </h2>
-              <div className="flex gap-4 mt-4">
-                <button onClick={() => { setView('login'); setError(null); }} className={`font-black pb-1 cursor-pointer ${view === 'login' ? 'text-[#0F5C94] border-b-2 border-[#0F5C94]' : 'text-gray-400'}`}>Log In</button>
-                <button onClick={() => { setView('signup'); setError(null); }} className={`font-black pb-1 cursor-pointer ${view === 'signup' ? 'text-[#0F5C94] border-b-2 border-[#0F5C94]' : 'text-gray-400'}`}>Sign Up</button>
-              </div>
+              <p className="text-xs font-bold text-stone-600 mt-1">
+                {view === 'complete_profile' ? 'Just a few more details to get you started.' : 'Sign in securely with Google to sync your favorites and applications.'}
+              </p>
             </div>
 
-            <form onSubmit={view === 'login' ? handleLogin : handleSignUp} className="p-5 sm:p-7 space-y-4">
+            <div className="p-5 sm:p-7 space-y-4">
               {error && <div className="p-3 rounded-xl bg-red-50 border-2 border-[#FB4504] text-[#FB4504] text-xs font-black">{error}</div>}
               {successMessage && <div className="p-3 rounded-xl bg-green-50 border-2 border-green-500 text-green-700 text-xs font-black">{successMessage}</div>}
               
-              <div>
-                <label className="block text-xs font-black text-[#0F5C94] uppercase tracking-wider mb-1">Email <span className="text-[#FB4504]">*</span></label>
-                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="your.email@example.com" className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF5EB] border-2 border-[#0F5C94]/30 text-xs font-bold" />
-              </div>
-              <div>
-                <label className="block text-xs font-black text-[#0F5C94] uppercase tracking-wider mb-1">Password <span className="text-[#FB4504]">*</span></label>
-                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="At least 6 characters" className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF5EB] border-2 border-[#0F5C94]/30 text-xs font-bold" />
-              </div>
-
-              {view === 'signup' && (
-                <>
+              {view !== 'complete_profile' ? (
+                <div className="py-4 text-center">
+                  <button onClick={handleGoogleSignIn} className="w-full flex items-center justify-center gap-3 py-4 rounded-xl bg-white text-[#0F5C94] font-black text-sm uppercase border-2 border-[#0F5C94] shadow-[4px_4px_0px_#0F5C94] hover:bg-blue-50 cursor-pointer transition-all">
+                    <svg className="w-5 h-5" viewBox="0 0 24 24">
+                      <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                    </svg>
+                    Continue with Google
+                  </button>
+                </div>
+              ) : (
+                <form onSubmit={handleCompleteProfile} className="space-y-4">
                   <div>
                     <label className="block text-xs font-black text-[#0F5C94] uppercase tracking-wider mb-1">I want to... <span className="text-[#FB4504]">*</span></label>
                     <div className="flex gap-4">
@@ -634,39 +395,13 @@ export const UserSignInModal: React.FC<UserSignInModalProps> = ({
                       <option value="No experience">No experience</option>
                     </select>
                   </div>
-                </>
+                  
+                  <button type="submit" className="w-full py-3.5 mt-2 rounded-xl bg-[#FB4504] hover:bg-[#e03a00] text-white font-black text-sm uppercase border-2 border-[#0F5C94] shadow-[4px_4px_0px_#0F5C94] cursor-pointer">
+                    Complete & Enter
+                  </button>
+                </form>
               )}
-
-              <button type="submit" className="w-full py-3.5 rounded-xl bg-[#FB4504] hover:bg-[#e03a00] text-white font-black text-sm uppercase border-2 border-[#0F5C94] shadow-[4px_4px_0px_#0F5C94] cursor-pointer">
-                {view === 'login' ? 'LOG IN' : 'SIGN UP'}
-              </button>
-
-              <div className="text-center pt-2">
-                {view === 'login' ? (
-                  <p className="text-xs font-bold text-stone-600">
-                    Don't have an account?{' '}
-                    <button
-                      type="button"
-                      onClick={() => { setView('signup'); setError(null); setSuccessMessage(null); }}
-                      className="text-[#0F5C94] font-black underline cursor-pointer hover:text-[#FB4504]"
-                    >
-                      Sign Up
-                    </button>
-                  </p>
-                ) : (
-                  <p className="text-xs font-bold text-stone-600">
-                    Already have an account?{' '}
-                    <button
-                      type="button"
-                      onClick={() => { setView('login'); setError(null); setSuccessMessage(null); }}
-                      className="text-[#0F5C94] font-black underline cursor-pointer hover:text-[#FB4504]"
-                    >
-                      Log In
-                    </button>
-                  </p>
-                )}
-              </div>
-            </form>
+            </div>
           </div>
         )}
       </div>

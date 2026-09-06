@@ -34,6 +34,24 @@ export const MyApplicationsView: React.FC<MyApplicationsViewProps> = ({
 
   const isLister = userProfile?.role === 'Pet Lister';
 
+  if (!userProfile) {
+    return (
+      <div className="py-20 lg:py-32 min-h-[calc(100vh-5rem)] flex items-center justify-center px-4">
+        <div className="bg-[#FAF5EB] rounded-3xl border-3 border-[#0F5C94] shadow-[6px_6px_0px_#0F5C94] p-10 text-center max-w-lg mx-auto space-y-4 w-full">
+          <div className="w-16 h-16 rounded-2xl bg-[#F6D97B] border-2 border-[#0F5C94] flex items-center justify-center mx-auto text-[#0F5C94] shadow-[3px_3px_0px_#0F5C94]">
+            <CustomIcon name="user" className="w-8 h-8 text-[#0F5C94]" />
+          </div>
+          <h3 className="text-2xl font-titan text-[#0F5C94]">
+            Sign In Required
+          </h3>
+          <p className="text-sm text-[#0F5C94]/80 font-medium">
+            Please sign in or create an account to view your adoption applications and manage listed pets.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   // Find all pets listed by this user
   const myListedPets = isLister
     ? pets.filter(p => p.petListerId === userProfile?.userId)

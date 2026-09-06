@@ -12,6 +12,7 @@ interface PetProfileModalProps {
   onToggleFavorite: (petId: string, e: React.MouseEvent) => void;
   onApply: (pet: Pet) => void;
   userRole?: string;
+  currentUserId?: string;
 }
 
 export const PetProfileModal: React.FC<PetProfileModalProps> = ({
@@ -22,6 +23,7 @@ export const PetProfileModal: React.FC<PetProfileModalProps> = ({
   onToggleFavorite,
   onApply,
   userRole,
+  currentUserId,
 }) => {
   const [copiedLink, setCopiedLink] = useState(false);
 
@@ -225,7 +227,11 @@ export const PetProfileModal: React.FC<PetProfileModalProps> = ({
               <PetBudgetEstimator pet={pet} />
 
               {isAvailable ? (
-                (userRole === 'Pet Lister' || userRole === 'pet-lister') ? (
+                (pet.petListerId && pet.petListerId === currentUserId) ? (
+                  <div className="text-center p-3.5 rounded-xl bg-stone-100 text-stone-600 font-bold text-xs border border-stone-300">
+                    You listed this pet.
+                  </div>
+                ) : (userRole === 'Pet Lister' || userRole === 'pet-lister') ? (
                   <div className="text-center p-3.5 rounded-xl bg-stone-100 text-stone-600 font-bold text-xs border border-stone-300">
                     Pet Listers cannot fill adoption forms.
                   </div>

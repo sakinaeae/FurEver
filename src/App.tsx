@@ -2,7 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Pet, AdoptionApplication, User, Like, ApplicationStatus } from './backend/types';
 import { INITIAL_PETS } from './data/petsData';
 import { shuffleArray } from './utils/shuffle';
-import { initializeStorage, loadPets, savePets, loadUsers, loadApplications, saveApplications, loadLikes, saveLikes } from './lib/storage';
+// Firebase
+import { db, auth, petsCollection, applicationsCollection, likesCollection, createLike, removeLike, createApplication, updateApplicationStatus, deleteApplication, deletePet } from './lib/db';
+import { onSnapshot, query, where } from 'firebase/firestore';
+import { onAuthStateChanged } from 'firebase/auth';
+import { seedDatabaseIfEmpty } from './lib/seed';
 import { UserProfile } from './components/UserSignInModal';
 
 // Components
@@ -58,16 +62,37 @@ export default function App() {
   const [isMatchesModalOpen, setIsMatchesModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Initialize and load base pets data on mount
+  // Initialize Firestore listeners
   useEffect(() => {
-    const init = async () => {
-      await initializeStorage(INITIAL_PETS, [], [], []);
-      setPets(loadPets());
+    
+    // Auth Listener
+    const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const { getDoc, doc } = await import('firebase/firestore');
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (userDoc.exists()) {
+          setUserProfile(userDoc.data() as UserProfile);
+        }
+        seedDatabaseIfEmpty();
+      } else {
+        setUserProfile(null);
+      }
+    });
+
+    const unsubscribePets = onSnapshot(petsCollection, (snapshot) => {
+      const p: Pet[] = [];
+      snapshot.forEach(doc => p.push(doc.data() as Pet));
+      // Optionally sort by dateAdded descending
+      p.sort((a, b) => new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime());
+      setPets(p);
+    });
+
+  return () => {
+      unsubscribeAuth();
+      unsubscribePets();
     };
-    init();
   }, []);
 
-  // Sync user-specific Likes & Applications whenever userProfile changes
   useEffect(() => {
     try {
       if (userProfile) {
@@ -79,66 +104,83 @@ export default function App() {
       console.error(e);
     }
 
-    const currentEmail = userProfile?.email?.toLowerCase() || 'default';
-
-    // 1. Filter likes matching current user or default guest
-    const masterLikes = loadLikes();
-    const userLikes = masterLikes.filter(l => (l.userId || 'default').toLowerCase() === currentEmail);
-    setLikedPetIds(userLikes.map(l => l.petId));
-
-    // 2. Filter applications matching current user email or locally submitted IDs for guests
-    const masterApps = loadApplications();
-    if (userProfile?.email) {
-      const userApps = masterApps.filter(app => (app.applicantEmail || '').toLowerCase() === currentEmail);
-      setApplications(userApps);
-    } else {
-      // Guest mode: show applications submitted locally in this browser session
-      try {
-        const storedIdsStr = localStorage.getItem('furever_submitted_ids');
-        const storedIds: string[] = storedIdsStr ? JSON.parse(storedIdsStr) : [];
-        const guestApps = masterApps.filter(app => storedIds.includes(app.id) || (app.applicantEmail || '').toLowerCase() === 'default');
-        setApplications(guestApps);
-      } catch (e) {
-        setApplications([]);
-      }
+    if (!auth.currentUser) {
+      setLikedPetIds([]);
+      setApplications([]);
+      return;
     }
-  }, [userProfile]);
 
-  // Helper to persist likes for current user without erasing other users' likes
-  const updateLikesForCurrentUser = (newUserLikedPetIds: string[]) => {
-    const currentEmail = userProfile?.email?.toLowerCase() || 'default';
-    const masterLikes = loadLikes();
+    const uid = auth.currentUser.uid;
     
-    // Keep all likes from other users
-    const otherUsersLikes = masterLikes.filter(l => (l.userId || 'default').toLowerCase() !== currentEmail);
-    
-    // Map current user's active likes
-    const currentUserLikes = newUserLikedPetIds.map(petId => ({
-      likeId: `like-${petId}-${currentEmail}`,
-      userId: currentEmail,
-      petId,
-      timestamp: new Date().toISOString()
-    }));
-
-    const mergedLikes = [...otherUsersLikes, ...currentUserLikes];
-    saveLikes(mergedLikes);
-    setLikedPetIds(newUserLikedPetIds);
-  };
-
-  // Helper to persist applications for current user without erasing other users' applications
-  const updateApplicationsForCurrentUser = (newUserApps: AdoptionApplication[]) => {
-    const currentEmail = userProfile?.email?.toLowerCase() || 'default';
-    const masterApps = loadApplications();
-
-    // Keep all applications from other users
-    const otherUsersApps = masterApps.filter(app => {
-      const appEmail = (app.applicantEmail || 'default').toLowerCase();
-      return userProfile?.email ? appEmail !== currentEmail : true;
+    // Listen to likes for this user
+    const qLikes = query(likesCollection, where("userId", "==", uid));
+    const unsubscribeLikes = onSnapshot(qLikes, (snapshot) => {
+      const ids: string[] = [];
+      snapshot.forEach(doc => ids.push((doc.data() as Like).petId));
+      setLikedPetIds(ids);
     });
 
-    const mergedApps = [...newUserApps, ...otherUsersApps];
-    saveApplications(mergedApps);
-    setApplications(newUserApps);
+    // Listen to applications
+    // A user can be the applicant (userId == uid) or the pet lister (petListerId == uid)
+    const qAppsApplicant = query(applicationsCollection, where("userId", "==", uid));
+    const qAppsLister = query(applicationsCollection, where("petListerId", "==", uid));
+    
+    const appsMap = new Map<string, AdoptionApplication>();
+
+    const updateApps = () => {
+      setApplications(Array.from(appsMap.values()).sort((a, b) => new Date(b.dateApplied).getTime() - new Date(a.dateApplied).getTime()));
+    };
+
+    const unsubAppsApplicant = onSnapshot(qAppsApplicant, (snapshot) => {
+      snapshot.forEach(doc => appsMap.set(doc.id, doc.data() as AdoptionApplication));
+      snapshot.docChanges().forEach(change => {
+        if (change.type === 'removed') appsMap.delete(change.doc.id);
+      });
+      updateApps();
+    });
+
+    const unsubAppsLister = onSnapshot(qAppsLister, (snapshot) => {
+      snapshot.forEach(doc => appsMap.set(doc.id, doc.data() as AdoptionApplication));
+      snapshot.docChanges().forEach(change => {
+        if (change.type === 'removed') appsMap.delete(change.doc.id);
+      });
+      updateApps();
+    });
+
+    return () => {
+      unsubscribeLikes();
+      unsubAppsApplicant();
+      unsubAppsLister();
+    };
+  }, [userProfile]);
+
+  // Helper to persist likes for current user
+  const updateLikesForCurrentUser = async (newUserLikedPetIds: string[]) => {
+    if (!auth.currentUser) return;
+    const uid = auth.currentUser.uid;
+    
+    // Find removed likes
+    const removedIds = likedPetIds.filter(id => !newUserLikedPetIds.includes(id));
+    for (const petId of removedIds) {
+      await removeLike(`like-${petId}-${uid}`);
+    }
+
+    // Find added likes
+    const addedIds = newUserLikedPetIds.filter(id => !likedPetIds.includes(id));
+    for (const petId of addedIds) {
+      await createLike({
+        likeId: `like-${petId}-${uid}`,
+        userId: uid,
+        petId: petId,
+        timestamp: new Date().toISOString()
+      });
+    }
+  };
+
+  // Helper to persist applications is now handled by directly making DB calls where needed, 
+  // but we provide a mock updateApplicationsForCurrentUser so we don't break old code before removing it.
+  const updateApplicationsForCurrentUser = (newUserApps: AdoptionApplication[]) => {
+    // No-op for now. DB operations will trigger onSnapshot.
   };
 
   // Toast notification helper
@@ -152,10 +194,10 @@ export default function App() {
   };
 
   // Add new pet listing
-  const handlePetListed = (newPet: Pet) => {
-    const updatedPets = [newPet, ...pets];
-    setPets(updatedPets);
-    savePets(updatedPets);
+  const handlePetListed = async (newPet: Pet) => {
+    if (!auth.currentUser) return;
+    newPet.petListerId = auth.currentUser.uid;
+    await import('./lib/db').then(db => db.createPet(newPet));
     showToast(`🎉 ${newPet.name} is now listed for adoption!`);
   };
 
@@ -201,107 +243,47 @@ export default function App() {
   };
 
   // Handle new submitted application
-  const handleNewApplication = (newApp: AdoptionApplication) => {
-    const updatedApps = [newApp, ...applications];
-    updateApplicationsForCurrentUser(updatedApps);
-
-    // Store the ID in locally submitted IDs so they can see it under Status tab even if guest
-    try {
-      const storedIdsStr = localStorage.getItem('furever_submitted_ids');
-      const storedIds = storedIdsStr ? JSON.parse(storedIdsStr) : [];
-      storedIds.push(newApp.id);
-      localStorage.setItem('furever_submitted_ids', JSON.stringify(storedIds));
-    } catch (e) {
-      console.error(e);
+  const handleNewApplication = async (newApp: AdoptionApplication) => {
+    if (!auth.currentUser) {
+      showToast('You must be signed in to submit an application.');
+      return;
     }
-
-    const updatedPets = pets.map(p => p.id === newApp.petId ? { ...p, status: 'PENDING' as const } : p);
-    setPets(updatedPets);
-    savePets(updatedPets);
-
+    newApp.userId = auth.currentUser.uid;
+    const db = await import('./lib/db');
+    await db.createApplication(newApp);
+    await db.updatePetStatus(newApp.petId, 'PENDING');
     showToast(`Application for ${newApp.petName} submitted successfully!`);
   };
 
   // Update status of an application
   const handleUpdateApplicationStatus = async (appId: string, status: ApplicationStatus) => {
-    try {
-      const res = await fetch(`/api/applications/${appId}/status`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status }),
-      });
-      
-      const updatedApps = applications.map(app => 
-        app.id === appId ? { ...app, currentStatus: status } : app
-      );
-      setApplications(updatedApps);
-      saveApplications(updatedApps);
-
-      if (status === 'Adopted') {
-        const targetApp = applications.find(a => a.id === appId);
-        if (targetApp) {
-          const updatedPets = pets.map(p => p.id === targetApp.petId ? { ...p, status: 'ADOPTED' as const } : p);
-          setPets(updatedPets);
-          savePets(updatedPets);
-        }
+    const db = await import('./lib/db');
+    await db.updateApplicationStatus(appId, status);
+    
+    if (status === 'Adopted') {
+      const targetApp = applications.find(a => a.id === appId);
+      if (targetApp) {
+        await db.updatePetStatus(targetApp.petId, 'ADOPTED');
       }
-
-      showToast(`Application marked as ${status}!`);
-    } catch (err) {
-      const updatedApps = applications.map(app => 
-        app.id === appId ? { ...app, currentStatus: status } : app
-      );
-      setApplications(updatedApps);
-      saveApplications(updatedApps);
-      showToast(`Application marked as ${status}!`);
     }
+    showToast(`Application marked as ${status}!`);
   };
 
   // Remove / delete a listed pet
   const handleRemovePet = async (petId: string) => {
-    try {
-      await fetch(`/api/pets/${petId}`, {
-        method: 'DELETE',
-      });
-      const updatedPets = pets.filter(p => p.id !== petId);
-      setPets(updatedPets);
-      savePets(updatedPets);
-      showToast('🏡 Pet listing removed successfully.');
-    } catch (err) {
-      const updatedPets = pets.filter(p => p.id !== petId);
-      setPets(updatedPets);
-      savePets(updatedPets);
-      showToast('🏡 Pet listing removed.');
-    }
+    await import('./lib/db').then(db => db.deletePet(petId));
+    showToast('🏡 Pet listing removed successfully.');
   };
 
   // Delete / Withdraw an application (for adopters)
   const handleDeleteApplication = async (appId: string) => {
-    try {
-      await fetch(`/api/applications/${appId}`, { method: 'DELETE' });
-    } catch (e) {
-      // Ignore network errors on static host
-    }
-
-    const updatedApps = applications.filter(app => app.id !== appId);
-    updateApplicationsForCurrentUser(updatedApps);
-
-    try {
-      const storedIdsStr = localStorage.getItem('furever_submitted_ids');
-      if (storedIdsStr) {
-        const storedIds: string[] = JSON.parse(storedIdsStr);
-        const updatedIds = storedIds.filter(id => id !== appId);
-        localStorage.setItem('furever_submitted_ids', JSON.stringify(updatedIds));
-      }
-    } catch (e) {
-      console.error(e);
-    }
-
+    await import('./lib/db').then(db => db.deleteApplication(appId));
     showToast('🗑️ Application withdrawn and deleted successfully.');
   };
 
 
-  const likedPetsList = pets.filter((p) => likedPetIds.includes(p.id));
+  const adoptablePets = pets.filter(p => !(userProfile && p.petListerId === userProfile.userId));
+  const likedPetsList = adoptablePets.filter((p) => likedPetIds.includes(p.id));
   const availablePetsCount = pets.filter((p) => p.status === 'AVAILABLE').length;
 
   return (
@@ -474,7 +456,7 @@ export default function App() {
         {/* VIEW 2: BROWSE / FIND A PET */}
         {currentTab === 'browse' && (
           <PetBrowseGrid
-            pets={pets}
+            pets={adoptablePets}
             favoriteIds={likedPetIds}
             onToggleFavorite={handleToggleFavorite}
             onSelectPet={setSelectedPetForProfile}
@@ -489,7 +471,7 @@ export default function App() {
         {/* VIEW 3: SWIPE TO MATCH */}
         {currentTab === 'swipe' && (
           <SwipeCardDeck
-            pets={pets}
+            pets={adoptablePets}
             likedPetIds={likedPetIds}
             onSwipeRight={handleSwipeRight}
             onSwipeLeft={handleSwipeLeft}
@@ -502,7 +484,7 @@ export default function App() {
         {/* VIEW 4: MATCH FINDER & QUIZ */}
         {currentTab === 'quiz' && (
           <MatchQuizFinder
-            pets={pets}
+            pets={adoptablePets}
             favoriteIds={likedPetIds}
             onToggleFavorite={handleToggleFavorite}
             onSelectPet={setSelectedPetForProfile}

@@ -47,6 +47,8 @@ export interface Pet {
 }
 
 export interface AdoptionApplication {
+  userId: string;
+  petListerId: string;
   id: string;
   petId: string;
   petName: string;

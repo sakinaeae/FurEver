@@ -1,0 +1,90 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Global Helpers
+    function isSignedIn() { return request.auth != null; }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isValidId(id) { return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+
+    // Validation Helpers
+    function isValidUser(data) {
+      return data.keys().hasAll(['name', 'email', 'role']) &&
+             data.keys().size() <= 7 &&
+             data.name is string && data.name.size() <= 100 &&
+             data.email is string && data.email.size() <= 100 &&
+             (data.role == 'Adopter' || data.role == 'Pet Lister');
+    }
+
+    function isValidPet(data) {
+      return data.keys().hasAll(['petListerId', 'name', 'animalType', 'status']) &&
+             data.petListerId == request.auth.uid &&
+             data.name is string && data.name.size() <= 100 &&
+             (data.animalType == 'Dog' || data.animalType == 'Cat' || data.animalType == 'Rabbit' || data.animalType == 'Bird' || data.animalType == 'Other') &&
+             (data.status == 'AVAILABLE' || data.status == 'CURRENTLY UNAVAILABLE' || data.status == 'ADOPTED' || data.status == 'PENDING');
+    }
+
+    function isValidApplication(data) {
+      return data.keys().hasAll(['petId', 'userId', 'applicantEmail', 'currentStatus']) &&
+             data.userId == request.auth.uid &&
+             data.petId is string && data.petId.size() <= 128 &&
+             (data.currentStatus == 'Pending' || data.currentStatus == 'Under Review' || data.currentStatus == 'Approved' || data.currentStatus == 'Adopted' || data.currentStatus == 'Rejected');
+    }
+
+    function isValidLike(data) {
+      return data.keys().hasAll(['userId', 'petId']) &&
+             data.userId == request.auth.uid &&
+             data.petId is string && data.petId.size() <= 128;
+    }
+
+    // Collections
+
+    match /users/{userId} {
+      allow read: if isSignedIn() && request.auth.uid == userId;
+      allow create: if isSignedIn() && request.auth.uid == userId && isValidUser(incoming());
+      allow update: if isSignedIn() && request.auth.uid == userId && isValidUser(incoming()) && (
+        incoming().diff(existing()).affectedKeys().hasOnly(['name', 'phone', 'address', 'housingType', 'petExperience'])
+      );
+      allow delete: if isSignedIn() && request.auth.uid == userId;
+    }
+
+    match /pets/{petId} {
+      allow read: if true;
+      allow list: if true;
+      allow create: if isSignedIn() && isValidPet(incoming());
+      allow update: if isSignedIn() && existing().petListerId == request.auth.uid && isValidPet(incoming()) && incoming().petListerId == existing().petListerId && (
+        incoming().diff(existing()).affectedKeys().hasOnly(['name', 'age', 'ageCategory', 'weight', 'location', 'description', 'personality', 'goodWith', 'medicalInfo', 'activityLevel', 'adoptionFee', 'status', 'image'])
+      );
+      allow delete: if isSignedIn() && existing().petListerId == request.auth.uid;
+    }
+
+    match /applications/{applicationId} {
+      allow read: if isSignedIn() && (existing().userId == request.auth.uid || existing().petListerId == request.auth.uid);
+      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.petListerId == request.auth.uid);
+      
+      allow create: if isSignedIn() && isValidApplication(incoming()) && exists(/databases/$(database)/documents/pets/$(incoming().petId));
+      
+      allow update: if isSignedIn() && isValidApplication(incoming()) && incoming().userId == existing().userId && incoming().petListerId == existing().petListerId && (
+        // Action: Applicant updates info
+        (existing().userId == request.auth.uid && incoming().diff(existing()).affectedKeys().hasOnly(['applicantName', 'applicantPhone', 'applicantAddress', 'housingType', 'hasOtherPets', 'petExperience', 'fitReason'])) ||
+        // Action: Pet Lister updates status
+        (existing().petListerId == request.auth.uid && incoming().diff(existing()).affectedKeys().hasOnly(['currentStatus', 'eligibilityResult', 'ineligibilityReason']))
+      );
+
+      allow delete: if isSignedIn() && existing().userId == request.auth.uid;
+    }
+
+    match /likes/{likeId} {
+      allow read: if isSignedIn() && existing().userId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidLike(incoming()) && exists(/databases/$(database)/documents/pets/$(incoming().petId));
+      allow delete: if isSignedIn() && existing().userId == request.auth.uid;
+    }
+  }
+}
