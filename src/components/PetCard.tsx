@@ -7,6 +7,7 @@ interface PetCardProps {
   isFavorite: boolean;
   onToggleFavorite: (petId: string, e: React.MouseEvent) => void;
   onSelectPet: (pet: Pet) => void;
+  isUnderAdoption?: boolean;
 }
 
 export const PetCard: React.FC<PetCardProps> = ({
@@ -14,14 +15,19 @@ export const PetCard: React.FC<PetCardProps> = ({
   isFavorite,
   onToggleFavorite,
   onSelectPet,
+  isUnderAdoption = false,
 }) => {
-  const isAvailable = pet.status === 'AVAILABLE';
+  const isAvailable = pet.status === 'AVAILABLE' && !isUnderAdoption;
 
   return (
     <div
       id={`pet-card-${pet.id}`}
       onClick={() => onSelectPet(pet)}
-      className="group relative bg-white rounded-2xl overflow-hidden border-2 border-[#0F5C94] shadow-[4px_4px_0px_#0F5C94] hover:shadow-[6px_6px_0px_#FB4504] hover:-translate-x-0.5 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer flex flex-col h-full"
+      className={`group relative rounded-2xl overflow-hidden border-2 transition-all duration-200 cursor-pointer flex flex-col h-full ${
+        isAvailable
+          ? 'bg-white border-[#0F5C94] shadow-[4px_4px_0px_#0F5C94] hover:shadow-[6px_6px_0px_#FB4504] hover:-translate-x-0.5 hover:-translate-y-0.5'
+          : 'bg-stone-50 border-stone-400 shadow-[3px_3px_0px_#a8a29e] opacity-85'
+      }`}
     >
       {/* Image Container */}
       <div className="relative w-full aspect-4/3 overflow-hidden bg-[#FAF5EB] border-b-2 border-[#0F5C94]">

@@ -12,6 +12,7 @@ interface PetBrowseGridProps {
   onSelectPet: (pet: Pet) => void;
   onOpenMatchFinder: () => void;
   onShufflePets?: () => void;
+  applications?: any[];
 }
 
 const getPetSize = (weightStr: string): PetSize => {
@@ -29,6 +30,7 @@ export const PetBrowseGrid: React.FC<PetBrowseGridProps> = ({
   onSelectPet,
   onOpenMatchFinder,
   onShufflePets,
+  applications = [],
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<AnimalType | ''>('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -513,26 +515,38 @@ export const PetBrowseGrid: React.FC<PetBrowseGridProps> = ({
         {filteredPets.length > 0 ? (
           viewMode === 'grid' ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-              {paginatedPets.map((pet) => (
-                <PetCard
-                  key={pet.id}
-                  pet={pet}
-                  isFavorite={favoriteIds.includes(pet.id)}
-                  onToggleFavorite={onToggleFavorite}
-                  onSelectPet={onSelectPet}
-                />
-              ))}
+              {paginatedPets.map((pet) => {
+                const hasApp = applications.some((app: any) => app.petId === pet.id);
+                const isUnderAdoption = pet.status !== 'AVAILABLE' || hasApp;
+                return (
+                  <PetCard
+                    key={pet.id}
+                    pet={pet}
+                    isFavorite={favoriteIds.includes(pet.id)}
+                    onToggleFavorite={onToggleFavorite}
+                    onSelectPet={onSelectPet}
+                    isUnderAdoption={isUnderAdoption}
+                  />
+                );
+              })}
             </div>
           ) : (
             /* Pets Presentation: Detailed List / Table Mode */
             <div className="space-y-4">
               {paginatedPets.map((pet) => {
                 const isFavorite = favoriteIds.includes(pet.id);
+                const hasApp = applications.some((app: any) => app.petId === pet.id);
+                const isUnderAdoption = pet.status !== 'AVAILABLE' || hasApp;
+
                 return (
                   <div
                     key={pet.id}
                     onClick={() => onSelectPet(pet)}
-                    className="group bg-white rounded-2xl p-5 border-2 border-[#0F5C94] shadow-[4px_4px_0px_#0F5C94] hover:shadow-[6px_6px_0px_#FB4504] hover:-translate-x-0.5 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer flex flex-col md:flex-row items-start md:items-center justify-between gap-5"
+                    className={`group rounded-2xl p-5 border-2 transition-all duration-200 cursor-pointer flex flex-col md:flex-row items-start md:items-center justify-between gap-5 ${
+                      !isUnderAdoption
+                        ? 'bg-white border-[#0F5C94] shadow-[4px_4px_0px_#0F5C94] hover:shadow-[6px_6px_0px_#FB4504] hover:-translate-x-0.5 hover:-translate-y-0.5'
+                        : 'bg-stone-50 border-stone-400 shadow-[3px_3px_0px_#a8a29e] opacity-85'
+                    }`}
                   >
                     <div className="flex items-center gap-4 w-full md:w-auto">
                       <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden shrink-0 border-2 border-[#0F5C94] bg-[#FAF5EB] relative">
@@ -542,6 +556,13 @@ export const PetBrowseGrid: React.FC<PetBrowseGridProps> = ({
                           referrerPolicy="no-referrer"
                           className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform"
                         />
+                        {isUnderAdoption && (
+                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center p-1 text-center">
+                            <span className="text-[9px] font-black uppercase text-white bg-[#FB4504] px-1.5 py-0.5 rounded">
+                              Under Process
+                            </span>
+                          </div>
+                        )}
                       </div>
 
                       <div className="space-y-1.5">
@@ -552,6 +573,11 @@ export const PetBrowseGrid: React.FC<PetBrowseGridProps> = ({
                           <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-[#F6D97B] border border-[#0F5C94] text-[#0F5C94] uppercase">
                             {pet.breed}
                           </span>
+                          {isUnderAdoption && (
+                            <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-stone-200 text-stone-700 border border-stone-300 uppercase">
+                              Under Adoption Process
+                            </span>
+                          )}
                         </div>
 
                         <p className="text-xs text-[#0F5C94]/80 font-medium line-clamp-1 max-w-lg">
@@ -602,9 +628,13 @@ export const PetBrowseGrid: React.FC<PetBrowseGridProps> = ({
                           e.stopPropagation();
                           onSelectPet(pet);
                         }}
-                        className="px-5 py-2.5 rounded-xl bg-[#0F5C94] hover:bg-[#FB4504] text-white font-black text-xs uppercase tracking-wider flex items-center gap-2 transition-all border-2 border-[#0F5C94] shadow-[3px_3px_0px_#0F5C94] cursor-pointer"
+                        className={`px-5 py-2.5 rounded-xl text-white font-black text-xs uppercase tracking-wider flex items-center gap-2 transition-all border-2 ${
+                          !isUnderAdoption
+                            ? 'bg-[#0F5C94] hover:bg-[#FB4504] border-[#0F5C94] shadow-[3px_3px_0px_#0F5C94] cursor-pointer'
+                            : 'bg-stone-400 hover:bg-stone-500 border-stone-500 shadow-[2px_2px_0px_#78716c] cursor-pointer'
+                        }`}
                       >
-                        <span>Meet {pet.name}</span>
+                        <span>{isUnderAdoption ? 'Under Process' : `Meet ${pet.name}`}</span>
                         <CustomIcon name="right-arrow" className="w-4 h-4" />
                       </button>
                     </div>

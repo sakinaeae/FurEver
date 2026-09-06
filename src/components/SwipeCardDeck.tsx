@@ -12,6 +12,7 @@ interface SwipeCardDeckProps {
   onOpenMatches: () => void;
   onSelectPet: (pet: Pet) => void;
   onApplyPet: (pet: Pet) => void;
+  applications?: any[];
 }
 
 export const SwipeCardDeck: React.FC<SwipeCardDeckProps> = ({
@@ -21,6 +22,7 @@ export const SwipeCardDeck: React.FC<SwipeCardDeckProps> = ({
   onSwipeLeft,
   onOpenMatches,
   onSelectPet,
+  applications = [],
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [history, setHistory] = useState<{ pet: Pet; action: 'like' | 'pass' }[]>([]);
@@ -189,6 +191,15 @@ export const SwipeCardDeck: React.FC<SwipeCardDeckProps> = ({
                     <CustomIcon name="cross" className="w-3.5 h-3.5" />
                     <span>PASS</span>
                   </motion.div>
+
+                  {/* Under Adoption Process Overlay */}
+                  {(currentPet.status !== 'AVAILABLE' || applications.some((a: any) => a.petId === currentPet.id)) && (
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center p-3 text-center pointer-events-none">
+                      <span className="bg-[#FB4504] text-white px-3 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider border-2 border-white shadow-md">
+                        Under Adoption Process
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Card Information Body */}

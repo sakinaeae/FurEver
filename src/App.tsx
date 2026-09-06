@@ -397,15 +397,20 @@ export default function App() {
 
                   {/* Pet Cards Grid (First 6 pets) */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-                    {pets.slice(0, 6).map((pet) => (
-                      <PetCard
-                        key={pet.id}
-                        pet={pet}
-                        isFavorite={likedPetIds.includes(pet.id)}
-                        onToggleFavorite={handleToggleFavorite}
-                        onSelectPet={setSelectedPetForProfile}
-                      />
-                    ))}
+                    {pets.slice(0, 6).map((pet) => {
+                      const hasApp = applications.some((app) => app.petId === pet.id);
+                      const isUnderAdoption = pet.status !== 'AVAILABLE' || hasApp;
+                      return (
+                        <PetCard
+                          key={pet.id}
+                          pet={pet}
+                          isFavorite={likedPetIds.includes(pet.id)}
+                          onToggleFavorite={handleToggleFavorite}
+                          onSelectPet={setSelectedPetForProfile}
+                          isUnderAdoption={isUnderAdoption}
+                        />
+                      );
+                    })}
                   </div>
 
                   {/* View All Button */}
@@ -443,6 +448,7 @@ export default function App() {
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
             onShufflePets={handleShufflePets}
+            applications={applications}
           />
         )}
 
@@ -467,6 +473,7 @@ export default function App() {
               }
               setSelectedPetForApplication(pet);
             }}
+            applications={applications}
           />
         )}
 
@@ -546,14 +553,16 @@ export default function App() {
           <MyApplicationsView
             applications={
               userProfile?.role === 'Pet Lister'
-                ? applications
+                ? applications.filter(app => {
+                    const targetPet = pets.find(p => p.id === app.petId);
+                    return (targetPet && targetPet.petListerId === userProfile.userId) || app.petListerId === userProfile.userId;
+                  })
                 : userProfile?.role?.toLowerCase() === 'adopter'
-                ? (
-                    applications.some(app => (userProfile?.email && app.applicantEmail?.toLowerCase() === userProfile.email.toLowerCase()) || (userProfile?.userId && app.userId === userProfile.userId))
-                      ? applications.filter(app => (userProfile?.email && app.applicantEmail?.toLowerCase() === userProfile.email.toLowerCase()) || (userProfile?.userId && app.userId === userProfile.userId))
-                      : applications
+                ? applications.filter(app => 
+                    (userProfile?.email && app.applicantEmail?.toLowerCase() === userProfile.email.toLowerCase()) || 
+                    (userProfile?.userId && app.userId === userProfile.userId)
                   )
-                : applications
+                : []
             }
             pets={pets}
             userProfile={userProfile}
