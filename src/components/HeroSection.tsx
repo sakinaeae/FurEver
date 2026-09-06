@@ -3,14 +3,16 @@ import { CustomIcon } from './CustomIcon';
 import { PawIcon } from './PawDecorations';
 
 interface HeroSectionProps {
-  onFindYourMatch: () => void;
-  onExplorePets: () => void;
+  onBrowsePets: () => void;
+  onSwipeMatch: () => void;
+  onMatchQuiz: () => void;
   availableCount: number;
 }
 
 export const HeroSection: React.FC<HeroSectionProps> = ({
-  onFindYourMatch,
-  onExplorePets,
+  onBrowsePets,
+  onSwipeMatch,
+  onMatchQuiz,
   availableCount,
 }) => {
   return (
@@ -78,25 +80,36 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 A thoughtful way to discover pets, find the right match and manage your journey to adoption.
               </p>
 
-              {/* Action Buttons */}
-              <div className="pt-1 flex flex-col sm:flex-row items-stretch sm:items-center justify-start gap-3.5">
+              {/* Action Buttons: 3 Options */}
+              <div className="pt-1 flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center justify-start gap-3">
+                {/* 1. Browse Pets */}
                 <button
-                  id="hero-find-match-btn"
-                  onClick={onFindYourMatch}
-                  className="w-full sm:w-auto px-6 sm:px-7 py-3 sm:py-3.5 rounded-xl bg-[#0F5C94] hover:bg-[#0c4a77] text-white font-black text-sm sm:text-base tracking-wide border-2 border-[#0F5C94] shadow-[4px_4px_0px_#FB4504] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_#FB4504] transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  id="hero-browse-pets-btn"
+                  onClick={onBrowsePets}
+                  className="px-5 py-3 sm:py-3.5 rounded-xl bg-[#0F5C94] hover:bg-[#0c4a77] text-white font-black text-xs sm:text-sm uppercase tracking-wider border-2 border-[#0F5C94] shadow-[4px_4px_0px_#FB4504] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_#FB4504] transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <span>Find Your Match</span>
-                  <CustomIcon name="sparkle" white className="w-4 h-4" />
+                  <CustomIcon name="discover" white className="w-4 h-4" />
+                  <span>Browse Pets</span>
                 </button>
 
+                {/* 2. Swipe Match */}
                 <button
-                  id="hero-explore-pets-btn"
-                  onClick={onExplorePets}
-                  className="w-full sm:w-auto px-6 sm:px-7 py-3 sm:py-3.5 rounded-xl bg-white hover:bg-[#F6D97B]/40 text-[#0F5C94] font-black text-sm sm:text-base tracking-wide border-2 border-[#0F5C94] shadow-[4px_4px_0px_#FB4504] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_#FB4504] transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  id="hero-swipe-match-btn"
+                  onClick={onSwipeMatch}
+                  className="px-5 py-3 sm:py-3.5 rounded-xl bg-[#FB4504] hover:bg-[#e03a00] text-white font-black text-xs sm:text-sm uppercase tracking-wider border-2 border-[#0F5C94] shadow-[4px_4px_0px_#0F5C94] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_#0F5C94] transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <CustomIcon name="discover" className="w-4 h-4" />
-                  <span>Explore Pets</span>
-                  <CustomIcon name="right-arrow" className="w-4 h-4" />
+                  <PawIcon className="w-4 h-4 fill-white" />
+                  <span>Swipe Match</span>
+                </button>
+
+                {/* 3. Match Quiz */}
+                <button
+                  id="hero-match-quiz-btn"
+                  onClick={onMatchQuiz}
+                  className="px-5 py-3 sm:py-3.5 rounded-xl bg-[#F6D97B] hover:bg-[#edd06f] text-[#0F5C94] font-black text-xs sm:text-sm uppercase tracking-wider border-2 border-[#0F5C94] shadow-[4px_4px_0px_#0F5C94] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_#0F5C94] transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <CustomIcon name="sparkle" className="w-4 h-4 text-[#0F5C94]" />
+                  <span>Match Quiz</span>
                 </button>
               </div>
 

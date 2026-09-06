@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CustomIcon } from './CustomIcon';
 import { Pet } from '../backend/types';
 import { PawIcon } from './PawDecorations';
@@ -13,6 +13,8 @@ interface PetProfileModalProps {
   onApply: (pet: Pet) => void;
   userRole?: string;
   currentUserId?: string;
+  onOpenSignIn?: () => void;
+  applications?: any[];
 }
 
 export const PetProfileModal: React.FC<PetProfileModalProps> = ({
@@ -24,12 +26,27 @@ export const PetProfileModal: React.FC<PetProfileModalProps> = ({
   onApply,
   userRole,
   currentUserId,
+  onOpenSignIn,
+  applications = [],
 }) => {
   const [copiedLink, setCopiedLink] = useState(false);
+  const [allApplications, setAllApplications] = useState<any[]>(applications);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('furever_applications');
+      if (stored) {
+        setAllApplications(JSON.parse(stored));
+      } else {
+        setAllApplications(applications);
+      }
+    } catch (e) {}
+  }, [isOpen, applications]);
 
   if (!isOpen || !pet) return null;
 
-  const isAvailable = pet.status === 'AVAILABLE';
+  const hasApplication = allApplications.some(app => app.petId === pet.id);
+  const isAvailable = pet.status === 'AVAILABLE' && !hasApplication;
 
   const handleShare = () => {
     navigator.clipboard?.writeText(window.location.href);
@@ -227,13 +244,29 @@ export const PetProfileModal: React.FC<PetProfileModalProps> = ({
               <PetBudgetEstimator pet={pet} />
 
               {isAvailable ? (
-                (pet.petListerId && pet.petListerId === currentUserId) ? (
+                !currentUserId ? (
+                  <button
+                    id="profile-apply-adopt-btn"
+                    onClick={() => {
+                      onClose();
+                      if (onOpenSignIn) {
+                        onOpenSignIn();
+                      } else {
+                        onApply(pet);
+                      }
+                    }}
+                    className="w-full py-3.5 rounded-xl bg-[#0F5C94] hover:bg-[#0b4875] text-white font-black text-sm tracking-wider uppercase border-2 border-[#0F5C94] shadow-[4px_4px_0px_#FB4504] hover:translate-x-0.5 hover:translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <CustomIcon name="user" className="w-4 h-4 text-white" white />
+                    <span>LOG IN AS ADOPTER TO APPLY</span>
+                  </button>
+                ) : (pet.petListerId && pet.petListerId === currentUserId) ? (
                   <div className="text-center p-3.5 rounded-xl bg-stone-100 text-stone-600 font-bold text-xs border border-stone-300">
                     You listed this pet.
                   </div>
-                ) : (userRole === 'Pet Lister' || userRole === 'pet-lister') ? (
+                ) : (userRole === 'Pet Lister' || userRole === 'pet-lister' || userRole?.toLowerCase() === 'pet lister') ? (
                   <div className="text-center p-3.5 rounded-xl bg-stone-100 text-stone-600 font-bold text-xs border border-stone-300">
-                    Pet Listers cannot fill adoption forms.
+                    Pet Listers cannot fill adoption forms. Only registered Adopters can apply.
                   </div>
                 ) : (
                   <button
@@ -253,13 +286,13 @@ export const PetProfileModal: React.FC<PetProfileModalProps> = ({
                   <button
                     id="profile-unavailable-btn"
                     disabled
-                    className="w-full py-3.5 rounded-xl bg-stone-200 text-stone-500 font-black text-sm tracking-wider uppercase border-2 border-stone-300 cursor-not-allowed flex items-center justify-center gap-2"
+                    className="w-full py-3.5 rounded-xl bg-stone-200 text-stone-600 font-black text-sm tracking-wider uppercase border-2 border-stone-300 cursor-not-allowed flex items-center justify-center gap-2"
                   >
-                    <CustomIcon name="exclamation" className="w-4 h-4" />
-                    <span>CURRENTLY UNAVAILABLE</span>
+                    <CustomIcon name="exclamation" className="w-4 h-4 text-stone-500" />
+                    <span>This pet is under adoption process</span>
                   </button>
                   <p className="text-center text-[11px] font-semibold text-stone-500">
-                    This animal currently has a pending adoption or scheduled checkup.
+                    This animal currently has a pending adoption application and cannot accept further applications.
                   </p>
                 </div>
               )}

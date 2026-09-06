@@ -9,6 +9,7 @@ interface ListPetModalProps {
   onClose: () => void;
   onPetListed: (newPet: Pet) => void;
   currentProfile?: UserProfile | null;
+  onOpenSignIn?: () => void;
 }
 
 const COMMON_BREEDS = [
@@ -55,6 +56,7 @@ export const ListPetModal: React.FC<ListPetModalProps> = ({
   onClose,
   onPetListed,
   currentProfile,
+  onOpenSignIn,
 }) => {
   const [petName, setPetName] = useState('');
   const [animalType, setAnimalType] = useState<'Dog' | 'Cat' | 'Rabbit' | 'Bird' | 'Other' | ''>('');
@@ -178,6 +180,16 @@ export const ListPetModal: React.FC<ListPetModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    if (!currentProfile) {
+      setError('You must be signed in with a Pet Lister account to list a pet.');
+      return;
+    }
+
+    if (currentProfile.role?.toLowerCase() === 'adopter') {
+      setError('Adopters cannot list pets. Only registered Pet Listers can list animals.');
+      return;
+    }
 
     if (!uploadedImagePreview) {
       setError('Please upload a photo of your pet before submitting.');
@@ -405,6 +417,82 @@ export const ListPetModal: React.FC<ListPetModalProps> = ({
                 className="w-full py-3.5 px-6 rounded-xl bg-[#FB4504] hover:bg-[#e03a00] text-white font-black text-xs uppercase tracking-wider border-2 border-[#0F5C94] shadow-[4px_4px_0px_#0F5C94] hover:translate-x-0.5 hover:translate-y-0.5 transition-all cursor-pointer"
               >
                 DONE & SEE LISTINGS
+              </button>
+            </div>
+          </div>
+        ) : !currentProfile ? (
+          <div className="p-7 sm:p-9 text-center space-y-5 animate-fadeIn">
+            <div className="w-16 h-16 rounded-2xl bg-[#FFFBEA] border-3 border-[#F6D97B] text-[#9A5D16] flex items-center justify-center mx-auto shadow-[4px_4px_0px_#9A5D16]">
+              <CustomIcon name="user" className="w-8 h-8" />
+            </div>
+            <div className="space-y-2">
+              <span className="inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#FFFBEA] text-[#9A5D16] border border-[#F6D97B]">
+                Log In Required
+              </span>
+              <h3 className="text-xl sm:text-2xl font-titan text-[#0F5C94]">
+                Sign In as Pet Lister Required
+              </h3>
+              <p className="text-xs sm:text-sm text-stone-600 font-bold max-w-sm mx-auto">
+                You must be logged in with a Pet Lister account to put a rescue or foster pet up for adoption.
+              </p>
+            </div>
+            <div className="pt-3 max-w-xs mx-auto flex flex-col gap-2.5">
+              {onOpenSignIn && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleReset();
+                    onOpenSignIn();
+                  }}
+                  className="w-full py-3 px-4 rounded-xl bg-[#FB4504] hover:bg-[#e03a00] text-white font-black text-xs uppercase tracking-wider border-2 border-[#0F5C94] shadow-[4px_4px_0px_#0F5C94] cursor-pointer transition-all"
+                >
+                  Log In or Register as Lister
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={handleReset}
+                className="w-full py-2.5 px-4 rounded-xl bg-stone-200 hover:bg-stone-300 text-stone-700 font-black text-xs uppercase border border-stone-300 cursor-pointer"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        ) : currentProfile?.role?.toLowerCase() === 'adopter' ? (
+          <div className="p-7 sm:p-9 text-center space-y-5 animate-fadeIn">
+            <div className="w-16 h-16 rounded-2xl bg-stone-50 border-3 border-stone-300 flex items-center justify-center mx-auto shadow-[4px_4px_0px_#A3A3A3]">
+              <CustomIcon name="cross" className="w-8 h-8 text-stone-500" />
+            </div>
+            <div className="space-y-2">
+              <span className="inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-stone-100 text-stone-600 border border-stone-300">
+                Adopter Account
+              </span>
+              <h3 className="text-xl sm:text-2xl font-titan text-[#0F5C94]">
+                Listing Restricted
+              </h3>
+              <p className="text-xs sm:text-sm text-stone-600 font-bold max-w-sm mx-auto">
+                Your account is currently registered as an Adopter. Adopters cannot list pets. Only registered Pet Listers can list animals for adoption.
+              </p>
+            </div>
+            <div className="pt-3 max-w-xs mx-auto flex flex-col gap-2.5">
+              {onOpenSignIn && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleReset();
+                    onOpenSignIn();
+                  }}
+                  className="w-full py-3 px-4 rounded-xl bg-[#0F5C94] hover:bg-[#0b4875] text-white font-black text-xs uppercase tracking-wider border-2 border-[#0F5C94] shadow-[4px_4px_0px_#FB4504] cursor-pointer transition-all"
+                >
+                  Switch / Register as Lister
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={handleReset}
+                className="w-full py-2.5 px-4 rounded-xl bg-stone-200 hover:bg-stone-300 text-stone-700 font-black text-xs uppercase border border-stone-300 cursor-pointer"
+              >
+                Close Window
               </button>
             </div>
           </div>

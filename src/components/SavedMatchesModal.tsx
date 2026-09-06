@@ -10,6 +10,7 @@ interface SavedMatchesModalProps {
   onSelectPet: (pet: Pet) => void;
   onApplyPet: (pet: Pet) => void;
   onStartSwiping: () => void;
+  applications?: any[];
 }
 
 export const SavedMatchesModal: React.FC<SavedMatchesModalProps> = ({
@@ -20,8 +21,17 @@ export const SavedMatchesModal: React.FC<SavedMatchesModalProps> = ({
   onSelectPet,
   onApplyPet,
   onStartSwiping,
+  applications = [],
 }) => {
   if (!isOpen) return null;
+
+  let allApps = applications;
+  try {
+    const stored = localStorage.getItem('furever_applications');
+    if (stored) {
+      allApps = JSON.parse(stored);
+    }
+  } catch (e) {}
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-xs animate-fadeIn">
@@ -110,18 +120,24 @@ export const SavedMatchesModal: React.FC<SavedMatchesModalProps> = ({
                       View Bio
                     </button>
 
-                    <button
-                      id={`saved-match-apply-${pet.id}`}
-                      onClick={() => {
-                        onClose();
-                        onApplyPet(pet);
-                      }}
-                      disabled={pet.status !== 'AVAILABLE'}
-                      className="px-3.5 py-1.5 rounded-xl bg-[#FB4504] hover:bg-[#e03a00] text-white font-black text-xs uppercase tracking-wider border border-[#0F5C94] shadow-[2px_2px_0px_#0F5C94] disabled:bg-stone-300 disabled:border-stone-300 disabled:shadow-none disabled:cursor-not-allowed flex items-center gap-1 cursor-pointer"
-                    >
-                      <span>Apply</span>
-                      <CustomIcon name="right-arrow" className="w-3 h-3" />
-                    </button>
+                    {(() => {
+                      const hasApp = allApps.some(app => app.petId === pet.id);
+                      const isUnderAdoption = pet.status !== 'AVAILABLE' || hasApp;
+                      return (
+                        <button
+                          id={`saved-match-apply-${pet.id}`}
+                          onClick={() => {
+                            onClose();
+                            onApplyPet(pet);
+                          }}
+                          disabled={isUnderAdoption}
+                          className="px-3.5 py-1.5 rounded-xl bg-[#FB4504] hover:bg-[#e03a00] text-white font-black text-xs uppercase tracking-wider border border-[#0F5C94] shadow-[2px_2px_0px_#0F5C94] disabled:bg-stone-200 disabled:text-stone-600 disabled:border-stone-300 disabled:shadow-none disabled:cursor-not-allowed flex items-center gap-1 cursor-pointer"
+                        >
+                          <span>{isUnderAdoption ? 'This pet is under adoption process' : 'Apply'}</span>
+                          {!isUnderAdoption && <CustomIcon name="right-arrow" className="w-3 h-3" />}
+                        </button>
+                      );
+                    })()}
                   </div>
                 </div>
               ))}

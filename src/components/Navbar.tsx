@@ -25,8 +25,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenSignIn,
   onOpenListPetModal,
 }) => {
-  const isAdopter = currentProfile?.role === 'adopter';
-  const isLister = currentProfile?.role === 'Pet Lister';
+  const isAdopter = currentProfile?.role?.toLowerCase() === 'adopter';
+  const isLister = currentProfile?.role === 'Pet Lister' || currentProfile?.role?.toLowerCase() === 'pet lister';
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -55,6 +55,12 @@ export const Navbar: React.FC<NavbarProps> = ({
   }, [mobileMenuOpen]);
 
   const handleNavClick = (tab: string) => {
+    if (tab === 'status' && !currentProfile) {
+      if (onOpenSignIn) onOpenSignIn();
+      onSelectTab(tab);
+      setMobileMenuOpen(false);
+      return;
+    }
     onSelectTab(tab);
     setMobileMenuOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -92,7 +98,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     },
     {
       id: 'status',
-      label: isLister ? 'My Listed Pets' : 'My Status',
+      label: isLister ? 'My Listed Pets' : 'Status',
       shortLabel: isLister ? 'My Listed Pets' : 'Status',
       icon: 'file',
       color: '#0F942D',

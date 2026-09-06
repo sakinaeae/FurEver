@@ -1,14 +1,19 @@
 import React from 'react';
 import { CustomIcon } from './CustomIcon';
 import { PawIcon } from './PawDecorations';
+import { UserProfile } from './UserSignInModal';
 
 interface FooterProps {
   onSelectTab: (tab: string) => void;
   onFindYourMatch?: () => void;
   onListPetClick?: () => void;
+  userProfile?: UserProfile | null;
+  onOpenSignIn?: () => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onSelectTab, onListPetClick }) => {
+export const Footer: React.FC<FooterProps> = ({ onSelectTab, onListPetClick, userProfile, onOpenSignIn }) => {
+  const isLister = userProfile?.role === 'Pet Lister' || userProfile?.role?.toLowerCase() === 'pet lister';
+  const isAdopter = userProfile?.role?.toLowerCase() === 'adopter';
   return (
     <footer className="bg-[#0F5C94] text-white pt-16 pb-12 border-t-8 border-[#FB4504] relative z-10 overflow-hidden">
       {/* Decorative background paw */}
@@ -22,13 +27,28 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab, onListPetClick }) =
           
           {/* Section 1: Brand Information */}
           <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl bg-[#F6D97B] border-2 border-white flex items-center justify-center text-[#0F5C94] shadow-[3px_3px_0px_#FB4504]">
-                <CustomIcon name="paw" className="w-7 h-7 object-contain" blue />
+            <div 
+              id="footer-brand-logo-btn"
+              onClick={() => {
+                onSelectTab('home');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className="flex items-center gap-2.5 sm:gap-3 cursor-pointer group select-none"
+            >
+              <div>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-[#F6D97B] flex items-center justify-center text-[#0F5C94] shadow-md group-hover:scale-105 group-hover:rotate-3 transition-transform duration-200 border-2 border-white/20">
+                  <CustomIcon name="paw" className="w-7 h-7 sm:w-8 sm:h-8 object-contain" />
+                </div>
               </div>
-              <span className="text-3xl sm:text-4xl font-titan tracking-normal text-white">
-                FUREVER
-              </span>
+
+              <div className="flex flex-col">
+                <span className="text-2xl sm:text-3xl tracking-tight text-white leading-none font-titan group-hover:text-[#F6D97B] transition-colors">
+                  FUREVER
+                </span>
+                <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.14em] text-[#F6D97B] leading-tight mt-1">
+                  Find your match. Make it furever.
+                </span>
+              </div>
             </div>
 
             <p className="text-white/85 text-xs sm:text-sm leading-relaxed max-w-sm font-medium">
@@ -97,7 +117,21 @@ export const Footer: React.FC<FooterProps> = ({ onSelectTab, onListPetClick }) =
                   Match Finder Quiz
                 </button>
               </li>
-              {onListPetClick && (
+              <li>
+                <button
+                  onClick={() => {
+                    if (!userProfile) {
+                      if (onOpenSignIn) onOpenSignIn();
+                    }
+                    onSelectTab('status');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className="hover:text-[#F6D97B] transition-colors cursor-pointer"
+                >
+                  {isLister ? 'My Listed Pets' : 'Status'}
+                </button>
+              </li>
+              {onListPetClick && !isAdopter && (
                 <li>
                   <button
                     onClick={() => {

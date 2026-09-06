@@ -14,6 +14,7 @@ interface AdoptionFormModalProps {
   onTrackStatus?: () => void;
   currentProfile?: UserProfile | null;
   applications?: AdoptionApplication[];
+  onOpenSignIn?: () => void;
 }
 
 type EligibilityResult = {
@@ -30,6 +31,7 @@ export const AdoptionFormModal: React.FC<AdoptionFormModalProps> = ({
   onTrackStatus,
   currentProfile,
   applications = [],
+  onOpenSignIn,
 }) => {
   // Form State
   const [fullName, setFullName] = useState('');
@@ -57,6 +59,8 @@ export const AdoptionFormModal: React.FC<AdoptionFormModalProps> = ({
   }, [isOpen, currentProfile]);
 
   if (!isOpen || !pet) return null;
+
+  const alreadyApplied = applications.some((app) => app.petId === pet.id) || pet.status === 'PENDING' || pet.status === 'ADOPTED';
 
   // Real-time word count calculation for fitReason
   const getWordCount = (text: string) => {
@@ -117,6 +121,16 @@ export const AdoptionFormModal: React.FC<AdoptionFormModalProps> = ({
     e.preventDefault();
     setErrorMessage(null);
 
+    if (!currentProfile) {
+      setErrorMessage('You must be logged in with an Adopter account to submit an adoption application.');
+      return;
+    }
+
+    if (currentProfile.role === 'Pet Lister' || currentProfile.role?.toLowerCase() === 'pet lister') {
+      setErrorMessage('Pet Listers cannot fill adoption forms. Only registered Adopters can apply.');
+      return;
+    }
+
     const alreadyApplied = applications.some(app => app.petId === pet.id);
     if (alreadyApplied) {
       setErrorMessage('This pet is already under the adoption process and cannot accept further applications.');
@@ -126,6 +140,17 @@ export const AdoptionFormModal: React.FC<AdoptionFormModalProps> = ({
     // Basic Input Validation
     if (!fullName.trim() || !email.trim() || !phone.trim() || !fitReason.trim()) {
       setErrorMessage('Looks like you missed something. Please complete the required fields.');
+      return;
+    }
+
+    if (/\d/.test(fullName)) {
+      setErrorMessage('Full name cannot contain numbers. Please use letters only.');
+      return;
+    }
+
+    const cleanPhone = phone.replace(/\D/g, '');
+    if (cleanPhone.length !== 10) {
+      setErrorMessage(`Phone number must be exactly 10 digits (currently ${cleanPhone.length} digits).`);
       return;
     }
 
@@ -171,7 +196,7 @@ export const AdoptionFormModal: React.FC<AdoptionFormModalProps> = ({
       dateApplied: dateString,
       eligibilityResult: 'APPLICABLE',
       ineligibilityReason: '',
-      userId: '',
+      userId: currentProfile?.userId || '',
       petListerId: pet.petListerId || 'system',
       currentStatus: 'Pending'
     };
@@ -370,20 +395,100 @@ export const AdoptionFormModal: React.FC<AdoptionFormModalProps> = ({
               </button>
             </div>
           </div>
-        ) : currentProfile?.role === 'Pet Lister' ? (
+        ) : !currentProfile ? (
+          <div className="p-7 sm:p-9 text-center space-y-5 animate-fadeIn">
+            <div className="w-16 h-16 rounded-2xl bg-[#FFFBEA] border-3 border-[#F6D97B] text-[#9A5D16] flex items-center justify-center mx-auto shadow-[4px_4px_0px_#9A5D16]">
+              <CustomIcon name="user" className="w-8 h-8" />
+            </div>
+            <div className="space-y-2">
+              <span className="inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#FFFBEA] text-[#9A5D16] border border-[#F6D97B]">
+                Log In Required
+              </span>
+              <h3 className="text-xl sm:text-2xl font-titan text-[#0F5C94]">
+                Please Log In as an Adopter
+              </h3>
+              <p className="text-xs sm:text-sm text-stone-600 font-bold max-w-sm mx-auto">
+                You must be logged in with an Adopter account to fill out an adoption application for <strong className="text-[#FB4504]">{pet.name}</strong>.
+              </p>
+            </div>
+            <div className="pt-3 max-w-xs mx-auto flex flex-col gap-2.5">
+              {onOpenSignIn && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    onOpenSignIn();
+                  }}
+                  className="w-full py-3 px-4 rounded-xl bg-[#FB4504] hover:bg-[#e03a00] text-white font-black text-xs uppercase tracking-wider border-2 border-[#0F5C94] shadow-[4px_4px_0px_#0F5C94] cursor-pointer transition-all"
+                >
+                  Log In or Create Account
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={onClose}
+                className="w-full py-2.5 px-4 rounded-xl bg-stone-200 hover:bg-stone-300 text-stone-700 font-black text-xs uppercase border border-stone-300 cursor-pointer"
+              >
+                Close Window
+              </button>
+            </div>
+          </div>
+        ) : (currentProfile?.role === 'Pet Lister' || currentProfile?.role?.toLowerCase() === 'pet lister') ? (
           <div className="p-7 sm:p-9 text-center space-y-4 animate-fadeIn">
             <div className="w-16 h-16 rounded-2xl bg-stone-50 border-3 border-stone-300 flex items-center justify-center mx-auto shadow-[4px_4px_0px_#A3A3A3]">
               <CustomIcon name="cross" className="w-8 h-8 text-stone-500" />
             </div>
             <div className="space-y-2">
+              <span className="inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-stone-100 text-stone-600 border border-stone-300">
+                Pet Lister Account
+              </span>
               <h3 className="text-xl sm:text-2xl font-titan text-[#0F5C94]">
                 Form Disabled
               </h3>
               <p className="text-xs sm:text-sm text-stone-600 font-bold max-w-sm mx-auto">
-                Your account is currently registered as a Pet Lister. Pet Listers cannot fill adoption forms for any animals.
+                Your account is currently registered as a Pet Lister. Pet Listers cannot fill adoption forms for any animals. Only registered Adopters can apply.
               </p>
             </div>
             <div className="pt-3 max-w-xs mx-auto">
+              <button
+                type="button"
+                onClick={onClose}
+                className="w-full py-2.5 px-4 rounded-xl bg-stone-200 hover:bg-stone-300 text-stone-700 font-black text-xs uppercase border border-stone-300 cursor-pointer"
+              >
+                Close Window
+              </button>
+            </div>
+          </div>
+        ) : alreadyApplied ? (
+          <div className="p-7 sm:p-9 text-center space-y-5 animate-fadeIn">
+            <div className="w-16 h-16 rounded-2xl bg-[#FFFBEA] border-3 border-[#F6D97B] text-[#9A5D16] flex items-center justify-center mx-auto shadow-[4px_4px_0px_#9A5D16]">
+              <CustomIcon name="file" className="w-8 h-8" />
+            </div>
+            <div className="space-y-2">
+              <span className="inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#FFFBEA] text-[#9A5D16] border border-[#F6D97B]">
+                Application in Progress
+              </span>
+              <h3 className="text-xl sm:text-2xl font-titan text-[#0F5C94]">
+                Application Already Submitted
+              </h3>
+              <p className="text-xs sm:text-sm text-stone-600 font-bold max-w-sm mx-auto">
+                An adoption application has already been submitted for <strong className="text-[#FB4504]">{pet.name}</strong>. Once an application is filled, the form cannot be submitted again.
+              </p>
+            </div>
+            <div className="pt-2 max-w-xs mx-auto flex flex-col gap-2.5">
+              {onTrackStatus && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    onTrackStatus();
+                  }}
+                  className="w-full py-3 px-4 rounded-xl bg-[#0F5C94] hover:bg-[#0c4a77] text-white font-black text-xs uppercase tracking-wider border-2 border-[#0F5C94] shadow-[3px_3px_0px_#FB4504] cursor-pointer transition-all flex items-center justify-center gap-2"
+                >
+                  <CustomIcon name="file" className="w-4 h-4 text-white" white />
+                  <span>View Application Status</span>
+                </button>
+              )}
               <button
                 type="button"
                 onClick={onClose}
@@ -414,11 +519,14 @@ export const AdoptionFormModal: React.FC<AdoptionFormModalProps> = ({
                 id="app-input-fullname"
                 type="text"
                 value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
+                onChange={(e) => setFullName(e.target.value.replace(/[0-9]/g, ''))}
                 placeholder="e.g. Maya Deshmukh"
                 required
                 className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF5EB] border-2 border-[#0F5C94]/30 text-xs sm:text-sm text-[#0F5C94] font-bold placeholder-[#0F5C94]/40 focus:outline-none focus:border-[#0F5C94] focus:bg-white"
               />
+              <span className="text-[10px] text-stone-500 font-semibold mt-0.5 block">
+                Numbers are not allowed in name
+              </span>
             </div>
 
             {/* Field: Contact Number & Email */}
@@ -440,19 +548,29 @@ export const AdoptionFormModal: React.FC<AdoptionFormModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-black text-[#0F5C94] uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                  <CustomIcon name="phone" className="w-3.5 h-3.5 text-[#9A5D16]" />
-                  Contact Number <span className="text-[#FB4504]">*</span>
-                </label>
+                <div className="flex justify-between items-center mb-1">
+                  <label className="block text-xs font-black text-[#0F5C94] uppercase tracking-wider flex items-center gap-1.5">
+                    <CustomIcon name="phone" className="w-3.5 h-3.5 text-[#9A5D16]" />
+                    Contact Number <span className="text-[#FB4504]">*</span>
+                  </label>
+                  <span className="text-[10px] font-black text-stone-500">
+                    {phone.replace(/\D/g, '').length}/10 digits
+                  </span>
+                </div>
                 <input
                   id="app-input-phone"
                   type="tel"
+                  inputMode="numeric"
+                  maxLength={10}
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="e.g. +91 98200 12345"
+                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                  placeholder="e.g. 9820012345"
                   required
                   className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF5EB] border-2 border-[#0F5C94]/30 text-xs sm:text-sm text-[#0F5C94] font-bold placeholder-[#0F5C94]/40 focus:outline-none focus:border-[#0F5C94] focus:bg-white"
                 />
+                <span className="text-[10px] text-stone-500 font-semibold mt-0.5 block">
+                  Must be exactly 10 digits (max 10 allowed)
+                </span>
               </div>
             </div>
 

@@ -89,10 +89,10 @@ export const HowItWorks: React.FC<HowItWorksProps> = ({
 
                   <button
                     onClick={onMeetClick}
-                    className="w-full p-2 rounded-xl bg-[#FAF5EB] hover:bg-[#9A5D16] text-[#0F5C94] hover:text-white border-2 border-[#0F5C94] text-[11px] font-black uppercase tracking-wider flex items-center justify-between transition-all cursor-pointer shadow-[2px_2px_0px_#0F5C94] group"
+                    className="w-full p-2 rounded-xl bg-[#FAF5EB] hover:bg-[#0F5C94] text-[#0F5C94] hover:text-white border-2 border-[#0F5C94] text-[11px] font-black uppercase tracking-wider flex items-center justify-between transition-all cursor-pointer shadow-[2px_2px_0px_#0F5C94] group"
                   >
                     <span className="flex items-center gap-1.5">
-                      <CustomIcon name="sparkle" className="w-3.5 h-3.5 group-hover:brightness-0 group-hover:invert transition-all" />
+                      <CustomIcon name="sparkle" className="w-3.5 h-3.5 group-hover:brightness-0 group-hover:invert transition-all" blue />
                       <span>Match Quiz</span>
                     </span>
                     <CustomIcon name="right-arrow" className="w-3.5 h-3.5 group-hover:brightness-0 group-hover:invert group-hover:text-white transition-all" />
@@ -193,7 +193,11 @@ export const HowItWorks: React.FC<HowItWorksProps> = ({
               </div>
 
               <div className="mt-4">
-                {onListPetClick ? (
+                {userRole?.toLowerCase() === 'adopter' ? (
+                  <div className="text-[11px] font-bold text-stone-500 bg-stone-100 p-2.5 rounded-xl text-center border border-stone-300">
+                    For Pet Listers
+                  </div>
+                ) : onListPetClick ? (
                   <button
                     onClick={onListPetClick}
                     className="w-full py-2.5 px-3 rounded-xl text-[11px] font-black uppercase tracking-wider border-2 border-[#0F5C94] flex items-center justify-center gap-2 transition-all hover:bg-[#0F942D] hover:text-white cursor-pointer shadow-[2px_2px_0px_#0F5C94] bg-[#F6D97B] text-[#0F5C94] group"

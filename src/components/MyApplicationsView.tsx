@@ -15,6 +15,7 @@ interface MyApplicationsViewProps {
   onUpdateApplicationStatus?: (appId: string, status: ApplicationStatus) => void;
   onRemovePet?: (petId: string) => void;
   onDeleteApplication?: (appId: string) => void;
+  onOpenSignIn?: () => void;
 }
 
 export const MyApplicationsView: React.FC<MyApplicationsViewProps> = ({
@@ -27,35 +28,53 @@ export const MyApplicationsView: React.FC<MyApplicationsViewProps> = ({
   onUpdateApplicationStatus,
   onRemovePet,
   onDeleteApplication,
+  onOpenSignIn,
 }) => {
   const [activeAppDetail, setActiveAppDetail] = useState<AdoptionApplication | null>(null);
   const [petIdToRemoveConfirm, setPetIdToRemoveConfirm] = useState<string | null>(null);
   const [appToDeleteConfirm, setAppToDeleteConfirm] = useState<AdoptionApplication | null>(null);
 
-  const isLister = userProfile?.role === 'Pet Lister';
+  const isLister = userProfile?.role === 'Pet Lister' || userProfile?.role?.toLowerCase() === 'pet lister';
 
   if (!userProfile) {
     return (
       <div className="py-20 lg:py-32 min-h-[calc(100vh-5rem)] flex items-center justify-center px-4">
-        <div className="bg-[#FAF5EB] rounded-3xl border-3 border-[#0F5C94] shadow-[6px_6px_0px_#0F5C94] p-10 text-center max-w-lg mx-auto space-y-4 w-full">
+        <div className="bg-[#FAF5EB] rounded-3xl border-3 border-[#0F5C94] shadow-[6px_6px_0px_#0F5C94] p-8 sm:p-10 text-center max-w-lg mx-auto space-y-4 w-full animate-fadeIn">
           <div className="w-16 h-16 rounded-2xl bg-[#F6D97B] border-2 border-[#0F5C94] flex items-center justify-center mx-auto text-[#0F5C94] shadow-[3px_3px_0px_#0F5C94]">
             <CustomIcon name="user" className="w-8 h-8 text-[#0F5C94]" />
           </div>
-          <h3 className="text-2xl font-titan text-[#0F5C94]">
-            Sign In Required
+          <span className="inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#FFFBEA] text-[#9A5D16] border border-[#F6D97B]">
+            Authentication Required
+          </span>
+          <h3 className="text-2xl sm:text-3xl font-titan text-[#0F5C94]">
+            Sign In to View Status
           </h3>
-          <p className="text-sm text-[#0F5C94]/80 font-medium">
-            Please sign in or create an account to view your adoption applications and manage listed pets.
+          <p className="text-xs sm:text-sm text-[#0F5C94]/80 font-medium max-w-sm mx-auto">
+            Please log in or create an account to view your adoption application status or access your listed pets.
           </p>
+          {onOpenSignIn && (
+            <div className="pt-2 max-w-xs mx-auto">
+              <button
+                type="button"
+                onClick={onOpenSignIn}
+                className="w-full py-3.5 px-6 rounded-xl bg-[#FB4504] hover:bg-[#e03a00] text-white font-black text-xs uppercase tracking-wider border-2 border-[#0F5C94] shadow-[4px_4px_0px_#0F5C94] cursor-pointer transition-all hover:translate-x-0.5 hover:translate-y-0.5"
+              >
+                Log In or Sign Up
+              </button>
+            </div>
+          )}
         </div>
       </div>
     );
   }
 
-  // Find all pets listed by this user
+  // Find all pets listed by this user, or show all shelter pets
+  const userSpecificPets = pets.filter(p => p.petListerId === userProfile?.userId);
+  const [showAllPetsToggle, setShowAllPetsToggle] = useState(false);
   const myListedPets = isLister
-    ? pets.filter(p => p.petListerId === userProfile?.userId)
+    ? (userSpecificPets.length > 0 && !showAllPetsToggle ? userSpecificPets : pets)
     : [];
+  const isShowingAllPets = isLister && (userSpecificPets.length === 0 || showAllPetsToggle);
 
   useEffect(() => {
     if (!isLister) {
@@ -96,13 +115,27 @@ export const MyApplicationsView: React.FC<MyApplicationsViewProps> = ({
               </div>
 
               <h1 className="text-3xl sm:text-5xl lg:text-6xl font-titan text-[#0F5C94] tracking-normal">
-                MY LISTED PETS
+                {isShowingAllPets ? `ALL SHELTER PETS (${pets.length})` : `MY LISTED PETS (${userSpecificPets.length})`}
               </h1>
 
               <p className="text-xs sm:text-sm text-[#0F5C94]/85 font-medium mt-1 max-w-xl">
-                Review and manage all adoption applications submitted by prospective families for your listed foster pets.
+                {isShowingAllPets 
+                  ? "Showing all active rescue and foster companions in the system. Manage applications and listing details below."
+                  : "Review and manage all adoption applications submitted by prospective families for your listed foster pets."}
               </p>
             </div>
+
+            {userSpecificPets.length > 0 && (
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAllPetsToggle(!showAllPetsToggle)}
+                  className="px-4 py-2 bg-white hover:bg-[#F6D97B]/30 text-[#0F5C94] text-xs font-black uppercase rounded-xl border-2 border-[#0F5C94] shadow-[3px_3px_0px_#0F5C94] transition-all cursor-pointer"
+                >
+                  {showAllPetsToggle ? `Show My Pets Only (${userSpecificPets.length})` : `Show All Shelter Pets (${pets.length})`}
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Listed Pets Grid / List */}
