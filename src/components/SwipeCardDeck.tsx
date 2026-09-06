@@ -193,7 +193,7 @@ export const SwipeCardDeck: React.FC<SwipeCardDeckProps> = ({
                   </motion.div>
 
                   {/* Under Adoption Process Overlay */}
-                  {(currentPet.status !== 'AVAILABLE' || applications.some((a: any) => a.petId === currentPet.id)) && (
+                  {(currentPet.status !== 'AVAILABLE' || applications.some((a: any) => a.petId === currentPet.id && a.status !== 'Rejected')) && (
                     <div className="absolute inset-0 bg-black/40 flex items-center justify-center p-3 text-center pointer-events-none">
                       <span className="bg-[#FB4504] text-white px-3 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider border-2 border-white shadow-md">
                         Under Adoption Process

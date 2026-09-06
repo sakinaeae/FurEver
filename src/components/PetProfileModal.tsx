@@ -30,22 +30,10 @@ export const PetProfileModal: React.FC<PetProfileModalProps> = ({
   applications = [],
 }) => {
   const [copiedLink, setCopiedLink] = useState(false);
-  const [allApplications, setAllApplications] = useState<any[]>(applications);
-
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem('furever_applications');
-      if (stored) {
-        setAllApplications(JSON.parse(stored));
-      } else {
-        setAllApplications(applications);
-      }
-    } catch (e) {}
-  }, [isOpen, applications]);
 
   if (!isOpen || !pet) return null;
 
-  const hasApplication = allApplications.some(app => app.petId === pet.id);
+  const hasApplication = applications.some(app => app.petId === pet.id && app.status !== 'Rejected');
   const isAvailable = pet.status === 'AVAILABLE' && !hasApplication;
 
   const handleShare = () => {

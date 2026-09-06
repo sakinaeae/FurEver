@@ -516,7 +516,7 @@ export const PetBrowseGrid: React.FC<PetBrowseGridProps> = ({
           viewMode === 'grid' ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
               {paginatedPets.map((pet) => {
-                const hasApp = applications.some((app: any) => app.petId === pet.id);
+                const hasApp = applications.some((app: any) => app.petId === pet.id && app.status !== 'Rejected');
                 const isUnderAdoption = pet.status !== 'AVAILABLE' || hasApp;
                 return (
                   <PetCard
@@ -535,7 +535,7 @@ export const PetBrowseGrid: React.FC<PetBrowseGridProps> = ({
             <div className="space-y-4">
               {paginatedPets.map((pet) => {
                 const isFavorite = favoriteIds.includes(pet.id);
-                const hasApp = applications.some((app: any) => app.petId === pet.id);
+                const hasApp = applications.some((app: any) => app.petId === pet.id && app.status !== 'Rejected');
                 const isUnderAdoption = pet.status !== 'AVAILABLE' || hasApp;
 
                 return (

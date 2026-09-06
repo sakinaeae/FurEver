@@ -25,14 +25,6 @@ export const SavedMatchesModal: React.FC<SavedMatchesModalProps> = ({
 }) => {
   if (!isOpen) return null;
 
-  let allApps = applications;
-  try {
-    const stored = localStorage.getItem('furever_applications');
-    if (stored) {
-      allApps = JSON.parse(stored);
-    }
-  } catch (e) {}
-
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-xs animate-fadeIn">
       <div 
@@ -121,7 +113,7 @@ export const SavedMatchesModal: React.FC<SavedMatchesModalProps> = ({
                     </button>
 
                     {(() => {
-                      const hasApp = allApps.some(app => app.petId === pet.id);
+                      const hasApp = applications.some(app => app.petId === pet.id && app.status !== 'Rejected');
                       const isUnderAdoption = pet.status !== 'AVAILABLE' || hasApp;
                       return (
                         <button

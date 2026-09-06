@@ -226,11 +226,20 @@ export default function App() {
 
   // Update status of an application
   const handleUpdateApplicationStatus = async (appId: string, status: ApplicationStatus) => {
-    setApplications(prev => prev.map(a => a.id === appId ? { ...a, currentStatus: status } : a));
-    
     const targetApp = applications.find(a => a.id === appId);
-    if (status === 'Adopted' && targetApp) {
-      setPets(prev => prev.map(p => p.id === targetApp.petId ? { ...p, status: 'ADOPTED' } : p));
+    const updatedApps = applications.map(a => a.id === appId ? { ...a, status, currentStatus: status } : a);
+    setApplications(updatedApps);
+    
+    if (targetApp) {
+      if (status === 'Adopted') {
+        setPets(prev => prev.map(p => p.id === targetApp.petId ? { ...p, status: 'ADOPTED' } : p));
+      } else if (status === 'Rejected') {
+        // If rejected, verify if any other non-rejected applications remain for this pet
+        const hasOtherActiveApps = updatedApps.some(a => a.petId === targetApp.petId && a.id !== appId && a.status !== 'Rejected');
+        if (!hasOtherActiveApps) {
+          setPets(prev => prev.map(p => p.id === targetApp.petId ? { ...p, status: 'AVAILABLE' } : p));
+        }
+      }
     }
   };
 
@@ -240,10 +249,20 @@ export default function App() {
     showToast('Pet removed successfully.');
   };
 
-  // Delete / Withdraw an application (for adopters)
+  // Delete / Withdraw an application (for adopters) - restores pet availability if no other active apps exist
   const handleDeleteApplication = async (appId: string) => {
-    setApplications(prev => prev.filter(a => a.id !== appId));
-    showToast('Application withdrawn and deleted successfully.');
+    const targetApp = applications.find(a => a.id === appId);
+    const remainingApps = applications.filter(a => a.id !== appId);
+    setApplications(remainingApps);
+
+    if (targetApp) {
+      // Check if there are any remaining active (non-rejected) applications for this pet
+      const hasOtherActiveApps = remainingApps.some(a => a.petId === targetApp.petId && a.status !== 'Rejected');
+      if (!hasOtherActiveApps) {
+        setPets(prev => prev.map(p => p.id === targetApp.petId ? { ...p, status: 'AVAILABLE' } : p));
+      }
+    }
+    showToast('Application withdrawn. Pet is now available again for adoption!');
   };
 
   const adoptablePets = pets.filter(p => !(userProfile && userProfile.role === 'Pet Lister' && p.petListerId === userProfile.userId));
@@ -398,7 +417,7 @@ export default function App() {
                   {/* Pet Cards Grid (First 6 pets) */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                     {pets.slice(0, 6).map((pet) => {
-                      const hasApp = applications.some((app) => app.petId === pet.id);
+                      const hasApp = applications.some((app) => app.petId === pet.id && app.status !== 'Rejected');
                       const isUnderAdoption = pet.status !== 'AVAILABLE' || hasApp;
                       return (
                         <PetCard
